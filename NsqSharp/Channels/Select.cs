@@ -71,7 +71,7 @@ namespace NsqSharp.Channels
         /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to Default or NoDefault.</returns>
         public static SelectInstance CaseReceive<T>(Chan<T> c, Action<T> func)
         {
-            return new SelectInstance().CaseReceive<T>(c, func);
+            return new SelectInstance().CaseReceive(c, func);
         }
 
         /// <summary>

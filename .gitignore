@@ -2,5 +2,6 @@
 *.csproj.user
 *.ReSharper.user
 *.sln.DotSettings
+*.sln.DotSettings.user
 bin/
 obj/
