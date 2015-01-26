@@ -79,26 +79,6 @@ namespace NsqSharp.Channels
             return data;
         }
 
-        /// <summary>
-        /// Tries to send on a channel. If the channel is closed, returns <c>false</c>.
-        /// Blocks until the send is successful or the channel is closed.
-        /// </summary>
-        /// <param name="message">The message to send.</param>
-        /// <returns><c>true</c> if the send was successful; otherwise, <c>false</c> indicating the channel was closed.</returns>
-        public bool TrySend(T message)
-        {
-            try
-            {
-                Send(message);
-                return true;
-            }
-            catch (ChannelClosedException)
-            {
-            }
-
-            return false;
-        }
-
         public IEnumerator<T> GetEnumerator()
         {
             while (true)

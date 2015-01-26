@@ -160,13 +160,18 @@ namespace NsqSharp.Channels
                 bool gotValue = false;
                 if (c.TryLockReceive())
                 {
-                    if (c.IsReadyToSend)
+                    try
                     {
-                        o = c.Receive();
-                        gotValue = true;
+                        if (c.IsReadyToSend)
+                        {
+                            o = c.Receive();
+                            gotValue = true;
+                        }
                     }
-
-                    c.UnlockReceive();
+                    finally
+                    {
+                        c.UnlockReceive();
+                    }
                 }
 
                 if (gotValue)
@@ -189,13 +194,18 @@ namespace NsqSharp.Channels
                 bool sentValue = false;
                 if (c.TryLockSend())
                 {
-                    if (c.IsReadyToReceive)
+                    try
                     {
-                        c.Send(d);
-                        sentValue = true;
+                        if (c.IsReadyToReceive)
+                        {
+                            c.Send(d);
+                            sentValue = true;
+                        }
                     }
-
-                    c.UnlockSend();
+                    finally
+                    {
+                        c.UnlockSend();    
+                    }
                 }
 
                 if (sentValue)
