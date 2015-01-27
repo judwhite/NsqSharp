@@ -47,9 +47,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiRequest.cs" />
     <Compile Include="Channels\ChannelClosedException.cs" />
     <Compile Include="Channels\IChan.cs" />
     <Compile Include="Channels\Select.cs" />
+    <Compile Include="Channels\Time.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="Delegates.cs" />
     <Compile Include="Message.cs" />
