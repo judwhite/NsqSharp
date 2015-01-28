@@ -82,10 +82,10 @@ namespace NsqSharp.Go
                                                                      {
                                                                          {"ns", Nanosecond},
                                                                          {"us", Microsecond},
-                                                                         {"µs", Microsecond},
                                                                          // U+00B5 = micro symbol
-                                                                         //{"μs", Microsecond},
+                                                                         {"µs", Microsecond},
                                                                          // U+03BC = Greek letter mu
+                                                                         {"μs", Microsecond},
                                                                          {"ms", Millisecond},
                                                                          {"s", Second},
                                                                          {"m", Minute},
