@@ -1,14 +1,35 @@
-﻿namespace NsqSharp.Tests
+﻿using System;
+
+namespace NsqSharp.Tests
 {
     public class Result<T>
     {
-        public Result(bool shouldPass, T expected)
+        public Result(T expected)
         {
-            ShouldPass = shouldPass;
             Expected = expected;
         }
 
-        public bool ShouldPass { get; private set; }
+        public Result(Type expectedException)
+        {
+            ExpectedException = expectedException;
+        }
+
         public T Expected { get; private set; }
+
+        public Type ExpectedException { get; private set; }
+
+        public bool ShouldPass
+        {
+            get { return ExpectedException == null; }
+        }
+    }
+
+    public class Result<T, TException> : Result<T>
+        where TException : Exception
+    {
+        public Result()
+            : base(typeof(TException))
+        {
+        }
     }
 }
