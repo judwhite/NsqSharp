@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace NsqSharp.Tests.Extensions
 {
     [TestFixture]
-    public class IntExtensionsTests
+    public class IntExtensionsTest
     {
         [Test]
         public void UInt32Test()
