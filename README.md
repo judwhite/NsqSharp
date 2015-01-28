@@ -11,8 +11,8 @@ If you want to use NSQ within .NET today, check out [NSQnet](https://github.com/
 
 ## Goals
 - Structurally similar to the official [go-nsq](https://github.com/bitly/go-nsq) client.
-- Keep the client up to date with the latest stable release of go-nsq.
-- Provide developers with similar behavior and semantics as the official package.
+- Up to date with the latest stable release of go-nsq.
+- Provide similar behavior and semantics as the official package.
 
 ## License
 
