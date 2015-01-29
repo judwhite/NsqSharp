@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using NsqSharp.Go;
+using NsqSharp.Tests.Utils;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests.Go

@@ -46,11 +46,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfigTest.cs" />
     <Compile Include="Extensions\IntExtensionsTest.cs" />
     <Compile Include="Go\TimeTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Result.cs" />
-    <Compile Include="TestData.cs" />
+    <Compile Include="Utils\TestData.cs" />
+    <Compile Include="Utils\Result.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

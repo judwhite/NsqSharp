@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NsqSharp.Tests
+namespace NsqSharp.Tests.Utils
 {
     public class Result<T>
     {

@@ -9,5 +9,8 @@
     {
         /// <summary>Version</summary>
         public const string Version = "0.0.2";
+
+        /// <summary>Client name</summary>
+        public const string ClientName = "NsqSharp";
     }
 }
