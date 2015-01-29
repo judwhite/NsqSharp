@@ -1,7 +1,7 @@
-[![Build Status](https://travis-ci.org/judwhite/NsqSharp.svg?branch=master)](https://travis-ci.org/judwhite/NsqSharp)
-
 NsqSharp
 ========
+
+[![Build Status](https://travis-ci.org/judwhite/NsqSharp.svg?branch=master)](https://travis-ci.org/judwhite/NsqSharp)
 
 A .NET client library for [NSQ](https://github.com/bitly/nsq), a realtime distributed messaging platform.
 
