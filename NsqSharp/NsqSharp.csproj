@@ -55,6 +55,7 @@
     <Compile Include="Channels\ChannelClosedException.cs" />
     <Compile Include="Channels\IChan.cs" />
     <Compile Include="Channels\Select.cs" />
+    <Compile Include="Errors.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\OptAttributeExtensions.cs" />
     <Compile Include="Extensions\PropertyInfoExtensions.cs" />
