@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/judwhite/NsqSharp.svg?branch=master)](https://travis-ci.org/judwhite/NsqSharp)
+
 NsqSharp
 ========
 
