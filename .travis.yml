@@ -1,8 +1,7 @@
 language: csharp
 solution: NsqSharp.sln
 install:
-  - nuget restore NsqSharp.sln
-  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
+  - chmod +x ./packages/xunit.runners.1.9.2/tools/xunit.console.clr4.exe
 script:
   - xbuild /p:Configuration=Release NsqSharp.sln
-  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Tests/bin/Release/NsqSharp.Tests.dll
+  - mono ./packages/xunit.runners.1.9.2/tools/xunit.console.clr4.exe ./NsqSharp.Tests/bin/Release/NsqSharp.Tests.dll

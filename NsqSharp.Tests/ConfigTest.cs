@@ -1,48 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Reflection;
 using System.Security.Authentication;
 using NsqSharp.Attributes;
 using NsqSharp.Extensions;
 using NsqSharp.Go;
-using NUnit.Framework;
+using Xunit;
 
 namespace NsqSharp.Tests
 {
-    [TestFixture]
     public class ConfigTest
     {
-        [Test]
+        [Fact]
         public void TestConfigSet()
         {
             var c = new Config();
 
-            Assert.Throws<Exception>(() => c.Set("not a real config value", new object()),
-                "No error when setting an invalid value");
+            Assert.Throws<Exception>(() => c.Set("not a real config value", new object()));
 
-            Assert.Throws<Exception>(() => c.Set("tls_v1", "lol"),
-                "No error when setting `tls_v1` to an invalid value");
+            Assert.Throws<Exception>(() => c.Set("tls_v1", "lol"));
 
             c.Set("tls_v1", true);
-            Assert.IsTrue(c.TlsV1, "Error setting `tls_v1` config.");
+            Assert.True(c.TlsV1, "Error setting `tls_v1` config.");
 
             c.Set("tls-insecure-skip-verify", true);
-            Assert.IsTrue(c.TlsConfig.InsecureSkipVerify);
+            Assert.True(c.TlsConfig.InsecureSkipVerify);
 
             c.Set("tls-min-version", "tls1.2");
 
-            Assert.Throws<Exception>(() => c.Set("tls-min-version", "tls1.3"),
-                "No error when setting `tls-min-version` to an invalid value");
+            Assert.Throws<Exception>(() => c.Set("tls-min-version", "tls1.3"));
         }
 
-        [Test]
+        [Fact]
         public void TestConfigValidateDefault()
         {
             var c = new Config();
             c.Validate();
         }
 
-        [Test]
+        [Fact]
         public void TestConfigValidateError()
         {
             var c = new Config();
@@ -53,88 +50,78 @@ namespace NsqSharp.Tests
             c.Validate();
 
             c.DeflateLevel = 100;
-            Assert.AreEqual(100, c.DeflateLevel);
+            Assert.Equal(100, c.DeflateLevel);
 
-            Assert.Throws<Exception>(c.Validate);
+            Assert.Throws<Exception>(() => c.Validate());
 
             c.DeflateLevel = 1;
             c.Validate();
 
             c.DeflateLevel = 0;
-            Assert.AreEqual(0, c.DeflateLevel);
-            Assert.Throws<Exception>(c.Validate);
+            Assert.Equal(0, c.DeflateLevel);
+            Assert.Throws<Exception>(() => c.Validate());
         }
 
-        [Test]
+        [Fact]
         public void TestOptNamesUnique()
         {
             var list = new List<string>();
             foreach (var propertyInfo in typeof(Config).GetProperties())
             {
                 var opt = propertyInfo.Get<OptAttribute>();
-                if (opt == null)
-                    continue;
 
                 string option = opt.Name;
 
-                if (list.Contains(option))
-                {
-                    Assert.Fail(string.Format("property opt '{0}' exists more than once", option));
-                }
-
+                Assert.DoesNotContain(option, list);
                 list.Add(option);
             }
         }
 
-        [Test]
+        [Fact]
         public void TestOptNamesAreLowerAndTrimmed()
         {
             foreach (var propertyInfo in typeof(Config).GetProperties())
             {
                 var opt = propertyInfo.Get<OptAttribute>();
-                if (opt == null)
-                    continue;
 
-                if (opt.Name != opt.Name.ToLower().Trim() || opt.Name.Contains("-"))
-                {
-                    Assert.Fail(string.Format("property opt '{0}' does not match naming rules", opt.Name));
-                }
+                bool isInvalidOptName = (opt.Name != opt.Name.ToLower().Trim() || opt.Name.Contains("-"));
+                Assert.False(isInvalidOptName, string.Format("property opt '{0}' does not match naming rules", opt.Name));
             }
         }
 
-        [Test]
+        [Fact]
         public void TestDefaultValues()
         {
             var c = new Config();
 
-            Assert.AreEqual(TimeSpan.FromSeconds(60), c.ReadTimeout, "read_timeout");
-            Assert.AreEqual(TimeSpan.FromSeconds(1), c.WriteTimeout, "write_timeout");
-            Assert.AreEqual(TimeSpan.FromSeconds(60), c.LookupdPollInterval, "lookupd_poll_interval");
-            Assert.AreEqual(0.3, c.LookupdPollJitter, "lookupd_poll_jitter");
-            Assert.AreEqual(TimeSpan.FromMinutes(15), c.MaxRequeueDelay, "max_requeue_delay");
-            Assert.AreEqual(TimeSpan.FromSeconds(90), c.DefaultRequeueDelay, "default_requeue_delay");
-            Assert.AreEqual(TimeSpan.FromSeconds(1), c.BackoffMultiplier, "backoff_multiplier");
-            Assert.AreEqual(5, c.MaxAttempts, "max_attempts");
-            Assert.AreEqual(TimeSpan.FromSeconds(10), c.LowRdyIdleTimeout, "low_rdy_idle_timeout");
-            Assert.AreEqual(Dns.GetHostName().Split(new[] { '.' })[0], c.ClientID, "client_id");
-            Assert.AreEqual(Dns.GetHostName(), c.Hostname, "hostname");
-            Assert.AreEqual("NsqSharp/0.0.2", c.UserAgent, "user_agent");
-            Assert.AreEqual(TimeSpan.FromSeconds(30), c.HeartbeatInterval, "heartbeat_interval");
-            Assert.AreEqual(0, c.SampleRate, "sample_rate");
-            Assert.AreEqual(false, c.TlsV1, "tls_v1");
-            Assert.IsNull(c.TlsConfig, "tls_config");
-            Assert.AreEqual(false, c.Deflate, "deflate");
-            Assert.AreEqual(6, c.DeflateLevel, "deflate_level");
-            Assert.AreEqual(false, c.Snappy, "snappy");
-            Assert.AreEqual(16384, c.OutputBufferSize, "output_buffer_size");
-            Assert.AreEqual(TimeSpan.FromMilliseconds(250), c.OutputBufferTimeout, "output_buffer_timeout");
-            Assert.AreEqual(1, c.MaxInFlight, "max_in_flight");
-            Assert.AreEqual(TimeSpan.FromMinutes(2), c.MaxBackoffDuration, "max_backoff_duration");
-            Assert.AreEqual(TimeSpan.Zero, c.MsgTimeout, "msg_timeout");
-            Assert.IsNull(c.AuthSecret, "auth_secret");
+            Assert.Equal(TimeSpan.FromSeconds(60), c.ReadTimeout);
+            Assert.Equal(TimeSpan.FromSeconds(1), c.WriteTimeout);
+            Assert.Equal(TimeSpan.FromSeconds(60), c.LookupdPollInterval);
+            Assert.Equal(0.3, c.LookupdPollJitter);
+            Assert.Equal(TimeSpan.FromMinutes(15), c.MaxRequeueDelay);
+            Assert.Equal(TimeSpan.FromSeconds(90), c.DefaultRequeueDelay);
+            Assert.Equal(TimeSpan.FromSeconds(1), c.BackoffMultiplier);
+            Assert.Equal(5, c.MaxAttempts);
+            Assert.Equal(TimeSpan.FromSeconds(10), c.LowRdyIdleTimeout);
+            Assert.Equal(Dns.GetHostName().Split(new[] { '.' })[0], c.ClientID);
+            Assert.Equal(Dns.GetHostName(), c.Hostname);
+            Assert.Equal("NsqSharp/0.0.2", c.UserAgent);
+            Assert.Equal(TimeSpan.FromSeconds(30), c.HeartbeatInterval);
+            Assert.Equal(0, c.SampleRate);
+            Assert.Equal(false, c.TlsV1);
+            Assert.Equal(null, c.TlsConfig);
+            Assert.Equal(false, c.Deflate);
+            Assert.Equal(6, c.DeflateLevel);
+            Assert.Equal(false, c.Snappy);
+            Assert.Equal(16384, c.OutputBufferSize);
+            Assert.Equal(TimeSpan.FromMilliseconds(250), c.OutputBufferTimeout);
+            Assert.Equal(1, c.MaxInFlight);
+            Assert.Equal(TimeSpan.FromMinutes(2), c.MaxBackoffDuration);
+            Assert.Equal(TimeSpan.Zero, c.MsgTimeout);
+            Assert.Equal(null, c.AuthSecret);
         }
 
-        [Test]
+        [Fact]
         public void TestMinValues()
         {
             var c = new Config();
@@ -164,34 +151,34 @@ namespace NsqSharp.Tests
             c.Set("msg_timeout", TimeSpan.Zero);
             c.Set("auth_secret", null);
 
-            Assert.AreEqual(TimeSpan.FromMilliseconds(100), c.ReadTimeout, "read_timeout");
-            Assert.AreEqual(TimeSpan.FromMilliseconds(100), c.WriteTimeout, "write_timeout");
-            Assert.AreEqual(TimeSpan.FromSeconds(5), c.LookupdPollInterval, "lookupd_poll_interval");
-            Assert.AreEqual(0, c.LookupdPollJitter, "lookupd_poll_jitter");
-            Assert.AreEqual(TimeSpan.Zero, c.MaxRequeueDelay, "max_requeue_delay");
-            Assert.AreEqual(TimeSpan.Zero, c.DefaultRequeueDelay, "default_requeue_delay");
-            Assert.AreEqual(TimeSpan.Zero, c.BackoffMultiplier, "backoff_multiplier");
-            Assert.AreEqual(0, c.MaxAttempts, "max_attempts");
-            Assert.AreEqual(TimeSpan.FromSeconds(1), c.LowRdyIdleTimeout, "low_rdy_idle_timeout");
-            Assert.AreEqual(null, c.ClientID, "client_id");
-            Assert.AreEqual(null, c.Hostname, "hostname");
-            Assert.AreEqual(null, c.UserAgent, "user_agent");
-            Assert.AreEqual(TimeSpan.MinValue, c.HeartbeatInterval, "heartbeat_interval");
-            Assert.AreEqual(0, c.SampleRate, "sample_rate");
-            Assert.AreEqual(false, c.TlsV1, "tls_v1");
-            Assert.AreEqual(null, c.TlsConfig, "tls_config");
-            Assert.AreEqual(false, c.Deflate, "deflate");
-            Assert.AreEqual(1, c.DeflateLevel, "deflate_level");
-            Assert.AreEqual(false, c.Snappy, "snappy");
-            Assert.AreEqual(Int64.MinValue, c.OutputBufferSize, "output_buffer_size");
-            Assert.AreEqual(TimeSpan.MinValue, c.OutputBufferTimeout, "output_buffer_timeout");
-            Assert.AreEqual(0, c.MaxInFlight, "max_in_flight");
-            Assert.AreEqual(TimeSpan.Zero, c.MaxBackoffDuration, "max_backoff_duration");
-            Assert.AreEqual(TimeSpan.Zero, c.MsgTimeout, "msg_timeout");
-            Assert.AreEqual(null, c.AuthSecret, "auth_secret");
+            Assert.Equal(TimeSpan.FromMilliseconds(100), c.ReadTimeout);
+            Assert.Equal(TimeSpan.FromMilliseconds(100), c.WriteTimeout);
+            Assert.Equal(TimeSpan.FromSeconds(5), c.LookupdPollInterval);
+            Assert.Equal(0, c.LookupdPollJitter);
+            Assert.Equal(TimeSpan.Zero, c.MaxRequeueDelay);
+            Assert.Equal(TimeSpan.Zero, c.DefaultRequeueDelay);
+            Assert.Equal(TimeSpan.Zero, c.BackoffMultiplier);
+            Assert.Equal(0, c.MaxAttempts);
+            Assert.Equal(TimeSpan.FromSeconds(1), c.LowRdyIdleTimeout);
+            Assert.Equal(null, c.ClientID);
+            Assert.Equal(null, c.Hostname);
+            Assert.Equal(null, c.UserAgent);
+            Assert.Equal(TimeSpan.MinValue, c.HeartbeatInterval);
+            Assert.Equal(0, c.SampleRate);
+            Assert.Equal(false, c.TlsV1);
+            Assert.Equal(null, c.TlsConfig);
+            Assert.Equal(false, c.Deflate);
+            Assert.Equal(1, c.DeflateLevel);
+            Assert.Equal(false, c.Snappy);
+            Assert.Equal(Int64.MinValue, c.OutputBufferSize);
+            Assert.Equal(TimeSpan.MinValue, c.OutputBufferTimeout);
+            Assert.Equal(0, c.MaxInFlight);
+            Assert.Equal(TimeSpan.Zero, c.MaxBackoffDuration);
+            Assert.Equal(TimeSpan.Zero, c.MsgTimeout);
+            Assert.Equal(null, c.AuthSecret);
         }
 
-        [Test]
+        [Fact]
         public void TestMaxValues()
         {
             var c = new Config();
@@ -222,100 +209,100 @@ namespace NsqSharp.Tests
             c.Set("msg_timeout", TimeSpan.MaxValue);
             c.Set("auth_secret", "!@#@#$#%");
 
-            Assert.AreEqual(TimeSpan.FromMinutes(5), c.ReadTimeout, "read_timeout");
-            Assert.AreEqual(TimeSpan.FromMinutes(5), c.WriteTimeout, "write_timeout");
-            Assert.AreEqual(TimeSpan.FromMinutes(5), c.LookupdPollInterval, "lookupd_poll_interval");
-            Assert.AreEqual(1, c.LookupdPollJitter, "lookupd_poll_jitter");
-            Assert.AreEqual(TimeSpan.FromMinutes(60), c.MaxRequeueDelay, "max_requeue_delay");
-            Assert.AreEqual(TimeSpan.FromMinutes(60), c.DefaultRequeueDelay, "default_requeue_delay");
-            Assert.AreEqual(TimeSpan.FromMinutes(60), c.BackoffMultiplier, "backoff_multiplier");
-            Assert.AreEqual(65535, c.MaxAttempts, "max_attempts");
-            Assert.AreEqual(TimeSpan.FromMinutes(5), c.LowRdyIdleTimeout, "low_rdy_idle_timeout");
-            Assert.AreEqual("my", c.ClientID, "client_id");
-            Assert.AreEqual("my.host.name.com", c.Hostname, "hostname");
-            Assert.AreEqual("user-agent/1.0", c.UserAgent, "user_agent");
-            Assert.AreEqual(TimeSpan.MaxValue, c.HeartbeatInterval, "heartbeat_interval");
-            Assert.AreEqual(99, c.SampleRate, "sample_rate");
-            Assert.AreEqual(true, c.TlsV1, "tls_v1");
-            Assert.AreEqual(tlsConfig, c.TlsConfig, "tls_config");
-            Assert.AreEqual(true, c.Deflate, "deflate");
-            Assert.AreEqual(9, c.DeflateLevel, "deflate_level");
-            Assert.AreEqual(true, c.Snappy, "snappy");
-            Assert.AreEqual(Int64.MaxValue, c.OutputBufferSize, "output_buffer_size");
-            Assert.AreEqual(TimeSpan.MaxValue, c.OutputBufferTimeout, "output_buffer_timeout");
-            Assert.AreEqual(int.MaxValue, c.MaxInFlight, "max_in_flight");
-            Assert.AreEqual(TimeSpan.FromMinutes(60), c.MaxBackoffDuration, "max_backoff_duration");
-            Assert.AreEqual(TimeSpan.MaxValue, c.MsgTimeout, "msg_timeout");
-            Assert.AreEqual("!@#@#$#%", c.AuthSecret, "auth_secret");
+            Assert.Equal(TimeSpan.FromMinutes(5), c.ReadTimeout);
+            Assert.Equal(TimeSpan.FromMinutes(5), c.WriteTimeout);
+            Assert.Equal(TimeSpan.FromMinutes(5), c.LookupdPollInterval);
+            Assert.Equal(1, c.LookupdPollJitter);
+            Assert.Equal(TimeSpan.FromMinutes(60), c.MaxRequeueDelay);
+            Assert.Equal(TimeSpan.FromMinutes(60), c.DefaultRequeueDelay);
+            Assert.Equal(TimeSpan.FromMinutes(60), c.BackoffMultiplier);
+            Assert.Equal(65535, c.MaxAttempts);
+            Assert.Equal(TimeSpan.FromMinutes(5), c.LowRdyIdleTimeout);
+            Assert.Equal("my", c.ClientID);
+            Assert.Equal("my.host.name.com", c.Hostname);
+            Assert.Equal("user-agent/1.0", c.UserAgent);
+            Assert.Equal(TimeSpan.MaxValue, c.HeartbeatInterval);
+            Assert.Equal(99, c.SampleRate);
+            Assert.Equal(true, c.TlsV1);
+            Assert.Equal(tlsConfig, c.TlsConfig);
+            Assert.Equal(true, c.Deflate);
+            Assert.Equal(9, c.DeflateLevel);
+            Assert.Equal(true, c.Snappy);
+            Assert.Equal(Int64.MaxValue, c.OutputBufferSize);
+            Assert.Equal(TimeSpan.MaxValue, c.OutputBufferTimeout);
+            Assert.Equal(int.MaxValue, c.MaxInFlight);
+            Assert.Equal(TimeSpan.FromMinutes(60), c.MaxBackoffDuration);
+            Assert.Equal(TimeSpan.MaxValue, c.MsgTimeout);
+            Assert.Equal("!@#@#$#%", c.AuthSecret);
         }
 
-        [Test]
+        [Fact]
         public void TestValidatesLessThanMinValues()
         {
             var c = new Config();
             var tick = new TimeSpan(1);
 
-            Assert.Throws<Exception>(() => c.Set("read_timeout", TimeSpan.FromMilliseconds(100) - tick), "read_timeout");
-            Assert.Throws<Exception>(() => c.Set("write_timeout", TimeSpan.FromMilliseconds(100) - tick), "write_timeout");
-            Assert.Throws<Exception>(() => c.Set("lookupd_poll_interval", TimeSpan.FromSeconds(5) - tick), "lookupd_poll_interval");
-            Assert.Throws<Exception>(() => c.Set("lookupd_poll_jitter", 0 - double.Epsilon), "lookupd_poll_jitter");
-            Assert.Throws<Exception>(() => c.Set("max_requeue_delay", TimeSpan.Zero - tick), "max_requeue_delay");
-            Assert.Throws<Exception>(() => c.Set("default_requeue_delay", TimeSpan.Zero - tick), "default_requeue_delay");
-            Assert.Throws<Exception>(() => c.Set("backoff_multiplier", TimeSpan.Zero - tick), "backoff_multiplier");
-            Assert.Throws<Exception>(() => c.Set("max_attempts", 0 - 1), "max_attempts");
-            Assert.Throws<Exception>(() => c.Set("low_rdy_idle_timeout", TimeSpan.FromSeconds(1) - tick), "low_rdy_idle_timeout");
+            Assert.Throws<Exception>(() => c.Set("read_timeout", TimeSpan.FromMilliseconds(100) - tick));
+            Assert.Throws<Exception>(() => c.Set("write_timeout", TimeSpan.FromMilliseconds(100) - tick));
+            Assert.Throws<Exception>(() => c.Set("lookupd_poll_interval", TimeSpan.FromSeconds(5) - tick));
+            Assert.Throws<Exception>(() => c.Set("lookupd_poll_jitter", 0 - double.Epsilon));
+            Assert.Throws<Exception>(() => c.Set("max_requeue_delay", TimeSpan.Zero - tick));
+            Assert.Throws<Exception>(() => c.Set("default_requeue_delay", TimeSpan.Zero - tick));
+            Assert.Throws<Exception>(() => c.Set("backoff_multiplier", TimeSpan.Zero - tick));
+            Assert.Throws<Exception>(() => c.Set("max_attempts", 0 - 1));
+            Assert.Throws<Exception>(() => c.Set("low_rdy_idle_timeout", TimeSpan.FromSeconds(1) - tick));
             //c.Set("client_id", null);
             //c.Set("hostname", null);
             //c.Set("user_agent", null);
-            //Assert.Throws<Exception>(() => c.Set("heartbeat_interval", TimeSpan.MinValue - tick), "heartbeat_interval");
-            Assert.Throws<Exception>(() => c.Set("sample_rate", 0 - 1), "sample_rate");
+            //Assert.Throws<Exception>(() => c.Set("heartbeat_interval", TimeSpan.MinValue - tick));
+            Assert.Throws<Exception>(() => c.Set("sample_rate", 0 - 1));
             //c.Set("tls_v1", false);
             //c.Set("tls_config", null);
             //c.Set("deflate", false);
-            Assert.Throws<Exception>(() => c.Set("deflate_level", 1 - 1), "deflate_level");
+            Assert.Throws<Exception>(() => c.Set("deflate_level", 1 - 1));
             //c.Set("snappy", false);
-            //Assert.Throws<Exception>(() => c.Set("output_buffer_size", Int64.MinValue - 1), "");
-            //Assert.Throws<Exception>(() => c.Set("output_buffer_timeout", TimeSpan.MinValue - tick), "output_buffer_timeout");
-            Assert.Throws<Exception>(() => c.Set("max_in_flight", 0 - 1), "max_in_flight");
-            Assert.Throws<Exception>(() => c.Set("max_backoff_duration", TimeSpan.Zero - tick), "max_backoff_duration");
-            Assert.Throws<Exception>(() => c.Set("msg_timeout", TimeSpan.Zero - tick), "msg_timeout");
-            //Assert.Throws<Exception>(() => c.Set("auth_secret", null), "");
+            //Assert.Throws<Exception>(() => c.Set("output_buffer_size", Int64.MinValue - 1));
+            //Assert.Throws<Exception>(() => c.Set("output_buffer_timeout", TimeSpan.MinValue - tick));
+            Assert.Throws<Exception>(() => c.Set("max_in_flight", 0 - 1));
+            Assert.Throws<Exception>(() => c.Set("max_backoff_duration", TimeSpan.Zero - tick));
+            Assert.Throws<Exception>(() => c.Set("msg_timeout", TimeSpan.Zero - tick));
+            //Assert.Throws<Exception>(() => c.Set("auth_secret", null));
         }
 
-        [Test]
+        [Fact]
         public void TestValidatesGreaterThanMaxValues()
         {
             var c = new Config();
             var tick = new TimeSpan(1);
 
-            Assert.Throws<Exception>(() => c.Set("read_timeout", TimeSpan.FromMinutes(5) + tick), "read_timeout");
-            Assert.Throws<Exception>(() => c.Set("write_timeout", TimeSpan.FromMinutes(5) + tick), "write_timeout");
-            Assert.Throws<Exception>(() => c.Set("lookupd_poll_interval", TimeSpan.FromMinutes(5) + tick), "lookupd_poll_interval");
-            Assert.Throws<Exception>(() => c.Set("lookupd_poll_jitter", 1 + 0.0001), "lookupd_poll_jitter");
-            Assert.Throws<Exception>(() => c.Set("max_requeue_delay", TimeSpan.FromMinutes(60) + tick), "max_requeue_delay");
-            Assert.Throws<Exception>(() => c.Set("default_requeue_delay", TimeSpan.FromMinutes(60) + tick), "default_requeue_delay");
-            Assert.Throws<Exception>(() => c.Set("backoff_multiplier", TimeSpan.FromMinutes(60) + tick), "backoff_multiplier");
-            Assert.Throws<Exception>(() => c.Set("max_attempts", 65535 + 1), "max_attempts");
-            Assert.Throws<Exception>(() => c.Set("low_rdy_idle_timeout", TimeSpan.FromMinutes(5) + tick), "low_rdy_idle_timeout");
-            //Assert.Throws<Exception>(() => c.Set("client_id", "my"), "client_id");
-            //Assert.Throws<Exception>(() => c.Set("hostname", "my.host.name.com"), "hostname");
-            //Assert.Throws<Exception>(() => c.Set("user_agent", "user-agent/1.0"), "user_agent");
-            //Assert.Throws<Exception>(() => c.Set("heartbeat_interval", TimeSpan.MaxValue), "heartbeat_interval");
-            Assert.Throws<Exception>(() => c.Set("sample_rate", 99 + 1), "sample_rate");
-            //Assert.Throws<Exception>(() => c.Set("tls_v1", true), "tls_v1");
+            Assert.Throws<Exception>(() => c.Set("read_timeout", TimeSpan.FromMinutes(5) + tick));
+            Assert.Throws<Exception>(() => c.Set("write_timeout", TimeSpan.FromMinutes(5) + tick));
+            Assert.Throws<Exception>(() => c.Set("lookupd_poll_interval", TimeSpan.FromMinutes(5) + tick));
+            Assert.Throws<Exception>(() => c.Set("lookupd_poll_jitter", 1 + 0.0001));
+            Assert.Throws<Exception>(() => c.Set("max_requeue_delay", TimeSpan.FromMinutes(60) + tick));
+            Assert.Throws<Exception>(() => c.Set("default_requeue_delay", TimeSpan.FromMinutes(60) + tick));
+            Assert.Throws<Exception>(() => c.Set("backoff_multiplier", TimeSpan.FromMinutes(60) + tick));
+            Assert.Throws<Exception>(() => c.Set("max_attempts", 65535 + 1));
+            Assert.Throws<Exception>(() => c.Set("low_rdy_idle_timeout", TimeSpan.FromMinutes(5) + tick));
+            //Assert.Throws<Exception>(() => c.Set("client_id", "my"));
+            //Assert.Throws<Exception>(() => c.Set("hostname", "my.host.name.com"));
+            //Assert.Throws<Exception>(() => c.Set("user_agent", "user-agent/1.0"));
+            //Assert.Throws<Exception>(() => c.Set("heartbeat_interval", TimeSpan.MaxValue));
+            Assert.Throws<Exception>(() => c.Set("sample_rate", 99 + 1));
+            //Assert.Throws<Exception>(() => c.Set("tls_v1", true));
             //Assert.Throws<Exception>(() => c.Set("tls_config", tlsConfig);
-            //Assert.Throws<Exception>(() => c.Set("deflate", true), "deflate");
-            Assert.Throws<Exception>(() => c.Set("deflate_level", 9 + 1), "deflate_level");
-            //Assert.Throws<Exception>(() => c.Set("snappy", true), "snappy");
-            //Assert.Throws<Exception>(() => c.Set("output_buffer_size", Int64.MaxValue), "output_buffer_size");
-            //Assert.Throws<Exception>(() => c.Set("output_buffer_timeout", TimeSpan.MaxValue), "output_buffer_timeout");
-            //Assert.Throws<Exception>(() => c.Set("max_in_flight", int.MaxValue), "max_in_flight");
-            Assert.Throws<Exception>(() => c.Set("max_backoff_duration", TimeSpan.FromMinutes(60) + tick), "max_backoff_duration");
-            //Assert.Throws<Exception>(() => c.Set("msg_timeout", TimeSpan.MaxValue), "msg_timeout");
-            //Assert.Throws<Exception>(() => c.Set("auth_secret", "!@#@#$#%"), "auth_secret");
+            //Assert.Throws<Exception>(() => c.Set("deflate", true));
+            Assert.Throws<Exception>(() => c.Set("deflate_level", 9 + 1));
+            //Assert.Throws<Exception>(() => c.Set("snappy", true));
+            //Assert.Throws<Exception>(() => c.Set("output_buffer_size", Int64.MaxValue));
+            //Assert.Throws<Exception>(() => c.Set("output_buffer_timeout", TimeSpan.MaxValue));
+            //Assert.Throws<Exception>(() => c.Set("max_in_flight", int.MaxValue));
+            Assert.Throws<Exception>(() => c.Set("max_backoff_duration", TimeSpan.FromMinutes(60) + tick));
+            //Assert.Throws<Exception>(() => c.Set("msg_timeout", TimeSpan.MaxValue));
+            //Assert.Throws<Exception>(() => c.Set("auth_secret");
         }
 
-        [Test]
+        [Fact]
         public void TestHeartbeatLessThanReadTimout()
         {
             var c = new Config();
@@ -326,31 +313,32 @@ namespace NsqSharp.Tests
 
             c.Set("read_timeout", "2s");
             c.Set("heartbeat_interval", "5m");
-            Assert.Throws<Exception>(c.Validate);
+            Assert.Throws<Exception>(() => c.Validate());
         }
 
-        [Test]
+        [Fact]
         public void TestTls()
         {
             // TODO: Test more TLS
 
             var c = new Config();
+
+            Assert.Equal(null, c.TlsConfig);
+
             c.Set("tls_insecure_skip_verify", true);
-            
-            Assert.IsNotNull(c.TlsConfig, "TlsConfig");
-            Assert.IsTrue(c.TlsConfig.InsecureSkipVerify, "TlsConfig.InsecureSkipVerify");
+            Assert.True(c.TlsConfig.InsecureSkipVerify, "TlsConfig.InsecureSkipVerify");
 
             c.Set("tls_min_version", "ssl3.0");
-            Assert.AreEqual(SslProtocols.Ssl3, c.TlsConfig.MinVersion);
+            Assert.Equal(SslProtocols.Ssl3, c.TlsConfig.MinVersion);
 
             c.Set("tls_min_version", "tls1.0");
-            Assert.AreEqual(SslProtocols.Tls, c.TlsConfig.MinVersion);
+            Assert.Equal(SslProtocols.Tls, c.TlsConfig.MinVersion);
 
             c.Set("tls_min_version", "tls1.1");
-            Assert.AreEqual(SslProtocols.Tls11, c.TlsConfig.MinVersion);
+            Assert.Equal(SslProtocols.Tls11, c.TlsConfig.MinVersion);
 
             c.Set("tls_min_version", "tls1.2");
-            Assert.AreEqual(SslProtocols.Tls12, c.TlsConfig.MinVersion);
+            Assert.Equal(SslProtocols.Tls12, c.TlsConfig.MinVersion);
 
             Assert.Throws<Exception>(() => c.Set("tls_min_version", "ssl2.0"));
         }
