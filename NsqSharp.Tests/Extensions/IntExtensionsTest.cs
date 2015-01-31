@@ -1,11 +1,12 @@
 ﻿using NsqSharp.Extensions;
-using Xunit;
+using NUnit.Framework;
 
 namespace NsqSharp.Tests.Extensions
 {
+    [TestFixture]
     public class IntExtensionsTest
     {
-        [Fact]
+        [Test]
         public void UInt32Test()
         {
             // Arrange
@@ -16,10 +17,10 @@ namespace NsqSharp.Tests.Extensions
             uint actual = original.AsBigEndian();
 
             // Assert
-            Assert.Equal(expected, actual);
+            Assert.AreEqual(expected, actual);
         }
 
-        [Fact]
+        [Test]
         public void Int32Test()
         {
             // Arrange
@@ -34,10 +35,10 @@ namespace NsqSharp.Tests.Extensions
             }
 
             // Assert
-            Assert.Equal(expected, actual);
+            Assert.AreEqual(expected, actual);
         }
 
-        [Fact]
+        [Test]
         public void UInt16Test()
         {
             // Arrange
@@ -48,10 +49,10 @@ namespace NsqSharp.Tests.Extensions
             ushort actual = original.AsBigEndian();
 
             // Assert
-            Assert.Equal(expected, actual);
+            Assert.AreEqual(expected, actual);
         }
 
-        [Fact]
+        [Test]
         public void UInt64Test()
         {
             // Arrange
@@ -62,7 +63,7 @@ namespace NsqSharp.Tests.Extensions
             ulong actual = original.AsBigEndian();
 
             // Assert
-            Assert.Equal(expected, actual);
+            Assert.AreEqual(expected, actual);
         }
     }
 }

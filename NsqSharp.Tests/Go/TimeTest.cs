@@ -2,10 +2,11 @@
 using System.IO;
 using NsqSharp.Go;
 using NsqSharp.Tests.Utils;
-using Xunit;
+using NUnit.Framework;
 
 namespace NsqSharp.Tests.Go
 {
+    [TestFixture]
     public class TimeTest
     {
         private static readonly TestData<string, long> _parseDurationTests = new TestData<string, long>
@@ -65,7 +66,7 @@ namespace NsqSharp.Tests.Go
             {"9223372036854775806ns", new Result<long, OverflowException>()}, // overflow in leadingInt
         };
 
-        [Fact]
+        [Test]
         public void TestParseDuration()
         {
             foreach (var kvp in _parseDurationTests)
@@ -78,7 +79,7 @@ namespace NsqSharp.Tests.Go
                 if (shouldPass)
                 {
                     long actual = Time.ParseDuration(input);
-                    Assert.Equal(expected, actual);
+                    Assert.AreEqual(expected, actual, input);
                 }
                 else
                 {
