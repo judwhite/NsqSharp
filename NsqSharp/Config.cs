@@ -455,5 +455,25 @@ namespace NsqSharp
                 return certificates;
             }
         }
+
+        /// <summary>
+        /// Clones (makes a copy) of this instance.
+        /// </summary>
+        internal Config Clone()
+        {
+            var newConfig = new Config();
+
+            var typ = GetType();
+            foreach (var field in typ.GetProperties())
+            {
+                var opt = field.Get<OptAttribute>();
+                if (opt != null)
+                {
+                    newConfig.Set(opt.Name, field.GetValue(this));
+                }
+            }
+
+            return newConfig;
+        }
     }
 }
