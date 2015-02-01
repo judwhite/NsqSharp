@@ -18,27 +18,27 @@ namespace NsqSharp
     public partial class Producer
     {
         //private long _id;
-        private string _addr;
+        //private string _addr;
         //private Conn _conn;
-        private Config _config;
+        //private Config _config;
 
         //private Logger _logger;
         /// <summary>Log level</summary>
         public LogLevel LogLevel { get; set; }
 
-        private Chan<byte[]> _responseChan;
-        private Chan<byte[]> _errorChan;
+        //private Chan<byte[]> _responseChan;
+        //private Chan<byte[]> _errorChan;
         //private Chan<int> _closeChan;
 
-        private Chan<ProducerTransaction> _transactionChan;
+        //private Chan<ProducerTransaction> _transactionChan;
         //private Slice<ProducerTransaction> _transactions;
         //private int _state;
 
         //private int _concurrentProducers;
         //private int _stopFlag;
-        private Chan<int> _exitChan;
+        //private Chan<int> _exitChan;
         //private WaitGroup _wg;
-        private readonly object _guard = new object();
+        //private readonly object _guard = new object();
     }
 
     /// <summary>
@@ -84,16 +84,16 @@ namespace NsqSharp
 
             config.Validate();
 
-            _addr = addr;
-            _config = config.Clone();
+            //_addr = addr;
+            //_config = config.Clone();
 
             //_logger = new Logger(...); // TODO
             LogLevel = LogLevel.Info;
 
-            _transactionChan = new Chan<ProducerTransaction>();
+            /*_transactionChan = new Chan<ProducerTransaction>();
             _exitChan = new Chan<int>();
             _responseChan = new Chan<byte[]>();
-            _errorChan = new Chan<byte[]>();
+            _errorChan = new Chan<byte[]>();*/
         }
 
         // TODO
