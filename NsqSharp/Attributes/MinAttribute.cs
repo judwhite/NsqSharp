@@ -1,5 +1,4 @@
 ﻿using System;
-using NsqSharp.Go;
 
 namespace NsqSharp.Attributes
 {
@@ -15,30 +14,9 @@ namespace NsqSharp.Attributes
         /// Initializes a new instance of the MinAttribute class.
         /// </summary>
         /// <param name="value">The minimum value.</param>
-        public MinAttribute(string value)
-            : this((object)value)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the MinAttribute class.
-        /// </summary>
-        /// <param name="value">The minimum value.</param>
-        public MinAttribute(int value)
-            : this((object)value)
-        {
-        }
-
-        private MinAttribute(object value)
+        public MinAttribute(object value)
         {
             _value = value;
-
-            string strValue = value as string;
-            if (strValue != null)
-            {
-                // convert from nanoseconds to ticks (100-nanosecond units)
-                _value = new TimeSpan(Time.ParseDuration(strValue) / 100);
-            }
         }
 
         /// <summary>
