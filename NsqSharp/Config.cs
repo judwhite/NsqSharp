@@ -40,15 +40,15 @@ namespace NsqSharp
         private readonly List<configHandler> configHandlers;
 
         /// <summary>Deadline for network reads</summary>
-        [Opt("read_timeout"), Min("100ms"), Max("5m"), Default("60s", isDuration: true)]
+        [Opt("read_timeout"), Min("100ms"), Max("5m"), Default("60s")]
         public TimeSpan ReadTimeout { get; internal set; }
 
         /// <summary>Deadline for network writes</summary>
-        [Opt("write_timeout"), Min("100ms"), Max("5m"), Default("1s", isDuration: true)]
+        [Opt("write_timeout"), Min("100ms"), Max("5m"), Default("1s")]
         public TimeSpan WriteTimeout { get; internal set; }
 
         /// <summary>Duration between polling lookupd for new producers</summary>
-        [Opt("lookupd_poll_interval"), Min("5s"), Max("5m"), Default("60s", isDuration: true)]
+        [Opt("lookupd_poll_interval"), Min("5s"), Max("5m"), Default("60s")]
         public TimeSpan LookupdPollInterval { get; set; }
 
         /// <summary>Fractional jitter to add to the lookupd pool loop. This helps evenly
@@ -57,15 +57,15 @@ namespace NsqSharp
         public double LookupdPollJitter { get; set; }
 
         /// <summary>Maximum duration when REQueueing (for doubling of deferred requeue)</summary>
-        [Opt("max_requeue_delay"), Min("0"), Max("60m"), Default("15m", isDuration: true)]
+        [Opt("max_requeue_delay"), Min("0"), Max("60m"), Default("15m")]
         public TimeSpan MaxRequeueDelay { get; set; }
 
         /// <summary>Default requeue delay</summary>
-        [Opt("default_requeue_delay"), Min("0"), Max("60m"), Default("90s", isDuration: true)]
+        [Opt("default_requeue_delay"), Min("0"), Max("60m"), Default("90s")]
         public TimeSpan DefaultRequeueDelay { get; set; }
 
         /// <summary>Unit of time for calculating consumer backoff</summary>
-        [Opt("backoff_multiplier"), Min("0"), Max("60m"), Default("1s", isDuration: true)]
+        [Opt("backoff_multiplier"), Min("0"), Max("60m"), Default("1s")]
         public TimeSpan BackoffMultiplier { get; set; }
 
         /// <summary>Maximum number of times this consumer will attempt to process a message before giving up</summary>
@@ -74,7 +74,7 @@ namespace NsqSharp
 
         /// <summary>Amount of time in seconds to wait for a message from a producer when in a state where RDY
         /// counts are re-distributed (ie. max_in_flight &lt; num_producers)</summary>
-        [Opt("low_rdy_idle_timeout"), Min("1s"), Max("5m"), Default("10s", isDuration: true)]
+        [Opt("low_rdy_idle_timeout"), Min("1s"), Max("5m"), Default("10s")]
         public TimeSpan LowRdyIdleTimeout { get; set; }
 
         /// <summary>client_id identifier sent to nsqd representing this client (defaults: short hostname)</summary>
@@ -91,7 +91,7 @@ namespace NsqSharp
         public string UserAgent { get; set; }
 
         /// <summary>Duration of time between heartbeats. This must be less than ReadTimeout</summary>
-        [Opt("heartbeat_interval"), Default("30s", isDuration: true)]
+        [Opt("heartbeat_interval"), Default("30s")]
         public TimeSpan HeartbeatInterval { get; set; }
 
         /// <summary>Integer percentage to sample the channel (requires nsqd 0.2.25+)</summary>
@@ -139,7 +139,7 @@ namespace NsqSharp
         /// (&lt; 25ms) output_buffer_timeout has a significant effect
         /// on nsqd CPU usage (particularly with > 50 clients connected).
         /// </summary>
-        [Opt("output_buffer_timeout"), Default("250ms", isDuration: true)]
+        [Opt("output_buffer_timeout"), Default("250ms")]
         public TimeSpan OutputBufferTimeout { get; set; }
 
         /// <summary>Maximum number of messages to allow in flight (concurrency knob)</summary>
@@ -147,7 +147,7 @@ namespace NsqSharp
         public int MaxInFlight { get; set; }
 
         /// <summary>Maximum amount of time to backoff when processing fails 0 == no backoff</summary>
-        [Opt("max_backoff_duration"), Min("0"), Max("60m"), Default("2m", isDuration: true)]
+        [Opt("max_backoff_duration"), Min("0"), Max("60m"), Default("2m")]
         public TimeSpan MaxBackoffDuration { get; set; }
         /// <summary>The server-side message timeout for messages delivered to this client</summary>
         [Opt("msg_timeout"), Min(0)]

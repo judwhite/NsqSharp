@@ -72,15 +72,10 @@ namespace NsqSharp.Tests
             foreach (var propertyInfo in typeof(Config).GetProperties())
             {
                 var opt = propertyInfo.Get<OptAttribute>();
-                if (opt == null)
-                    continue;
 
                 string option = opt.Name;
 
-                if (list.Contains(option))
-                {
-                    Assert.Fail(string.Format("property opt '{0}' exists more than once", option));
-                }
+                Assert.IsFalse(list.Contains(option), string.Format("property opt '{0}' exists more than once", option));
 
                 list.Add(option);
             }
@@ -92,13 +87,9 @@ namespace NsqSharp.Tests
             foreach (var propertyInfo in typeof(Config).GetProperties())
             {
                 var opt = propertyInfo.Get<OptAttribute>();
-                if (opt == null)
-                    continue;
 
-                if (opt.Name != opt.Name.ToLower().Trim() || opt.Name.Contains("-"))
-                {
-                    Assert.Fail(string.Format("property opt '{0}' does not match naming rules", opt.Name));
-                }
+                bool hasGoodName = opt.Name == opt.Name.ToLower().Trim() && !opt.Name.Contains("-");
+                Assert.IsTrue(hasGoodName, string.Format("property opt '{0}' does not match naming rules", opt.Name));
             }
         }
 
@@ -336,7 +327,7 @@ namespace NsqSharp.Tests
 
             var c = new Config();
             c.Set("tls_insecure_skip_verify", true);
-            
+
             Assert.IsNotNull(c.TlsConfig, "TlsConfig");
             Assert.IsTrue(c.TlsConfig.InsecureSkipVerify, "TlsConfig.InsecureSkipVerify");
 

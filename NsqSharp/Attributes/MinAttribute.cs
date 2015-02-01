@@ -16,15 +16,6 @@ namespace NsqSharp.Attributes
         /// </summary>
         /// <param name="value">The minimum value.</param>
         public MinAttribute(string value)
-            : this((object)value, isDuration: true)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the MinAttribute class.
-        /// </summary>
-        /// <param name="value">The minimum value.</param>
-        public MinAttribute(ushort value)
             : this((object)value)
         {
         }
@@ -38,23 +29,15 @@ namespace NsqSharp.Attributes
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the MinAttribute class.
-        /// </summary>
-        /// <param name="value">The minimum value.</param>
-        public MinAttribute(double value)
-            : this((object)value)
-        {
-        }
-
-        private MinAttribute(object value, bool isDuration = false)
+        private MinAttribute(object value)
         {
             _value = value;
 
-            if (isDuration)
+            string strValue = value as string;
+            if (strValue != null)
             {
                 // convert from nanoseconds to ticks (100-nanosecond units)
-                _value = new TimeSpan(Time.ParseDuration((string)value) / 100);
+                _value = new TimeSpan(Time.ParseDuration(strValue) / 100);
             }
         }
 

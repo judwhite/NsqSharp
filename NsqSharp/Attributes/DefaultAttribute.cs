@@ -24,25 +24,6 @@ namespace NsqSharp.Attributes
         /// Initializes a new instance of the DefaultAttribute class.
         /// </summary>
         /// <param name="value">The default value.</param>
-        /// <param name="isDuration">Indicates if the value should be parsed as a duration</param>
-        public DefaultAttribute(string value, bool isDuration)
-            : this((object)value, isDuration)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the DefaultAttribute class.
-        /// </summary>
-        /// <param name="value">The default value.</param>
-        public DefaultAttribute(ushort value)
-            : this((object)value)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the DefaultAttribute class.
-        /// </summary>
-        /// <param name="value">The default value.</param>
         public DefaultAttribute(int value)
             : this((object)value)
         {
@@ -57,14 +38,15 @@ namespace NsqSharp.Attributes
         {
         }
 
-        private DefaultAttribute(object value, bool isDuration = false)
+        private DefaultAttribute(object value)
         {
             _value = value;
 
-            if (isDuration)
+            string strValue = value as string;
+            if (strValue != null)
             {
                 // convert from nanoseconds to ticks (100-nanosecond units)
-                _value = new TimeSpan(Time.ParseDuration((string)value) / 100);
+                _value = new TimeSpan(Time.ParseDuration(strValue) / 100);
             }
         }
 

@@ -16,15 +16,6 @@ namespace NsqSharp.Attributes
         /// </summary>
         /// <param name="value">The maximum value.</param>
         public MaxAttribute(string value)
-            : this((object)value, isDuration: true)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the MaxAttribute class.
-        /// </summary>
-        /// <param name="value">The maximum value.</param>
-        public MaxAttribute(ushort value)
             : this((object)value)
         {
         }
@@ -38,23 +29,15 @@ namespace NsqSharp.Attributes
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the MaxAttribute class.
-        /// </summary>
-        /// <param name="value">The maximum value.</param>
-        public MaxAttribute(double value)
-            : this((object)value)
-        {
-        }
-
-        private MaxAttribute(object value, bool isDuration = false)
+        private MaxAttribute(object value)
         {
             _value = value;
 
-            if (isDuration)
+            string strValue = value as string;
+            if (strValue != null)
             {
                 // convert from nanoseconds to ticks (100-nanosecond units)
-                _value = new TimeSpan(Time.ParseDuration((string)value) / 100);
+                _value = new TimeSpan(Time.ParseDuration(strValue) / 100);
             }
         }
 
