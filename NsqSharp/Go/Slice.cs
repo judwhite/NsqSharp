@@ -9,8 +9,9 @@ namespace NsqSharp.Go
     public class Slice<T>
     {
         private readonly T[] _array;
-        private int _offset;
-        private int _maxIndex;
+        private readonly int _hashCode;
+        private readonly int _offset;
+        private readonly int _maxIndex;
 
         /// <summary>
         /// Initializes a new Slice from a string
@@ -26,6 +27,8 @@ namespace NsqSharp.Go
             _array = (T[])(object)value.ToCharArray();
             _offset = 0;
             _maxIndex = _array.Length;
+
+            _hashCode = CalculateHashCode(this);
         }
 
         /// <summary>
@@ -40,6 +43,42 @@ namespace NsqSharp.Go
             _array = array;
             _offset = 0;
             _maxIndex = array.Length;
+
+            _hashCode = CalculateHashCode(this);
+        }
+
+        private Slice(T[] array, int offset, int maxIndex)
+        {
+            _array = array;
+            _offset = offset;
+            _maxIndex = maxIndex;
+
+            _hashCode = CalculateHashCode(this);
+        }
+
+        private static int CalculateHashCode(Slice<T> slice)
+        {
+            int hashCode;
+
+            int len = slice.Len();
+            if (len == 0)
+            {
+                hashCode = 0;
+            }
+            else
+            {
+                unchecked
+                {
+                    hashCode = 17;
+
+                    for (int i = slice._offset; i < len; i++)
+                    {
+                        hashCode = hashCode * 31 + slice[i].GetHashCode();
+                    }
+                }
+            }
+
+            return hashCode;
         }
 
         /// <summary>
@@ -69,9 +108,10 @@ namespace NsqSharp.Go
             if (end > Len())
                 throw new ArgumentOutOfRangeException("start", start, string.Format("end must be <= Len() {0}", Len()));
 
-            var slice = new Slice<T>(_array);
-            slice._offset = _offset + start;
-            slice._maxIndex = _offset + end;
+            int offset = _offset + start;
+            int maxIndex = _offset + end;
+
+            var slice = new Slice<T>(_array, offset, maxIndex);
 
             return slice;
         }
@@ -134,15 +174,15 @@ namespace NsqSharp.Go
         /// <returns><c>true</c> if the slice and string are equal; otherwise, <c>false</c>.</returns>
         public static bool operator ==(Slice<T> s1, string s2)
         {
-            if (ReferenceEquals(s1, null) && s2 == null)
-                return true;
-            if (ReferenceEquals(s1, null) || s2 == null)
-                return false;
-            if (typeof(T) != typeof(char))
-                return false;
-
-            var str1 = s1.ToString();
-            return str1 == s2;
+            bool isNull = ReferenceEquals(s1, null);
+            if (!isNull)
+            {
+                return s1.Equals(s2);
+            }
+            else
+            {
+                return (s2 == null);
+            }
         }
 
         /// <summary>
@@ -163,15 +203,19 @@ namespace NsqSharp.Go
         /// <returns><c>true</c> if the strings or references are equal; otherwise, <c>false</c>.</returns>
         public override bool Equals(object obj)
         {
-            string str = obj as string;
-            if (this == str)
-                return true;
+            if (obj == null)
+                return false;
 
-            if (ReferenceEquals(this, obj))
-                return true;
-
-            return false;
-            // TODO: check other slices, arrays.. maybe
+            if (typeof(T) == typeof(char))
+            {
+                var str1 = ToString();
+                var str2 = (string)obj;
+                return str1 == str2;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -179,7 +223,7 @@ namespace NsqSharp.Go
         /// </summary>
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return _hashCode;
         }
     }
 }

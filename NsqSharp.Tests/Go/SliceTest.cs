@@ -204,5 +204,83 @@ namespace NsqSharp.Tests.Go
         {
             Assert.Throws<ArgumentNullException>(() => new Slice<int>((int[])null));
         }
+
+        [Test]
+        public void TestIndexOfSlice()
+        {
+            var s = new Slice<int>(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+
+            int i;
+            for (i = 0; i < s.Len(); i++)
+            {
+                Assert.AreEqual(i + 1, s[i]);
+            }
+            Assert.Throws<IndexOutOfRangeException>(() => { int a = s[i]; });
+        }
+
+        [Test]
+        public void TestIndexOfSliceOfSlice()
+        {
+            var s = new Slice<int>(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+            s = s.Slc(2, 5);
+
+            int i;
+            for (i = 0; i < s.Len(); i++)
+            {
+                Assert.AreEqual(i + 3, s[i]);
+            }
+            Assert.Throws<IndexOutOfRangeException>(() => { int a = s[i]; });
+        }
+
+        [Test]
+        public void TestIndexOfSliceOfSliceOfSlice()
+        {
+            var s = new Slice<int>(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+
+            // 4, 5, 6, 7, 8, 9
+            s = s.Slc(3, 9);
+
+            int i;
+            for (i = 0; i < s.Len(); i++)
+            {
+                Assert.AreEqual(i + 4, s[i]);
+            }
+            Assert.Throws<IndexOutOfRangeException>(() => { int a = s[i]; });
+
+            // 5, 6, 7, 8
+            s = s.Slc(1, 5);
+
+            for (i = 0; i < s.Len(); i++)
+            {
+                Assert.AreEqual(i + 5, s[i]);
+            }
+            Assert.Throws<IndexOutOfRangeException>(() => { int a = s[i]; });
+        }
+
+        [Test]
+        public void TestGetHashCodeIsZeroForEmptySlice()
+        {
+            var s = new Slice<int>(new int[0]);
+            Assert.AreEqual(0, s.GetHashCode());
+
+            s = new Slice<int>(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+            s = s.Slc(5, 5);
+            Assert.AreEqual(0, s.Len());
+            Assert.AreEqual(0, s.GetHashCode());
+        }
+
+        [Test]
+        public void TestGetHashCodeIsCalculating()
+        {
+            var s = new Slice<int>(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+            int hash1 = s.GetHashCode();
+
+            s = new Slice<int>(new[] { 1, 2, 3, 4, 5 });
+            int hash2 = s.GetHashCode();
+
+            Assert.AreNotEqual(0, hash1);
+            Assert.AreNotEqual(0, hash2);
+            Assert.AreNotEqual(hash1, hash2);
+        }
     }
 }
