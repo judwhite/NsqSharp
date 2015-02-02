@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="ConfigTest.cs" />
     <Compile Include="Extensions\IntExtensionsTest.cs" />
+    <Compile Include="Extensions\ObjectExtensionsTest.cs" />
     <Compile Include="Extensions\PropertyInfoExtensionsTest.cs" />
     <Compile Include="Go\SliceTest.cs" />
     <Compile Include="Go\TimeTest.cs" />
