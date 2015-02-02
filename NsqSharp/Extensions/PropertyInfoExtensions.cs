@@ -18,7 +18,7 @@ namespace NsqSharp.Extensions
         public static T Get<T>(this PropertyInfo propertyInfo)
             where T : Attribute
         {
-            return propertyInfo.GetCustomAttributes(typeof(T), inherit: false).SingleOrDefault() as T;
+            return propertyInfo.GetCustomAttributes(typeof(T)).SingleOrDefault() as T;
         }
     }
 }
