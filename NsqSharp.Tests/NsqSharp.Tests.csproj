@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Channels\ChanTest.cs" />
     <Compile Include="ConfigTest.cs" />
     <Compile Include="Extensions\IntExtensionsTest.cs" />
     <Compile Include="Extensions\ObjectExtensionsTest.cs" />
