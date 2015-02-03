@@ -321,6 +321,44 @@ namespace NsqSharp.Tests
         }
 
         [Test]
+        public void TestClone()
+        {
+            var c = new Config();
+
+            c.Set("read_timeout", "5m");
+            c.Set("heartbeat_interval", "2s");
+            c.Validate();
+
+            var c2 = c.Clone();
+
+            Assert.AreEqual(TimeSpan.FromMinutes(5), c2.ReadTimeout, "read_timeout");
+            Assert.AreEqual(TimeSpan.FromSeconds(1), c2.WriteTimeout, "write_timeout");
+            Assert.AreEqual(TimeSpan.FromSeconds(60), c2.LookupdPollInterval, "lookupd_poll_interval");
+            Assert.AreEqual(0.3, c2.LookupdPollJitter, "lookupd_poll_jitter");
+            Assert.AreEqual(TimeSpan.FromMinutes(15), c2.MaxRequeueDelay, "max_requeue_delay");
+            Assert.AreEqual(TimeSpan.FromSeconds(90), c2.DefaultRequeueDelay, "default_requeue_delay");
+            Assert.AreEqual(TimeSpan.FromSeconds(1), c2.BackoffMultiplier, "backoff_multiplier");
+            Assert.AreEqual(5, c2.MaxAttempts, "max_attempts");
+            Assert.AreEqual(TimeSpan.FromSeconds(10), c2.LowRdyIdleTimeout, "low_rdy_idle_timeout");
+            Assert.AreEqual(Dns.GetHostName().Split(new[] { '.' })[0], c2.ClientID, "client_id");
+            Assert.AreEqual(Dns.GetHostName(), c2.Hostname, "hostname");
+            Assert.AreEqual("NsqSharp/0.0.2", c2.UserAgent, "user_agent");
+            Assert.AreEqual(TimeSpan.FromSeconds(2), c2.HeartbeatInterval, "heartbeat_interval");
+            Assert.AreEqual(0, c2.SampleRate, "sample_rate");
+            Assert.AreEqual(false, c2.TlsV1, "tls_v1");
+            Assert.IsNull(c2.TlsConfig, "tls_config");
+            Assert.AreEqual(false, c2.Deflate, "deflate");
+            Assert.AreEqual(6, c2.DeflateLevel, "deflate_level");
+            Assert.AreEqual(false, c2.Snappy, "snappy");
+            Assert.AreEqual(16384, c2.OutputBufferSize, "output_buffer_size");
+            Assert.AreEqual(TimeSpan.FromMilliseconds(250), c2.OutputBufferTimeout, "output_buffer_timeout");
+            Assert.AreEqual(1, c2.MaxInFlight, "max_in_flight");
+            Assert.AreEqual(TimeSpan.FromMinutes(2), c2.MaxBackoffDuration, "max_backoff_duration");
+            Assert.AreEqual(TimeSpan.Zero, c2.MsgTimeout, "msg_timeout");
+            Assert.IsNull(c2.AuthSecret, "auth_secret");
+        }
+
+        [Test]
         public void TestTls()
         {
             // TODO: Test more TLS

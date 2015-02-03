@@ -459,7 +459,7 @@ namespace NsqSharp
         /// <summary>
         /// Clones (makes a copy) of this instance.
         /// </summary>
-        internal Config Clone()
+        public Config Clone()
         {
             var newConfig = new Config();
 

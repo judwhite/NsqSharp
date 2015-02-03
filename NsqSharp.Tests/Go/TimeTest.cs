@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using NsqSharp.Channels;
 using NsqSharp.Go;
 using NsqSharp.Tests.Utils;
 using NUnit.Framework;
@@ -88,6 +91,52 @@ namespace NsqSharp.Tests.Go
             }
 
             Assert.Throws<ArgumentNullException>(() => Time.ParseDuration(null));
+        }
+
+        [Test]
+        public void AfterNotFired()
+        {
+            var c1 = Time.After(TimeSpan.FromMilliseconds(10));
+            var c2 = new Chan<string>();
+
+            var t1 = new Thread(() => c2.Send("no-timeout"));
+            t1.IsBackground = true;
+            t1.Start();
+
+            var list = new List<string>();
+
+            Select
+                .CaseReceive(c1, o => list.Add("timeout"))
+                .CaseReceive(c2, list.Add)
+                .NoDefault();
+
+            Assert.AreEqual(1, list.Count, "list.Count");
+            Assert.AreEqual("no-timeout", list[0], "list[0]");
+        }
+
+        [Test]
+        public void AfterFired()
+        {
+            var c1 = Time.After(TimeSpan.FromMilliseconds(10));
+            var c2 = new Chan<string>();
+
+            var t1 = new Thread(() =>
+                                {
+                                    Thread.Sleep(20);
+                                    c2.Send("no-timeout");
+                                });
+            t1.IsBackground = true;
+            t1.Start();
+
+            var list = new List<string>();
+
+            Select
+                .CaseReceive(c1, o => list.Add("timeout"))
+                .CaseReceive(c2, list.Add)
+                .NoDefault();
+
+            Assert.AreEqual(1, list.Count, "list.Count");
+            Assert.AreEqual("timeout", list[0], "list[0]");
         }
     }
 }

@@ -55,9 +55,6 @@ namespace NsqSharp.Go
         /// </summary>
         private static long leadingInt(ref Slice<char> s)
         {
-            if (s == null)
-                throw new ArgumentNullException("s");
-
             int i = 0;
             long x = 0;
             for (; i < s.Len(); i++)
