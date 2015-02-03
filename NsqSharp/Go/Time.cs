@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using NsqSharp.Channels;
 
@@ -36,16 +37,18 @@ namespace NsqSharp.Go
 
             var timeoutChan = new Chan<bool>();
 
-            Task.Factory.StartNew(() =>
+            Thread t = new Thread(() =>
                                   {
                                       var sleep = (fireAt - DateTime.UtcNow);
                                       if (sleep > TimeSpan.Zero)
                                       {
-                                          Task.Delay(sleep).Wait();
+                                          Thread.Sleep(sleep);
                                       }
 
                                       timeoutChan.Send(default(bool));
                                   });
+            t.IsBackground = true;
+            t.Start();
 
             return timeoutChan;
         }
