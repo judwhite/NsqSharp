@@ -60,6 +60,7 @@
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\OptAttributeExtensions.cs" />
     <Compile Include="Extensions\PropertyInfoExtensions.cs" />
+    <Compile Include="Go\GoFunc.cs" />
     <Compile Include="Go\Logger.cs" />
     <Compile Include="Go\Slice.cs" />
     <Compile Include="Go\Time.cs" />

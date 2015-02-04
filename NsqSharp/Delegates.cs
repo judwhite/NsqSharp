@@ -4,8 +4,19 @@ namespace NsqSharp
 {
     // https://github.com/bitly/go-nsq/blob/v1.0.2/delegates.go#L50
 
-    internal interface ILogger
+    /// <summary>
+    /// Logger interface
+    /// </summary>
+    public interface ILogger
     {
+        /// <summary>
+        /// Output writes the output for a logging event.  The string s contains
+        /// the text to print after the prefix specified by the flags of the
+        /// Logger.  A newline is appended if the last character of s is not
+        /// already a newline.  Calldepth is used to recover the PC and is
+        /// provided for generality, although at the moment on all pre-defined
+        /// paths it will be 2.
+        /// </summary>
         void Output(int calldepth, string s);
     }
 
@@ -91,17 +102,8 @@ namespace NsqSharp
     // TODO
 
     /*// TODO: Placeholder. Remove.
-    public class Conn
-    {
-    }
-
     // TODO: Placeholder. Remove.
     public class Consumer
-    {
-    }
-
-    // TODO: Placeholder. Remove.
-    public class Producer
     {
     }
 
@@ -115,7 +117,7 @@ namespace NsqSharp
             c.onMessageRequeue(m, delay, backoff);
         }
         public void OnTouch(Message m) { c.onMessageTouch(m); }
-    }
+    }*/
 
     /// <summary>
     /// ConnDelegate is an interface of methods that are used as
@@ -182,7 +184,7 @@ namespace NsqSharp
         void OnClose(Conn c);
     }
 
-    internal class ConsumerConnDelegate : IConnDelegate
+    /*internal class ConsumerConnDelegate : IConnDelegate
     {
         public Consumer r { get; set; }
 
@@ -196,7 +198,7 @@ namespace NsqSharp
         public void OnIOError(Conn c, Exception err) { r.onConnIOError(c, err); }
         public void OnHeartbeat(Conn c) { r.onConnHeartbeat(c); }
         public void OnClose(Conn c) { r.onConnClose(c); }
-    }
+    }*/
 
     internal class ProducerConnDelegate : IConnDelegate
     {
@@ -212,5 +214,5 @@ namespace NsqSharp
         public void OnIOError(Conn c, Exception err) { w.onConnIOError(c, err); }
         public void OnHeartbeat(Conn c) { w.onConnHeartbeat(c); }
         public void OnClose(Conn c) { w.onConnClose(c); }
-    }*/
+    }
 }
