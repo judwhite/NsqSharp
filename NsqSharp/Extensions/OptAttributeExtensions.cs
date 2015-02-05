@@ -4,7 +4,7 @@ using NsqSharp.Attributes;
 namespace NsqSharp.Extensions
 {
     /// <summary>
-    /// <see cref="OptAttribute"/> Extensions.
+    /// <see cref="OptAttribute"/> extension methods.
     /// </summary>
     public static class OptAttributeExtensions
     {

@@ -6,7 +6,8 @@ using System.Threading;
 namespace NsqSharp.Channels
 {
     /// <summary>
-    /// Control structure to send or receive from the first available channel. Chain Case methods and end with a call to Default or NoDefault.
+    /// Control structure to send or receive from the first available channel. Chain Case methods and end with a
+    /// call to Default or NoDefault.
     /// </summary>
     /// <example>
     /// private static void Main()
@@ -68,8 +69,9 @@ namespace NsqSharp.Channels
         /// </summary>
         /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
         /// <param name="func">The function to execute with the data received from the channel. Can be <c>null</c></param>
-        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to Default or NoDefault.</returns>
-        public static SelectCase CaseReceive<T>(Chan<T> c, Action<T> func)
+        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to 
+        /// Default or NoDefault.</returns>
+        public static SelectCase CaseReceive<T>(IReceiveOnlyChan<T> c, Action<T> func)
         {
             return new SelectCase().CaseReceive(c, func);
         }
@@ -80,20 +82,25 @@ namespace NsqSharp.Channels
         /// <param name="c">The channel to send to. Can be <c>null</c>.</param>
         /// <param name="message">The message to send.</param>
         /// <param name="func">The callback function to execute once the message has been sent. Can be <c>null</c>.</param>
-        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to Default or NoDefault.</returns>
-        public static SelectCase CaseSend<T>(Chan<T> c, T message, Action func)
+        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
+        /// Default or NoDefault.</returns>
+        public static SelectCase CaseSend<T>(ISendOnlyChan<T> c, T message, Action func)
         {
             return new SelectCase().CaseSend(c, message, func);
         }
     }
 
     /// <summary>
-    /// Control structure to send or receive from the first available channel. Chain Case methods and end with a call to Default or NoDefault.
+    /// Control structure to send or receive from the first available channel. Chain Case methods and end with a call to
+    /// Default or NoDefault.
     /// </summary>
     public class SelectCase
     {
-        private readonly Dictionary<IChan, Action<object>> _receiveFuncs = new Dictionary<IChan, Action<object>>();
-        private readonly Dictionary<IChan, Tuple<Action, object>> _sendFuncs = new Dictionary<IChan, Tuple<Action, object>>();
+        private readonly Dictionary<IReceiveOnlyChan, Action<object>> _receiveFuncs =
+            new Dictionary<IReceiveOnlyChan, Action<object>>();
+        
+        private readonly Dictionary<ISendOnlyChan, Tuple<Action, object>> _sendFuncs =
+            new Dictionary<ISendOnlyChan, Tuple<Action, object>>();
         
         private Action _default;
         private bool _hasDefault;
@@ -105,8 +112,9 @@ namespace NsqSharp.Channels
         /// </summary>
         /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
         /// <param name="func">The function to execute with the data received from the channel. Can be <c>null</c></param>
-        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to Default or NoDefault.</returns>
-        public SelectCase CaseReceive<T>(Chan<T> c, Action<T> func)
+        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
+        /// Default or NoDefault.</returns>
+        public SelectCase CaseReceive<T>(IReceiveOnlyChan<T> c, Action<T> func)
         {
             if (c != null)
                 _receiveFuncs.Add(c, func == null ? (Action<object>)null : o => func((T)o));
@@ -119,8 +127,9 @@ namespace NsqSharp.Channels
         /// <param name="c">The channel to send to. Can be <c>null</c>.</param>
         /// <param name="message">The message to send.</param>
         /// <param name="func">The callback function to execute once the message has been sent. Can be <c>null</c>.</param>
-        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to Default or NoDefault.</returns>
-        public SelectCase CaseSend<T>(Chan<T> c, T message, Action func)
+        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
+        /// Default or NoDefault.</returns>
+        public SelectCase CaseSend<T>(ISendOnlyChan<T> c, T message, Action func)
         {
             if (c != null)
                 _sendFuncs.Add(c, new Tuple<Action, object>(func, message));
@@ -139,7 +148,8 @@ namespace NsqSharp.Channels
         }
 
         /// <summary>
-        /// Specifies that no action should be taken if no channels are ready. Blocks until one channel is ready and its callback function has been executed.
+        /// Specifies that no action should be taken if no channels are ready. Blocks until one channel is ready and its
+        /// callback function has been executed.
         /// </summary>
         public void NoDefault()
         {

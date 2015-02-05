@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using NsqSharp.Channels;
 
 namespace NsqSharp.Go
@@ -51,6 +50,20 @@ namespace NsqSharp.Go
             t.Start();
 
             return timeoutChan;
+        }
+
+        /// <summary>
+        /// Unix returns the local Time corresponding to the given Unix time,
+        /// sec seconds and nsec nanoseconds since January 1, 1970 UTC.
+        /// It is valid to pass nsec outside the range [0, 999999999].
+        /// </summary>
+        /// <param name="sec">The number of seconds.</param>
+        /// <param name="nsec">The number of nanoseconds.</param>
+        /// <returns>The <see cref="DateTime"/> specified in local time.</returns>
+        public static DateTime Unix(long sec, long nsec)
+        {
+            long ticks = sec * Second / 100 + nsec / 100;
+            return new DateTime(ticks, DateTimeKind.Local);
         }
 
         /// <summary>

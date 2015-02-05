@@ -66,6 +66,12 @@ namespace NsqSharp
             Reason = reason;
         }
 
+        /// <summary>Initializes a new instance of the ErrIdentify class.</summary>
+        public ErrIdentify(string reason, Exception innerException)
+            : base(string.Format("failed to IDENTIFY - {0}", reason), innerException)
+        {
+        }
+
         /// <summary>Reason</summary>
         public string Reason { get; private set; }
     }

@@ -8,9 +8,9 @@ namespace NsqSharp.Extensions
     public static class IntExtensions
     {
         /// <summary>
-        /// Changes the endianness of the specified value
+        /// Reverses the endianness of the specified value
         /// </summary>
-        public static UInt64 AsBigEndian(this UInt64 value)
+        public static UInt64 ReverseEndian(this UInt64 value)
         {
             return (
                 ((value & 0xFF00000000000000) >> 56) |
@@ -25,9 +25,9 @@ namespace NsqSharp.Extensions
         }
 
         /// <summary>
-        /// Changes the endianness of the specified value
+        /// Reverses the endianness of the specified value
         /// </summary>
-        public static UInt32 AsBigEndian(this UInt32 value)
+        public static UInt32 ReverseEndian(this UInt32 value)
         {
             return (
                 ((value & 0xFF000000) >> 24) |
@@ -38,9 +38,9 @@ namespace NsqSharp.Extensions
         }
 
         /// <summary>
-        /// Changes the endianness of the specified value
+        /// Reverses the endianness of the specified value
         /// </summary>
-        public static UInt32 AsBigEndian(this Int32 value)
+        public static UInt32 ReverseEndian(this Int32 value)
         {
             uint val = (uint)value;
             return (
@@ -52,9 +52,9 @@ namespace NsqSharp.Extensions
         }
 
         /// <summary>
-        /// Changes the endianness of the specified value
+        /// Reverses the endianness of the specified value
         /// </summary>
-        public static UInt16 AsBigEndian(this UInt16 value)
+        public static UInt16 ReverseEndian(this UInt16 value)
         {
             return (UInt16)(
                 ((value & 0xFF00) >> 8) |

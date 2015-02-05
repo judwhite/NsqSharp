@@ -1,8 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using NsqSharp.Extensions;
+using NsqSharp.Go;
 
 namespace NsqSharp
 {
@@ -77,16 +76,16 @@ namespace NsqSharp
         /// </summary>
         /// <param name="r">The stream to read from</param>
         /// <returns>The response as a byte array</returns>
-        public static byte[] ReadResponse(Stream r)
+        public static byte[] ReadResponse(IReader r)
         {
             if (r == null)
                 throw new ArgumentNullException("r");
 
-            using (var streamReader = new BinaryReader(r))
-            {
-                int msgSize = (int)streamReader.ReadUInt32().AsBigEndian();
-                return streamReader.ReadBytes(msgSize);
-            }
+            // message size
+            int msgSize = Binary.ReadInt32(r, Binary.BigEndian);
+            byte[] data = new byte[msgSize];
+            r.Read(data); // TODO: ReadFull?
+            return data;
         }
 
         /// <summary>
@@ -94,19 +93,18 @@ namespace NsqSharp
         /// according to NSQ protocol spec
         /// /// </summary>
         /// <param name="response">The response to unpack</param>
-        /// <returns>A tuple containing the <see cref="FrameType"/> and body</returns>
-        public static Tuple<FrameType, byte[]> UnpackResponse(byte[] response)
+        /// <param name="frameType">The frame type.</param>
+        /// <param name="body">The body.</param>
+        public static void UnpackResponse(byte[] response, out FrameType frameType, out byte[] body)
         {
             if (response == null)
                 throw new ArgumentNullException("response");
             if (response.Length < 4)
                 throw new ArgumentException("length of response is too small", "response");
 
-            int frameType = (int)BitConverter.ToUInt32(response, 0).AsBigEndian();
-            byte[] body = new byte[response.Length - 4];
+            frameType = (FrameType)Binary.BigEndian.Int32(response);
+            body = new byte[response.Length - 4];
             Buffer.BlockCopy(response, 4, body, 0, body.Length);
-
-            return new Tuple<FrameType, byte[]>((FrameType)frameType, body);
         }
 
         /// <summary>
@@ -114,24 +112,13 @@ namespace NsqSharp
         /// TCP connection according to the NSQ TCP protocol spec and
         /// returns the frameType, data or error
         /// </summary>
-        /// <param name="r">The stream to read from</param>
-        /// <returns>A tuple containing the <see cref="FrameType"/> and body</returns>
-        public static Tuple<FrameType, byte[]> ReadUnpackedResponse(Stream r)
+        /// <param name="r">The reader to read from</param>
+        /// <param name="frameType">The frame type.</param>
+        /// <param name="body">The body.</param>
+        public static void ReadUnpackedResponse(IReader r, out FrameType frameType, out byte[] body)
         {
-            // NOTE: Implementation changed from original Go client. Repeats logic in ReadResponse and UnpackResponse to avoid allocating more byte arrays than necessary
-            // (orig. implementations works for slices, not arrays)
-
-            if (r == null)
-                throw new ArgumentNullException("r");
-
-            using (var streamReader = new BinaryReader(r))
-            {
-                int msgSize = (int)streamReader.ReadUInt32().AsBigEndian();
-                int frameType = (int)streamReader.ReadUInt32().AsBigEndian();
-                byte[] body = streamReader.ReadBytes(msgSize - 4);
-
-                return new Tuple<FrameType, byte[]>((FrameType)frameType, body);
-            }
+            var resp = ReadResponse(r);
+            UnpackResponse(resp, out frameType, out body);
         }
     }
 }

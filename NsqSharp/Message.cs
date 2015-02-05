@@ -164,8 +164,8 @@ namespace NsqSharp
 
             using (var writer = new BinaryWriter(w))
             {
-                writer.Write(Timestamp.AsBigEndian());
-                writer.Write(Attempts.AsBigEndian());
+                writer.Write(Timestamp.ReverseEndian());
+                writer.Write(Attempts.ReverseEndian());
                 total = 10;
 
                 writer.Write(ID);
@@ -189,8 +189,8 @@ namespace NsqSharp
             using (var memoryStream = new MemoryStream(b))
             using (var binaryReader = new BinaryReader(memoryStream))
             {
-                ulong timestamp = binaryReader.ReadUInt64().AsBigEndian();
-                ushort attempts = binaryReader.ReadUInt16().AsBigEndian();
+                ulong timestamp = binaryReader.ReadUInt64().ReverseEndian();
+                ushort attempts = binaryReader.ReadUInt16().ReverseEndian();
 
                 byte[] id = binaryReader.ReadBytes(MsgIdLength);
 

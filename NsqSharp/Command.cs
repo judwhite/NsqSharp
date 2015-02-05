@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using NsqSharp.Extensions;
+using NsqSharp.Go;
 
 namespace NsqSharp
 {
@@ -30,6 +31,9 @@ namespace NsqSharp
         private static readonly byte[] TOUCH_BYTES = Encoding.UTF8.GetBytes("TOUCH");
         private static readonly byte[] CLS_BYTES = Encoding.UTF8.GetBytes("CLS");
         private static readonly byte[] NOP_BYTES = Encoding.UTF8.GetBytes("NOP");
+
+        private static readonly byte[] byteSpace = Encoding.UTF8.GetBytes(" ");
+        private static readonly byte[] byteNewLine = Encoding.UTF8.GetBytes("\n");
 
         /// <summary>Name</summary>
         public byte[] Name { get; set; }
@@ -87,38 +91,29 @@ namespace NsqSharp
         /// It is suggested that the target Writer is buffered
         /// to avoid performing many system calls.
         /// </summary>
-        public long WriteTo(Stream w)
+        public long WriteTo(IWriter w)
         {
             long total = 0;
 
-            using (var binaryWriter = new BinaryWriter(w))
+            total += w.Write(Name);
+
+            if (Params != null)
             {
-                binaryWriter.Write(Name);
-                total += Name.Length;
-
-                if (Params != null)
+                foreach (var param in Params)
                 {
-                    foreach (var param in Params)
-                    {
-                        binaryWriter.Write(' ');
-                        total++;
-
-                        binaryWriter.Write(param);
-                        total += param.Length;
-                    }
+                    total += w.Write(byteSpace);
+                    total += w.Write(param);
                 }
+            }
 
-                binaryWriter.Write('\n');
-                total++;
+            total += w.Write(byteNewLine);
 
-                if (Body != null)
-                {
-                    binaryWriter.Write(Body.Length.AsBigEndian());
-                    total += 4;
-
-                    binaryWriter.Write(Body);
-                    total += Body.Length;
-                }
+            if (Body != null)
+            {
+                byte[] buf = new byte[4];
+                Binary.BigEndian.PutUint32(buf, Body.Length);
+                total += w.Write(buf);
+                total += w.Write(Body);
             }
 
             return total;
@@ -200,10 +195,10 @@ namespace NsqSharp
             {
                 using (var binaryWriter = new BinaryWriter(memoryStream))
                 {
-                    binaryWriter.Write(num.AsBigEndian());
+                    binaryWriter.Write(num.ReverseEndian());
                     foreach (var b in bodies)
                     {
-                        binaryWriter.Write(b.Length.AsBigEndian());
+                        binaryWriter.Write(b.Length.ReverseEndian());
                         binaryWriter.Write(b);
                     }
                 }

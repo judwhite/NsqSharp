@@ -253,7 +253,7 @@ namespace NsqSharp
 
                 log(LogLevel.Info, "{0} connecting to nsqd", _addr);
 
-                _conn = new Conn(_addr, _config, new ProducerConnDelegate { w = this }); // ??? cast to Interface?
+                _conn = new Conn(_addr, _config, new ProducerConnDelegate { w = this });
                 _conn.SetLogger(_logger, _logLvl, string.Format("{0} ({{0}})", _id));
                 try
                 {

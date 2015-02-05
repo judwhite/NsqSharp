@@ -5,7 +5,7 @@ using System.Reflection;
 namespace NsqSharp.Extensions
 {
     /// <summary>
-    /// <see cref="PropertyInfo"/> extensions.
+    /// <see cref="PropertyInfo"/> extension methods.
     /// </summary>
     public static class PropertyInfoExtensions
     {

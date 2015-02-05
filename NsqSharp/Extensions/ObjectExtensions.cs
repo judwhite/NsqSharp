@@ -4,7 +4,7 @@ using NsqSharp.Go;
 namespace NsqSharp.Extensions
 {
     /// <summary>
-    /// Object Extensions
+    /// <see cref="Object"/> extension methods.
     /// </summary>
     public static class ObjectExtensions
     {

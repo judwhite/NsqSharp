@@ -14,7 +14,7 @@ namespace NsqSharp.Tests.Extensions
             const uint expected = 0xF6237FE6;
 
             // Act
-            uint actual = original.AsBigEndian();
+            uint actual = original.ReverseEndian();
 
             // Assert
             Assert.AreEqual(expected, actual);
@@ -31,7 +31,7 @@ namespace NsqSharp.Tests.Extensions
             uint actual;
             unchecked
             {
-                actual = ((int)original).AsBigEndian();
+                actual = ((int)original).ReverseEndian();
             }
 
             // Assert
@@ -46,7 +46,7 @@ namespace NsqSharp.Tests.Extensions
             const ushort expected = 0xF7E6;
 
             // Act
-            ushort actual = original.AsBigEndian();
+            ushort actual = original.ReverseEndian();
 
             // Assert
             Assert.AreEqual(expected, actual);
@@ -60,7 +60,7 @@ namespace NsqSharp.Tests.Extensions
             const ulong expected = 0xEFBEADDE46237FE6;
 
             // Act
-            ulong actual = original.AsBigEndian();
+            ulong actual = original.ReverseEndian();
 
             // Assert
             Assert.AreEqual(expected, actual);

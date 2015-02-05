@@ -105,19 +105,19 @@ namespace NsqSharp
     // TODO: Placeholder. Remove.
     public class Consumer
     {
-    }
+    }*/
 
     internal class ConnMessageDelegate : IMessageDelegate
     {
         public Conn c { get; set; }
 
         public void OnFinish(Message m) { c.onMessageFinish(m); }
-        public void OnRequeue(Message m, TimeSpan delay, bool backoff)
+        public void OnRequeue(Message m, TimeSpan? delay, bool backoff)
         {
             c.onMessageRequeue(m, delay, backoff);
         }
         public void OnTouch(Message m) { c.onMessageTouch(m); }
-    }*/
+    }
 
     /// <summary>
     /// ConnDelegate is an interface of methods that are used as

@@ -2,21 +2,18 @@
 
 namespace NsqSharp.Channels
 {
-    internal interface IChan
+    /// <summary>
+    /// IChan interface.
+    /// </summary>
+    public interface IChan
     {
-        void Send(object message);
-        object Receive();
-
-        bool IsReadyToReceive { get; }
-        bool IsReadyToSend { get; }
+        /// <summary>Gets a value indicating whether the channel is closed.</summary>
         bool IsClosed { get; }
 
+        /// <summary>Add a listener which will be notified when a channel is ready to either send or receive.</summary>
         void AddListener(AutoResetEvent func);
-        void RemoveListener(AutoResetEvent autoResetEvent);
 
-        bool TryLockReceive();
-        bool TryLockSend();
-        void UnlockReceive();
-        void UnlockSend();
+        /// <summary>Remove a listener.</summary>
+        void RemoveListener(AutoResetEvent autoResetEvent);
     }
 }

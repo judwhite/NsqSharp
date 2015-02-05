@@ -8,7 +8,7 @@ namespace NsqSharp.Channels
     /// Channel for synchronizing communication between threads. Supports foreach to read from the channel until it's closed. See also <see cref="Select"/>.
     /// </summary>
     /// <typeparam name="T">The message type communicated over the channel.</typeparam>
-    public class Chan<T> : IChan, IEnumerable<T>
+    public class Chan<T> : IReceiveOnlyChan<T>, ISendOnlyChan<T>, IEnumerable<T>
     {
         private readonly object _sendLocker = new object();
         private readonly object _receiveLocker = new object();
@@ -142,32 +142,32 @@ namespace NsqSharp.Channels
             }
         }
 
-        bool IChan.TryLockReceive()
+        bool IReceiveOnlyChan.TryLockReceive()
         {
             return Monitor.TryEnter(_receiveLocker);
         }
 
-        bool IChan.TryLockSend()
+        bool ISendOnlyChan.TryLockSend()
         {
             return Monitor.TryEnter(_sendLocker);
         }
 
-        void IChan.UnlockReceive()
+        void IReceiveOnlyChan.UnlockReceive()
         {
             Monitor.Exit(_receiveLocker);
         }
 
-        void IChan.UnlockSend()
+        void ISendOnlyChan.UnlockSend()
         {
             Monitor.Exit(_sendLocker);
         }
 
-        bool IChan.IsReadyToReceive
+        bool ISendOnlyChan.IsReadyToReceive
         {
             get { return _isReadyToReceive; }
         }
 
-        bool IChan.IsReadyToSend
+        bool IReceiveOnlyChan.IsReadyToSend
         {
             get { return _isReadyToSend; }
         }
@@ -177,12 +177,12 @@ namespace NsqSharp.Channels
             get { return _isClosed; }
         }
 
-        void IChan.Send(object message)
+        void ISendOnlyChan.Send(object message)
         {
             Send((T)message);
         }
 
-        object IChan.Receive()
+        object IReceiveOnlyChan.Receive()
         {
             return Receive();
         }
