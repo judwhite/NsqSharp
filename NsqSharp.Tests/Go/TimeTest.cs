@@ -122,7 +122,7 @@ namespace NsqSharp.Tests.Go
 
             var t1 = new Thread(() =>
                                 {
-                                    Thread.Sleep(20);
+                                    Thread.Sleep(30);
                                     c2.Send("no-timeout");
                                 });
             t1.IsBackground = true;
