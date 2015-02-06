@@ -125,7 +125,6 @@ namespace NsqSharp
             doRequeue(delay, true);
         }
 
-
         /// <summary>
         /// RequeueWithoutBackoff sends a REQ command to the nsqd which
         /// sent this message, using the supplied delay.

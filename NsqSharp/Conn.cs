@@ -92,11 +92,6 @@ namespace NsqSharp
         private IReader _r;
         private IWriter _w;
 
-        // TODO: create PR for go-nsq to remove unused fields
-        // https://github.com/bitly/go-nsq/blob/103a1c5b3b6acbe9dd6c8eeb2ad7fb47f6863fc4/conn.go#L75
-        // private int _backoffCounter;
-        // rdyRetryTimer *time.Timer
-
         private readonly Chan<Command> _cmdChan;
         private readonly Chan<msgResponse> _msgResponseChan;
         private readonly Chan<int> _exitChan;
@@ -765,7 +760,6 @@ namespace NsqSharp
 
         internal void onMessageFinish(Message m)
         {
-            // TODO: backoff true? https://github.com/bitly/go-nsq/blob/v1.0.2/conn.go#L673
             _msgResponseChan.Send(new msgResponse { msg = m, cmd = Command.Finish(m.ID), success = true, backoff = true });
         }
 
