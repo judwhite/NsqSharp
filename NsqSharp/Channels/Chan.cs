@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -20,6 +21,8 @@ namespace NsqSharp.Channels
 
         private readonly List<AutoResetEvent> _listeners = new List<AutoResetEvent>();
 
+        private readonly TimeSpan _infiniteTimeSpan = TimeSpan.FromMilliseconds(-1);
+
         private T _data;
 
         private bool _isReadyToSend;
@@ -32,6 +35,11 @@ namespace NsqSharp.Channels
         /// <param name="message">The message to send.</param>
         public void Send(T message)
         {
+            ((ISendOnlyChan)this).TrySend(message, _infiniteTimeSpan);
+        }
+
+        bool ISendOnlyChan.TrySend(object message, TimeSpan timeout)
+        {
             if (_isClosed)
                 throw new ChannelClosedException();
 
@@ -41,24 +49,39 @@ namespace NsqSharp.Channels
 
                 PumpListeners();
 
-                _readyToReceive.WaitOne();
+                bool success = _readyToReceive.WaitOne(timeout.Milliseconds);
                 _isReadyToReceive = false;
+                if (!success)
+                    return false;
                 if (_isClosed)
                     throw new ChannelClosedException();
-                _data = message;
+                _data = (T)message;
                 _sent.Set();
                 _receiveComplete.WaitOne();
             }
+
+            return true;
         }
 
         /// <summary>
-        /// Receives a message from the channel. Blocks until a message is ready.
+        /// Receives a message from the channel. Blocks until a message is ready or the channel is closed.
         /// </summary>
-        /// <returns>The message received.</returns>
+        /// <returns>The message received; or default(T) if the channel was closed.</returns>
         public T Receive()
         {
+            var valueOk = ReceiveOk();
+            return valueOk.Value;
+        }
+
+        /// <summary>
+        /// Receives a message from the channel. Blocks until a message is ready or the channel is closed.
+        /// </summary>
+        /// <returns>The message received; or default(T) if the channel was closed. Includes an indicator
+        /// whether the channel was closed or not.</returns>
+        public ReceiveOk<T> ReceiveOk()
+        {
             if (_isClosed)
-                throw new ChannelClosedException();
+                return new ReceiveOk<T> { Value = default(T), Ok = false };
 
             T data;
             lock (_receiveLocker)
@@ -70,13 +93,15 @@ namespace NsqSharp.Channels
 
                 _sent.WaitOne();
                 _isReadyToSend = false;
-                if (_isClosed)
-                    throw new ChannelClosedException();
                 data = _data;
                 _receiveComplete.Set();
             }
 
-            return data;
+            // TODO: Race condition, but can't lock _isClosedLocker in this method. Fix.
+            if (_isClosed)
+                return new ReceiveOk<T> { Value = default(T), Ok = false };
+            else
+                return new ReceiveOk<T> { Value = data, Ok = true };
         }
 
         /// <summary>Returns an enumerator that iterates through the collection.</summary>
@@ -85,18 +110,12 @@ namespace NsqSharp.Channels
         {
             while (true)
             {
-                T value;
+                var valueOk = ReceiveOk();
 
-                try
-                {
-                    value = Receive();
-                }
-                catch (ChannelClosedException)
-                {
+                if (!valueOk.Ok)
                     yield break;
-                }
-
-                yield return value;
+                else
+                    yield return valueOk.Value;
             }
         }
 
@@ -118,16 +137,6 @@ namespace NsqSharp.Channels
 
                 _sent.Set();
                 _readyToReceive.Set();
-
-                lock (_receiveLocker)
-                {
-                    lock (_sendLocker)
-                    {
-                        _readyToReceive.Dispose();
-                        _sent.Dispose();
-                        _receiveComplete.Dispose();
-                    }
-                }
             }
         }
 
@@ -169,7 +178,7 @@ namespace NsqSharp.Channels
 
         bool IReceiveOnlyChan.IsReadyToSend
         {
-            get { return _isReadyToSend; }
+            get { return _isReadyToSend || _isClosed; }
         }
 
         bool IChan.IsClosed
@@ -207,5 +216,17 @@ namespace NsqSharp.Channels
         {
             return GetEnumerator();
         }
+    }
+
+    /// <summary>
+    /// <see cref="Value"/>, <see cref="Ok"/> return type from <see cref="Chan&lt;T&gt;.ReceiveOk"/>
+    /// </summary>
+    /// <typeparam name="T">The item type</typeparam>
+    public class ReceiveOk<T>
+    {
+        /// <summary>The value</summary>
+        public T Value { get; set; }
+        /// <summary><c>true</c> if the value was read from a sent value; <c>false</c> if the channel is closed</summary>
+        public bool Ok { get; set; }
     }
 }

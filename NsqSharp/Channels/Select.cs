@@ -65,15 +65,53 @@ namespace NsqSharp.Channels
     public static class Select
     {
         /// <summary>
+        /// Creates a case for receiving from the specific channel and assigns the Select a name for debugging.
+        /// </summary>
+        /// <param name="debugName">The select's name for debugging</param>
+        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to 
+        /// Default or NoDefault.</returns>
+        public static SelectCase DebugName(string debugName)
+        {
+            return new SelectCase { DebugName = debugName };
+        }
+
+        /// <summary>
+        /// Creates a case for receiving from the specific channel.
+        /// </summary>
+        /// <param name="debugName">The channel's name for debugging.</param>
+        /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
+        /// <param name="func">The function to execute with the data received from the channel. Can be <c>null</c></param>
+        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to 
+        /// Default or NoDefault.</returns>
+        public static SelectCase CaseReceive<T>(string debugName, IReceiveOnlyChan<T> c, Action<T> func = null)
+        {
+            return new SelectCase().CaseReceive(debugName, c, func);
+        }
+
+        /// <summary>
+        /// Creates a case for sending to the specific channel.
+        /// </summary>
+        /// <param name="debugName">The channel's name for debugging.</param>
+        /// <param name="c">The channel to send to. Can be <c>null</c>.</param>
+        /// <param name="message">The message to send.</param>
+        /// <param name="func">The callback function to execute once the message has been sent. Can be <c>null</c>.</param>
+        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
+        /// Default or NoDefault.</returns>
+        public static SelectCase CaseSend<T>(string debugName, ISendOnlyChan<T> c, T message, Action func = null)
+        {
+            return new SelectCase().CaseSend(debugName, c, message, func);
+        }
+
+        /// <summary>
         /// Creates a case for receiving from the specific channel.
         /// </summary>
         /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
         /// <param name="func">The function to execute with the data received from the channel. Can be <c>null</c></param>
         /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to 
         /// Default or NoDefault.</returns>
-        public static SelectCase CaseReceive<T>(IReceiveOnlyChan<T> c, Action<T> func)
+        public static SelectCase CaseReceive<T>(IReceiveOnlyChan<T> c, Action<T> func = null)
         {
-            return new SelectCase().CaseReceive(c, func);
+            return CaseReceive(null, c, func);
         }
 
         /// <summary>
@@ -84,9 +122,9 @@ namespace NsqSharp.Channels
         /// <param name="func">The callback function to execute once the message has been sent. Can be <c>null</c>.</param>
         /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
         /// Default or NoDefault.</returns>
-        public static SelectCase CaseSend<T>(ISendOnlyChan<T> c, T message, Action func)
+        public static SelectCase CaseSend<T>(ISendOnlyChan<T> c, T message, Action func = null)
         {
-            return new SelectCase().CaseSend(c, message, func);
+            return CaseSend(null, c, message, func);
         }
     }
 
@@ -96,16 +134,86 @@ namespace NsqSharp.Channels
     /// </summary>
     public class SelectCase
     {
-        private readonly Dictionary<IReceiveOnlyChan, Action<object>> _receiveFuncs =
-            new Dictionary<IReceiveOnlyChan, Action<object>>();
-        
-        private readonly Dictionary<ISendOnlyChan, Tuple<Action, object>> _sendFuncs =
-            new Dictionary<ISendOnlyChan, Tuple<Action, object>>();
-        
+        private class ReceiveCase
+        {
+            public string DebugName { get; set; }
+            public IReceiveOnlyChan Chan { get; set; }
+        }
+
+        private class SendCase
+        {
+            public string DebugName { get; set; }
+            public ISendOnlyChan Chan { get; set; }
+        }
+
+        private readonly Dictionary<ReceiveCase, Action<object>> _receiveFuncs =
+            new Dictionary<ReceiveCase, Action<object>>();
+
+        private readonly Dictionary<SendCase, Tuple<Action, object>> _sendFuncs =
+            new Dictionary<SendCase, Tuple<Action, object>>();
+
         private Action _default;
         private bool _hasDefault;
 
         private bool _isExecuteCalled;
+
+        /// <summary>
+        /// Name used for debugging
+        /// </summary>
+        public string DebugName { get; set; }
+
+        /// <summary>
+        /// Creates a case for receiving from the specific channel.
+        /// </summary>
+        /// <param name="debugName">The name of the channel.</param>
+        /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
+        /// <param name="func">The function to execute with the data received from the channel. Can be <c>null</c></param>
+        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
+        /// Default or NoDefault.</returns>
+        public SelectCase CaseReceive<T>(string debugName, IReceiveOnlyChan<T> c, Action<T> func = null)
+        {
+            if (c != null)
+            {
+                _receiveFuncs.Add(
+                    new ReceiveCase
+                    {
+                        Chan = c,
+                        DebugName = (debugName != null ? "<-" + DebugName + "::" + debugName : null)
+                    },
+                    func == null
+                        ? (Action<object>)null
+                        : o => func(o != null ? (T)o : default(T))
+                );
+            }
+
+            return this;
+        }
+
+        /// <summary>
+        /// Creates a case for sending to the specific channel.
+        /// </summary>
+        /// <param name="debugName">The name of the channel.</param>
+        /// <param name="c">The channel to send to. Can be <c>null</c>.</param>
+        /// <param name="message">The message to send.</param>
+        /// <param name="func">The callback function to execute once the message has been sent. Can be <c>null</c>.</param>
+        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
+        /// Default or NoDefault.</returns>
+        public SelectCase CaseSend<T>(string debugName, ISendOnlyChan<T> c, T message, Action func = null)
+        {
+            if (c != null)
+            {
+                _sendFuncs.Add(
+                    new SendCase
+                    {
+                        Chan = c,
+                        DebugName = (debugName != null ? DebugName + "::" + debugName + "<-" : null)
+                    }
+                    , new Tuple<Action, object>(func, message)
+                );
+            }
+
+            return this;
+        }
 
         /// <summary>
         /// Creates a case for receiving from the specific channel.
@@ -114,11 +222,9 @@ namespace NsqSharp.Channels
         /// <param name="func">The function to execute with the data received from the channel. Can be <c>null</c></param>
         /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
         /// Default or NoDefault.</returns>
-        public SelectCase CaseReceive<T>(IReceiveOnlyChan<T> c, Action<T> func)
+        public SelectCase CaseReceive<T>(IReceiveOnlyChan<T> c, Action<T> func = null)
         {
-            if (c != null)
-                _receiveFuncs.Add(c, func == null ? (Action<object>)null : o => func((T)o));
-            return this;
+            return CaseReceive(null, c, func);
         }
 
         /// <summary>
@@ -129,11 +235,9 @@ namespace NsqSharp.Channels
         /// <param name="func">The callback function to execute once the message has been sent. Can be <c>null</c>.</param>
         /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
         /// Default or NoDefault.</returns>
-        public SelectCase CaseSend<T>(ISendOnlyChan<T> c, T message, Action func)
+        public SelectCase CaseSend<T>(ISendOnlyChan<T> c, T message, Action func = null)
         {
-            if (c != null)
-                _sendFuncs.Add(c, new Tuple<Action, object>(func, message));
-            return this;
+            return CaseSend(null, c, message, func);
         }
 
         /// <summary>
@@ -156,45 +260,64 @@ namespace NsqSharp.Channels
             Execute();
         }
 
-        private bool CheckCases()
+        private bool CheckCases(out Exception exception)
         {
+            exception = null;
+
             foreach (var kvp in _receiveFuncs)
             {
-                var c = kvp.Key;
+                var c = kvp.Key.Chan;
                 var f = kvp.Value;
-
-                if (c.IsClosed)
-                    continue;
 
                 object o = null;
                 bool gotValue = false;
-                if (c.TryLockReceive())
+
+                if (c.IsClosed)
                 {
-                    try
+                    Debug.WriteLine("[{0}] Closed channel {1}...", GetThreadName(), kvp.Key.DebugName);
+                    gotValue = true;
+                }
+                else
+                {
+                    if (c.TryLockReceive())
                     {
-                        if (c.IsReadyToSend)
+                        try
                         {
-                            o = c.Receive();
-                            gotValue = true;
+                            if (c.IsReadyToSend)
+                            {
+                                Debug.WriteLine("[{0}] Trying {1}...", GetThreadName(), kvp.Key.DebugName);
+                                o = c.Receive();
+                                gotValue = true;
+                            }
                         }
-                    }
-                    finally
-                    {
-                        c.UnlockReceive();
+                        finally
+                        {
+                            c.UnlockReceive();
+                        }
                     }
                 }
 
                 if (gotValue)
                 {
+                    Debug.WriteLine("[{0}] {1} success.", GetThreadName(), kvp.Key.DebugName);
                     if (f != null)
-                        f(o);
+                    {
+                        try
+                        {
+                            f(o);
+                        }
+                        catch (Exception ex)
+                        {
+                            exception = ex;
+                        }
+                    }
                     return true;
                 }
             }
 
             foreach (var kvp in _sendFuncs)
             {
-                var c = kvp.Key;
+                var c = kvp.Key.Chan;
                 var f = kvp.Value.Item1;
                 var d = kvp.Value.Item2;
 
@@ -206,22 +329,29 @@ namespace NsqSharp.Channels
                 {
                     try
                     {
-                        if (c.IsReadyToReceive)
-                        {
-                            c.Send(d);
-                            sentValue = true;
-                        }
+                        Debug.WriteLine("[{0}] Trying {1}...", GetThreadName(), kvp.Key.DebugName);
+                        sentValue = c.TrySend(d, TimeSpan.FromMilliseconds(20));
                     }
                     finally
                     {
-                        c.UnlockSend();    
+                        c.UnlockSend();
                     }
                 }
 
                 if (sentValue)
                 {
+                    Debug.WriteLine("[{0}] {1} success.", GetThreadName(), kvp.Key.DebugName);
                     if (f != null)
-                        f();
+                    {
+                        try
+                        {
+                            f();
+                        }
+                        catch (Exception ex)
+                        {
+                            exception = ex;
+                        }
+                    }
 
                     return true;
                 }
@@ -232,55 +362,144 @@ namespace NsqSharp.Channels
 
         private void Execute()
         {
-            if (_isExecuteCalled)
-                throw new Exception("Default/NoDefault can only be called once per select");
-
-            _isExecuteCalled = true;
-
+            Exception caseHandlerException = null;
             AutoResetEvent ready = null;
 
-            if (_hasDefault)
+            try
             {
-                bool isDone = CheckCases();
+                if (_isExecuteCalled)
+                    throw new Exception("Default/NoDefault can only be called once per select");
 
-                if (!isDone)
-                {
-                    if (_default != null)
-                        _default();
-                }
-            }
-            else
-            {
-                ready = new AutoResetEvent(initialState: false);
+                _isExecuteCalled = true;
 
+#if DEBUG
+                AddThreadToDebugLog();
+
+                Debug.WriteLine(string.Format("[{0}] +++ Entering Select +++", GetThreadName()));
                 foreach (var c in _sendFuncs.Keys)
                 {
-                    c.AddListener(ready);
+                    Debug.WriteLine("[{0}] Case: {1}", GetThreadName(), c.DebugName);
                 }
 
                 foreach (var c in _receiveFuncs.Keys)
                 {
-                    c.AddListener(ready);
+                    Debug.WriteLine("[{0}] Case: {1}", GetThreadName(), c.DebugName);
                 }
 
-                bool isDone = CheckCases();
+                Debug.WriteLine("[{0}] Has Default: {1}", GetThreadName(), _hasDefault);
+#endif
 
-                if (!isDone)
+                if (_hasDefault)
                 {
-                    bool done;
-                    do
+                    bool isDone = CheckCases(out caseHandlerException);
+
+                    if (!isDone)
                     {
-                        bool signaled = ready.WaitOne(TimeSpan.FromMilliseconds(3000));
-                        if (!signaled)
+                        if (_default != null)
                         {
-                            Debug.WriteLine("signaled not received");
+                            Debug.WriteLine(string.Format("[{0}] executing DEFAULT", GetThreadName()));
+                            try
+                            {
+                                _default();
+                            }
+                            catch (Exception ex)
+                            {
+                                caseHandlerException = ex;
+                            }
                         }
-                        done = CheckCases();
-                    } while (!done);
+                    }
                 }
+                else
+                {
+                    ready = new AutoResetEvent(initialState: false);
+
+                    foreach (var c in _sendFuncs.Keys)
+                    {
+                        c.Chan.AddListener(ready);
+                    }
+
+                    foreach (var c in _receiveFuncs.Keys)
+                    {
+                        c.Chan.AddListener(ready);
+                    }
+
+                    bool isDone = CheckCases(out caseHandlerException);
+
+                    if (!isDone)
+                    {
+                        bool done;
+                        do
+                        {
+                            bool signaled = ready.WaitOne(TimeSpan.FromMilliseconds(50));
+#if DEBUG
+                            if (!signaled && !string.IsNullOrEmpty(DebugName))
+                            {
+                                Debug.WriteLine(string.Format("[{0}] Waiting...", GetThreadName()));
+                                Debug.WriteLine(string.Format("[{0}] Active threads:", GetThreadName()));
+                                var activeThreads = GetActiveThreads();
+                                foreach (var threadId in activeThreads)
+                                {
+                                    Debug.WriteLine("[{0}] Thread: {1}", GetThreadName(), threadId);
+                                }
+                            }
+#endif
+                            done = CheckCases(out caseHandlerException);
+                        } while (!done);
+                    }
+                }
+
+                CleanUp(ready);
+
+#if DEBUG
+                RemoveThreadFromDebugLog();
+
+                Debug.WriteLine(string.Format("[{0}] --- Exited select ---", GetThreadName()));
+#endif
+            }
+            catch (Exception)
+            {
+                CleanUp(ready);
+#if DEBUG
+                RemoveThreadFromDebugLog();
+#endif
             }
 
-            CleanUp(ready);
+            if (caseHandlerException != null)
+                throw caseHandlerException;
+        }
+
+#if DEBUG
+        private static readonly List<string> _activeThreads = new List<string>();
+
+        private void RemoveThreadFromDebugLog()
+        {
+            lock (_activeThreads)
+            {
+                _activeThreads.Remove(GetThreadName());
+            }
+        }
+
+        private void AddThreadToDebugLog()
+        {
+            lock (_activeThreads)
+            {
+                _activeThreads.Add(GetThreadName());
+            }
+        }
+
+        private string[] GetActiveThreads()
+        {
+            lock (_activeThreads)
+            {
+                return _activeThreads.ToArray();
+            }
+        }
+
+#endif
+
+        private string GetThreadName()
+        {
+            return string.Format("{0}/{1}", Thread.CurrentThread.ManagedThreadId, DebugName);
         }
 
         private void CleanUp(AutoResetEvent ready)
@@ -289,12 +508,12 @@ namespace NsqSharp.Channels
             {
                 foreach (var c in _receiveFuncs.Keys)
                 {
-                    c.RemoveListener(ready);
+                    c.Chan.RemoveListener(ready);
                 }
 
                 foreach (var c in _sendFuncs.Keys)
                 {
-                    c.RemoveListener(ready);
+                    c.Chan.RemoveListener(ready);
                 }
 
                 ready.Dispose();

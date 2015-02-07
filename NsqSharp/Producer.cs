@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using Newtonsoft.Json;
 using NsqSharp.Channels;
 using NsqSharp.Go;
 
@@ -175,11 +176,21 @@ namespace NsqSharp
 
         /// <summary>
         /// Publish synchronously publishes a message body to the specified topic, returning
-        /// the an error if publish failed
+        /// an error if publish failed
         /// </summary>
         public void Publish(string topic, byte[] body)
         {
             sendCommand(Command.Publish(topic, body));
+        }
+
+        /// <summary>
+        /// Publish synchronously publishes a JSON serialized object to the specified topic, returning
+        /// an error if publish failed
+        /// </summary>
+        public void Publish<T>(string topic, T value)
+        {
+            string json = (value != null ? JsonConvert.SerializeObject(value) : "");
+            Publish(topic, Encoding.UTF8.GetBytes(json));
         }
 
         /// <summary>
@@ -206,7 +217,9 @@ namespace NsqSharp
                 throw;
             }
 
-            doneChan.Receive();
+            var t = doneChan.Receive();
+            if (t.Error != null)
+                throw t.Error;
         }
 
         private void sendCommandAsync(Command cmd, Chan<ProducerTransaction> doneChan, params object[] args)
@@ -226,6 +239,7 @@ namespace NsqSharp
                             Args = args,
                         };
 
+                // TODO: No debug name for debug perf, add back if you get stuck
                 Select
                     .CaseSend(_transactionChan, t, () => { })
                     .CaseReceive(_exitChan, m => { throw new ErrStopped(); })
@@ -243,6 +257,9 @@ namespace NsqSharp
             {
                 if (_stopFlag == 1)
                     throw new ErrStopped();
+
+                if (_state == (int)State.Connected)
+                    return;
 
                 const int newValue = (int)State.Connected;
                 const int comparand = (int)State.Init;
@@ -299,6 +316,7 @@ namespace NsqSharp
             while (doLoop)
             {
                 Select
+                    .DebugName("Producer::router")
                     .CaseReceive(_transactionChan, t =>
                     {
                         _transactions.Add(t);
@@ -312,17 +330,17 @@ namespace NsqSharp
                             close();
                         }
                     })
-                    .CaseReceive(_responseChan, data =>
+                    .CaseReceive("_responseChan", _responseChan, data =>
                         popTransaction(FrameType.Response, data)
                     )
-                    .CaseReceive(_errorChan, data =>
+                    .CaseReceive("_errorChan", _errorChan, data =>
                         popTransaction(FrameType.Error, data)
                     )
-                    .CaseReceive(_closeChan, o =>
+                    .CaseReceive("_closeChan", _closeChan, o =>
                     {
                         doLoop = false;
                     })
-                    .CaseReceive(_exitChan, o =>
+                    .CaseReceive("_exitChan", _exitChan, o =>
                     {
                         doLoop = false;
                     })
@@ -362,7 +380,8 @@ namespace NsqSharp
             while (doLoop)
             {
                 Select
-                    .CaseReceive(_transactionChan, t =>
+                    .DebugName("Producer::transactionCleanup")
+                    .CaseReceive("_transactionChan", _transactionChan, t =>
                     {
                         t.Error = new ErrNotConnected();
                         t.finish();

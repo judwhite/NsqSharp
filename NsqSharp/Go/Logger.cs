@@ -1,4 +1,7 @@
-﻿namespace NsqSharp.Go
+﻿using System;
+using System.Diagnostics;
+
+namespace NsqSharp.Go
 {
     /// <summary>
     /// A Logger represents an active logging object that generates lines of
@@ -19,7 +22,8 @@
         /// paths it will be 2.
         public void Output(int calldepth, string s)
         {
-            // TODO
+            Console.WriteLine(s);
+            Debug.WriteLine(s);
         }
     }
 }

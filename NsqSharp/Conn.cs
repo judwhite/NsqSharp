@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
@@ -167,6 +168,9 @@ namespace NsqSharp
             _r = conn;
             _w = conn;
 
+            _conn.ReadTimeout = _config.ReadTimeout;
+            _conn.WriteTimeout = _config.WriteTimeout;
+
             try
             {
                 Write(Protocol.MagicV2);
@@ -284,7 +288,7 @@ namespace NsqSharp
         /// </summary>
         public int Read(byte[] p)
         {
-            //c.conn.SetReadDeadline(time.Now().Add(c.config.ReadTimeout)) // TODO
+            // SetReadDeadline handled in Connect
             return _r.Read(p);
         }
 
@@ -293,7 +297,7 @@ namespace NsqSharp
         /// </summary>
         public int Write(byte[] p)
         {
-            //c.conn.SetWriteDeadline(time.Now().Add(c.config.WriteTimeout)) // TODO
+            // SetWriteDeadline handled in Connect
             return _w.Write(p);
         }
 
@@ -392,9 +396,10 @@ namespace NsqSharp
                     return null;
                 }
 
-                var resp = JsonConvert.DeserializeObject<IdentifyResponse>(Encoding.UTF8.GetString(data));
-
-                log(LogLevel.Debug, "IDENTIFY response: {0}", resp);
+                string respJson = Encoding.UTF8.GetString(data);
+                log(LogLevel.Debug, "IDENTIFY response: {0}", respJson);
+                
+                var resp = JsonConvert.DeserializeObject<IdentifyResponse>(respJson);
 
                 _maxRdyCount = resp.MaxRdyCount;
 
@@ -500,7 +505,7 @@ namespace NsqSharp
                     catch (Exception ex)
                     {
                         // TODO: determine equivalent exception type from .NET runtime
-                        if (!ex.Message.Contains("use of closed network connection"))
+                        if (ex is IOException)
                         {
                             log(LogLevel.Error, "IO error - {0}", ex.Message);
                             _delegate.OnIOError(this, ex);
@@ -552,7 +557,8 @@ namespace NsqSharp
                             _delegate.OnMessage(this, msg);
                             break;
                         case FrameType.Error:
-                            log(LogLevel.Error, "protocol error - {0}", data); // TODO: this is a byte array...
+                            string errMsg = Encoding.UTF8.GetString(data);
+                            log(LogLevel.Error, "protocol error - {0}", errMsg);
                             _delegate.OnError(this, data);
                             break;
                         default:
@@ -591,14 +597,15 @@ namespace NsqSharp
             while (doLoop)
             {
                 Select
-                    .CaseReceive(_exitChan, o =>
+                    .DebugName("Conn::writeLoop")
+                    .CaseReceive("_exitChan", _exitChan, o =>
                     {
                         log(LogLevel.Info, "breaking out of writeLoop");
                         // Indicate drainReady because we will not pull any more off msgResponseChan
                         _drainReady.Close();
                         doLoop = false;
                     })
-                    .CaseReceive(_cmdChan, cmd =>
+                    .CaseReceive("_cmdChan", _cmdChan, cmd =>
                     {
                         try
                         {
@@ -612,7 +619,7 @@ namespace NsqSharp
                             // https://github.com/bitly/go-nsq/blob/v1.0.2/conn.go#L544
                         }
                     })
-                    .CaseReceive(_msgResponseChan, resp =>
+                    .CaseReceive("_msgResponseChan", _msgResponseChan, resp =>
                     {
                         // Decrement this here so it is correct even if we can't respond to nsqd
                         var msgsInFlight = Interlocked.Decrement(ref _messagesInFlight);
@@ -716,8 +723,9 @@ namespace NsqSharp
                 long msgsInFlight = _messagesInFlight;
 
                 Select
-                    .CaseReceive(_msgResponseChan, o => msgsInFlight = Interlocked.Decrement(ref _messagesInFlight))
-                    .CaseReceive(ticker.C, o => msgsInFlight = _messagesInFlight)
+                    .DebugName("Conn:cleanup")
+                    .CaseReceive("_msgResponseChan", _msgResponseChan, o => msgsInFlight = Interlocked.Decrement(ref _messagesInFlight))
+                    .CaseReceive("ticker.C", ticker.C, o => msgsInFlight = _messagesInFlight)
                     .NoDefault();
 
                 if (msgsInFlight > 0)
@@ -776,15 +784,21 @@ namespace NsqSharp
                 }
             }
 
-            _msgResponseChan.Send(new msgResponse { msg = m, cmd = Command.Requeue(m.ID, delay.Value), success = false, 
-                backoff = backoff });
+            _msgResponseChan.Send(new msgResponse
+            {
+                msg = m,
+                cmd = Command.Requeue(m.ID, delay.Value),
+                success = false,
+                backoff = backoff
+            });
         }
 
         internal void onMessageTouch(Message m)
         {
             Select
-                .CaseSend(_cmdChan, Command.Touch(m.ID), () => { })
-                .CaseReceive(_exitChan, o => { })
+                .DebugName("Conn:onMessageTouch")
+                .CaseSend("_cmdChan", _cmdChan, Command.Touch(m.ID), () => { })
+                .CaseReceive("_exitChan", _exitChan, o => { })
                 .NoDefault();
         }
 

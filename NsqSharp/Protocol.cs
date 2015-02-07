@@ -84,7 +84,7 @@ namespace NsqSharp
             // message size
             int msgSize = Binary.ReadInt32(r, Binary.BigEndian);
             byte[] data = new byte[msgSize];
-            r.Read(data); // TODO: ReadFull?
+            r.Read(data);
             return data;
         }
 

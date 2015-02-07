@@ -1,4 +1,6 @@
-﻿namespace NsqSharp.Go
+﻿using System;
+
+namespace NsqSharp.Go
 {
     /// <summary>
     /// ITcpConn interface. http://golang.org/pkg/net/#TCPConn
@@ -14,5 +16,15 @@
         /// CloseWrite shuts down the writing side of the TCP connection. Most callers should just use Close.
         /// </summary>
         void CloseWrite();
+
+        /// <summary>
+        /// Gets or sets the read timeout.
+        /// </summary>
+        TimeSpan ReadTimeout { get; set; }
+
+        /// <summary>
+        /// Gets or sets the write timeout.
+        /// </summary>
+        TimeSpan WriteTimeout { get; set; }
     }
 }

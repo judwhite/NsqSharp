@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using NsqSharp.Channels;
+using NsqSharp.Go;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests.Channels
@@ -134,8 +136,9 @@ namespace NsqSharp.Tests.Channels
             t2.Start();
 
             Select
-                .CaseReceive(c1, list.Add)
-                .CaseReceive(c2, list.Add)
+                .DebugName("SelectTwoChannels")
+                .CaseReceive("c1", c1, list.Add)
+                .CaseReceive("c2", c2, list.Add)
                 .NoDefault();
 
             Assert.AreEqual(1, list.Count, "list.Count");
@@ -146,7 +149,6 @@ namespace NsqSharp.Tests.Channels
         public void SelectNullChannel()
         {
             var c1 = new Chan<int>();
-            var c2 = (Chan<int>)null;
 
             var t1 = new Thread(() =>
             {
@@ -160,8 +162,9 @@ namespace NsqSharp.Tests.Channels
             t1.Start();
 
             Select
-                .CaseReceive(c2, list.Add)
-                .CaseReceive(c1, list.Add)
+                .DebugName("SelectNullChannel")
+                .CaseReceive("c2", (Chan<int>)null, list.Add)
+                .CaseReceive("c1", c1, list.Add)
                 .NoDefault();
 
             Assert.AreEqual(1, list.Count, "list.Count");
@@ -194,8 +197,9 @@ namespace NsqSharp.Tests.Channels
             t2.Start();
 
             Select
-                .CaseReceive(c1, list.Add)
-                .CaseReceive(c2, list.Add)
+                .DebugName("SelectDefaultCaseNoChannelsReady")
+                .CaseReceive("c1", c1, list.Add)
+                .CaseReceive("c2", c2, list.Add)
                 .Default(() => list.Add(3));
 
             Assert.AreEqual(1, list.Count, "list.Count");
@@ -210,7 +214,7 @@ namespace NsqSharp.Tests.Channels
 
             var t1 = new Thread(() =>
             {
-                Thread.Sleep(10);
+                Thread.Sleep(50);
                 c1.Send(1);
             });
             t1.IsBackground = true;
@@ -224,8 +228,9 @@ namespace NsqSharp.Tests.Channels
             t2.Start();
 
             Select
-                .CaseReceive(c1, list.Add)
-                .CaseReceive(c2, list.Add)
+                .DebugName("SelectDefaultCaseChannelReady")
+                .CaseReceive("c1", c1, list.Add)
+                .CaseReceive("c2", c2, list.Add)
                 .Default(() => list.Add(3));
 
             Assert.AreEqual(1, list.Count, "list.Count");
@@ -242,12 +247,13 @@ namespace NsqSharp.Tests.Channels
         }
 
         [Test]
-        public void ReceiveOnClosedChannelThrows()
+        public void ReceiveOnClosedChannelReturnsDefault()
         {
             var c = new Chan<int>();
             c.Close();
 
-            Assert.Throws<ChannelClosedException>(() => c.Receive());
+            int val = c.Receive();
+            Assert.AreEqual(default(int), val);
         }
 
         [Test]
@@ -258,7 +264,7 @@ namespace NsqSharp.Tests.Channels
 
             var t1 = new Thread(() =>
                                 {
-                                    Thread.Sleep(10);
+                                    Thread.Sleep(1000);
                                     c1.Receive();
                                 });
             t1.IsBackground = true;
@@ -272,8 +278,9 @@ namespace NsqSharp.Tests.Channels
             t2.Start();
 
             Select
-                .CaseSend(c1, 1, () => list.Add(1))
-                .CaseSend(c2, 2, () => list.Add(2))
+                .DebugName("SelectSendsOnly")
+                .CaseSend("c1", c1, 1, () => list.Add(1))
+                .CaseSend("c2", c2, 2, () => list.Add(2))
                 .NoDefault();
 
             Assert.AreEqual(1, list.Count, "list.Count");
@@ -327,8 +334,9 @@ namespace NsqSharp.Tests.Channels
             t2.Start();
 
             Select
-                .CaseReceive(c1, list.Add)
-                .CaseSend(c2, 2, () => { })
+                .DebugName("SelectSendAndReceiveReceiveReady")
+                .CaseReceive("c1", c1, list.Add)
+                .CaseSend("c2", c2, 2, () => { })
                 .NoDefault();
 
             Assert.AreEqual(1, list.Count, "list.Count");
@@ -348,7 +356,7 @@ namespace NsqSharp.Tests.Channels
 
             var t2 = new Thread(() =>
                                 {
-                                    Thread.Sleep(10);
+                                    Thread.Sleep(50);
                                     list.Add(c2.Receive());
                                 });
             t2.IsBackground = true;
@@ -357,12 +365,48 @@ namespace NsqSharp.Tests.Channels
             t2.Start();
 
             Select
-                .CaseReceive(c1, list.Add)
-                .CaseSend(c2, 2, () => { })
+                .DebugName("SelectSendAndReceiveSendReady")
+                .CaseReceive("c1", c1, list.Add)
+                .CaseSend("c2", c2, 2, () => { })
                 .NoDefault();
 
             Assert.AreEqual(1, list.Count, "list.Count");
             Assert.AreEqual(1, list[0], "list[0]");
+        }
+
+        [Test]
+        public void TwoSelectsSendAndReceiveCanTalk()
+        {
+            var c = new Chan<int>();
+
+            int actual = 0;
+
+            var wg = new WaitGroup();
+            wg.Add(2);
+
+            Task.Factory.StartNew(() =>
+            {
+                Select
+                    .DebugName("TwoSelectsSendAndReceiveCanTalk.Send")
+                    .CaseSend("c", c, 7)
+                    .NoDefault();
+                
+                wg.Done();
+            });
+
+            Task.Factory.StartNew(() =>
+            {
+                Select
+                    .DebugName("TwoSelectsSendAndReceiveCanTalk.Receive")
+                    .CaseReceive("c", c, o => actual = o)
+                    .NoDefault();
+
+                wg.Done();
+            });
+
+            wg.Wait();
+
+            Assert.AreEqual(7, actual);
         }
     }
 }
