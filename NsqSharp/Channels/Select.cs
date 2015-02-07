@@ -430,8 +430,9 @@ namespace NsqSharp.Channels
                         bool done;
                         do
                         {
-                            bool signaled = ready.WaitOne(TimeSpan.FromMilliseconds(50));
+
 #if DEBUG
+                            bool signaled = ready.WaitOne(TimeSpan.FromMilliseconds(50));
                             if (!signaled && !string.IsNullOrEmpty(DebugName))
                             {
                                 Debug.WriteLine(string.Format("[{0}] Waiting...", GetThreadName()));
@@ -442,6 +443,8 @@ namespace NsqSharp.Channels
                                     Debug.WriteLine("[{0}] Thread: {1}", GetThreadName(), threadId);
                                 }
                             }
+#else
+                            ready.WaitOne(TimeSpan.FromMilliseconds(50));
 #endif
                             done = CheckCases(out caseHandlerException);
                         } while (!done);
