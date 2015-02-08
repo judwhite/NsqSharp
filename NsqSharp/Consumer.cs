@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Security.Cryptography;
 using System.Threading;
+using System.Web;
 using NsqSharp.Channels;
 using NsqSharp.Go;
 
@@ -116,16 +118,16 @@ namespace NsqSharp
         private readonly string _channel;
         private readonly Config _config;
 
-        private readonly RNGCryptoServiceProvider _rng; // TODO: must Dispose
+        private readonly RNGCryptoServiceProvider _rng; // TODO: Dispose, or make static
 
         private int _needRDYRedistributed;
 
-        private readonly ReaderWriterLockSlim _backoffMtx = new ReaderWriterLockSlim();
+        private readonly ReaderWriterLockSlim _backoffMtx = new ReaderWriterLockSlim(); // TODO: Dispose
         private int _backoffCounter;
 
         private readonly Chan<Message> _incomingMessages;
 
-        private readonly ReaderWriterLockSlim _rdyRetryMtx = new ReaderWriterLockSlim();
+        private readonly ReaderWriterLockSlim _rdyRetryMtx = new ReaderWriterLockSlim(); // TODO: Dispose
         private readonly Dictionary<string, Timer> _rdyRetryTimers;
 
         private readonly Dictionary<string, Conn> _pendingConnections;
@@ -272,7 +274,7 @@ namespace NsqSharp
         {
             long b = getMaxInFlight();
             int connCount = conns().Count;
-            long s = (connCount == 0 ? 0 : b/connCount);
+            long s = (connCount == 0 ? 0 : b / connCount);
             return Math.Min(Math.Max(1, s), b);
         }
 
@@ -284,7 +286,7 @@ namespace NsqSharp
         {
             foreach (var conn in conns())
             {
-                long threshold = (long)(conn._lastRdyCount*0.85);
+                long threshold = (long)(conn._lastRdyCount * 0.85);
                 long inFlight = conn._messagesInFlight;
                 if (inFlight >= threshold && inFlight > 0 && !conn.IsClosing)
                 {
@@ -318,6 +320,95 @@ namespace NsqSharp
             {
                 maybeUpdateRDY(c);
             }
+        }
+
+        /// <summary>
+        /// ConnectToNSQLookupd adds an nsqlookupd address to the list for this Consumer instance.
+        ///
+        /// If it is the first to be added, it initiates an HTTP request to discover nsqd
+        /// producers for the configured topic.
+        ///
+        /// A goroutine is spawned to handle continual polling.
+        /// </summary>
+        public void ConnectToNSQLookupd(string addr)
+        {
+            if (string.IsNullOrEmpty(addr))
+                throw new ArgumentNullException("addr");
+
+            if (_stopFlag == 1)
+                throw new Exception("consumer stopped");
+            if (_runningHandlers == 0)
+                throw new Exception("no handlers");
+
+            validatedLookupAddr(addr);
+
+            _connectedFlag = 1;
+
+            int numLookupd;
+            _mtx.EnterWriteLock();
+            try
+            {
+                foreach (var x in _lookupdHTTPAddrs)
+                {
+                    if (x == addr)
+                        return;
+                }
+
+                _lookupdHTTPAddrs.Add(addr);
+                numLookupd = _lookupdHTTPAddrs.Count;
+            }
+            finally
+            {
+                _mtx.ExitWriteLock();
+            }
+
+            // if this is the first one, kick off the go loop
+            if (numLookupd == 1)
+            {
+                queryLookupd();
+                _wg.Add(1);
+                GoFunc.Run(lookupdLoop);
+            }
+        }
+
+        /// <summary>
+        /// ConnectToNSQLookupd adds multiple nsqlookupd address to the list for this Consumer instance.
+        ///
+        /// If adding the first address it initiates an HTTP request to discover nsqd
+        /// producers for the configured topic.
+        ///
+        /// A goroutine is spawned to handle continual polling.
+        /// </summary>
+        public void ConnectToNSQLookupds(IEnumerable<string> addresses)
+        {
+            if (addresses == null)
+                throw new ArgumentNullException("addresses");
+
+            foreach (var addr in addresses)
+            {
+                ConnectToNSQLookupd(addr);
+            }
+        }
+
+        private void validatedLookupAddr(string addr)
+        {
+            if (addr.Contains("/"))
+            {
+                // TODO: verify this is the kind of validation we want
+                new Uri(addr, UriKind.Absolute);
+            }
+            if (!addr.Contains(":"))
+                throw new Exception("missing port");
+        }
+
+        /// <summary>
+        /// poll all known lookup servers every LookupdPollInterval
+        /// </summary>
+        private void lookupdLoop()
+        {
+            // add some jitter so that multiple consumers discovering the same topic,
+            // when restarted at the same time, dont all connect at once.
+            var jitter = _rng.
         }
 
         // TODO
@@ -363,7 +454,7 @@ namespace NsqSharp
                 return;
 
             // TODO: proper width formatting
-            logger.Output(2, string.Format("{0} {1} [{2}/{3}] {4}", 
+            logger.Output(2, string.Format("{0} {1} [{2}/{3}] {4}",
                 Log.Prefix(lvl), _id, _topic, _channel,
                 string.Format(line, args)));
         }

@@ -63,6 +63,7 @@
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\OptAttributeExtensions.cs" />
     <Compile Include="Extensions\PropertyInfoExtensions.cs" />
+    <Compile Include="Extensions\RNGCryptoServiceProviderExtensions.cs" />
     <Compile Include="Go\Binary.cs" />
     <Compile Include="Go\Bytes.cs" />
     <Compile Include="Go\GoFunc.cs" />
