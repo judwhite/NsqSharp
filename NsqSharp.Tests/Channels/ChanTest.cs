@@ -390,7 +390,7 @@ namespace NsqSharp.Tests.Channels
                     .DebugName("TwoSelectsSendAndReceiveCanTalk.Send")
                     .CaseSend("c", c, 7)
                     .NoDefault();
-                
+
                 wg.Done();
             });
 
@@ -407,6 +407,189 @@ namespace NsqSharp.Tests.Channels
             wg.Wait();
 
             Assert.AreEqual(7, actual);
+        }
+
+        [Test]
+        public void BufferedChannelsDontBlock()
+        {
+            var c = new Chan<int>(1);
+            c.Send(2);
+            int actual = c.Receive();
+
+            Assert.AreEqual(2, actual);
+        }
+
+        [Test]
+        public void BufferedChannelsSelectSendAndReceiveInGoroutine()
+        {
+            var c = new Chan<int>(10);
+
+            var list = new List<int>();
+            var wg = new WaitGroup();
+
+            wg.Add(2);
+
+            GoFunc.Run(() =>
+            {
+                bool doLoop = true;
+                while (doLoop)
+                {
+                    Select
+                        .CaseReceiveOk(c, (i, ok) =>
+                        {
+                            if (ok)
+                                list.Add(i);
+                            else
+                                doLoop = false;
+                        })
+                        .NoDefault();
+                }
+
+                wg.Done();
+            });
+
+            GoFunc.Run(() =>
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    Select
+                        .CaseSend(c, i)
+                        .NoDefault();
+                }
+
+                c.Close();
+                wg.Done();
+            });
+
+            wg.Wait();
+
+            Assert.AreEqual(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, list.ToArray());
+        }
+
+        [Test]
+        public void BufferedChannelsSelectSendInGoroutine()
+        {
+            var c = new Chan<int>(10);
+
+            var list = new List<int>();
+            var wg = new WaitGroup();
+
+            wg.Add(1);
+
+            GoFunc.Run(() =>
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    Select
+                        .CaseSend(c, i)
+                        .NoDefault();
+                }
+
+                c.Close();
+                wg.Done();
+            });
+
+            wg.Wait();
+
+            bool doLoop = true;
+            while (doLoop)
+            {
+                Select
+                    .CaseReceiveOk(c, (i, ok) =>
+                    {
+                        if (ok)
+                            list.Add(i);
+                        else
+                            doLoop = false;
+                    })
+                    .NoDefault();
+            }
+
+            Assert.AreEqual(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, list.ToArray());
+        }
+
+        [Test]
+        public void BufferedChannelsSelectReceiveInGoroutine()
+        {
+            var c = new Chan<int>(10);
+
+            var list = new List<int>();
+            var wg = new WaitGroup();
+
+            wg.Add(1);
+
+            GoFunc.Run(() =>
+            {
+                bool doLoop = true;
+                while (doLoop)
+                {
+                    Select
+                        .CaseReceiveOk(c, (i, ok) =>
+                        {
+                            if (ok)
+                                list.Add(i);
+                            else
+                                doLoop = false;
+                        })
+                        .NoDefault();
+                }
+
+                wg.Done();
+            });
+
+            for (int i = 0; i < 10; i++)
+            {
+                Select
+                    .CaseSend(c, i)
+                    .NoDefault();
+            }
+
+            c.Close();
+
+            wg.Wait();
+
+            Assert.AreEqual(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, list.ToArray());
+        }
+
+        [Test]
+        public void BufferedChannelsReceiveSelectInGoroutineSendOnMainThread()
+        {
+            var c = new Chan<int>(10);
+
+            var list = new List<int>();
+            var wg = new WaitGroup();
+
+            wg.Add(1);
+
+            GoFunc.Run(() =>
+            {
+                bool doLoop = true;
+                while (doLoop)
+                {
+                    Select
+                        .CaseReceiveOk(c, (i, ok) =>
+                        {
+                            if (ok)
+                                list.Add(i);
+                            else
+                                doLoop = false;
+                        })
+                        .NoDefault();
+                }
+
+                wg.Done();
+            });
+
+            for (int i = 0; i < 10; i++)
+            {
+                c.Send(i);
+            }
+
+            c.Close();
+
+            wg.Wait();
+
+            Assert.AreEqual(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, list.ToArray());
         }
     }
 }

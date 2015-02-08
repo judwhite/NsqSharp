@@ -89,6 +89,19 @@ namespace NsqSharp.Channels
         }
 
         /// <summary>
+        /// Creates a case for receiving from the specific channel.
+        /// </summary>
+        /// <param name="debugName">The channel's name for debugging.</param>
+        /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
+        /// <param name="func">The function to execute with the data received from the channel.</param>
+        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to 
+        /// Default or NoDefault.</returns>
+        public static SelectCase CaseReceiveOk<T>(string debugName, IReceiveOnlyChan<T> c, Action<T, bool> func)
+        {
+            return new SelectCase().CaseReceiveOk(debugName, c, func);
+        }
+
+        /// <summary>
         /// Creates a case for sending to the specific channel.
         /// </summary>
         /// <param name="debugName">The channel's name for debugging.</param>
@@ -112,6 +125,18 @@ namespace NsqSharp.Channels
         public static SelectCase CaseReceive<T>(IReceiveOnlyChan<T> c, Action<T> func = null)
         {
             return CaseReceive(null, c, func);
+        }
+
+        /// <summary>
+        /// Creates a case for receiving from the specific channel.
+        /// </summary>
+        /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
+        /// <param name="func">The function to execute with the data received from the channel.</param>
+        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to 
+        /// Default or NoDefault.</returns>
+        public static SelectCase CaseReceiveOk<T>(IReceiveOnlyChan<T> c, Action<T, bool> func = null)
+        {
+            return CaseReceiveOk(null, c, func);
         }
 
         /// <summary>
@@ -146,8 +171,8 @@ namespace NsqSharp.Channels
             public ISendOnlyChan Chan { get; set; }
         }
 
-        private readonly Dictionary<ReceiveCase, Action<object>> _receiveFuncs =
-            new Dictionary<ReceiveCase, Action<object>>();
+        private readonly Dictionary<ReceiveCase, Action<object, bool>> _receiveFuncs =
+            new Dictionary<ReceiveCase, Action<object, bool>>();
 
         private readonly Dictionary<SendCase, Tuple<Action, object>> _sendFuncs =
             new Dictionary<SendCase, Tuple<Action, object>>();
@@ -167,10 +192,10 @@ namespace NsqSharp.Channels
         /// </summary>
         /// <param name="debugName">The name of the channel.</param>
         /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
-        /// <param name="func">The function to execute with the data received from the channel. Can be <c>null</c></param>
+        /// <param name="func">The function to execute with the data received from the channel.</param>
         /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
         /// Default or NoDefault.</returns>
-        public SelectCase CaseReceive<T>(string debugName, IReceiveOnlyChan<T> c, Action<T> func = null)
+        public SelectCase CaseReceiveOk<T>(string debugName, IReceiveOnlyChan<T> c, Action<T, bool> func)
         {
             if (c != null)
             {
@@ -181,12 +206,25 @@ namespace NsqSharp.Channels
                         DebugName = (debugName != null ? "<-" + DebugName + "::" + debugName : null)
                     },
                     func == null
-                        ? (Action<object>)null
-                        : o => func(o != null ? (T)o : default(T))
+                        ? (Action<object, bool>)null
+                        : (v, ok) => func(v != null ? (T)v : default(T), ok)
                 );
             }
 
             return this;
+        }
+
+        /// <summary>
+        /// Creates a case for receiving from the specific channel.
+        /// </summary>
+        /// <param name="debugName">The name of the channel.</param>
+        /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
+        /// <param name="func">The function to execute with the data received from the channel. Can be <c>null</c></param>
+        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
+        /// Default or NoDefault.</returns>
+        public SelectCase CaseReceive<T>(string debugName, IReceiveOnlyChan<T> c, Action<T> func = null)
+        {
+            return CaseReceiveOk(debugName, c, func == null ? (Action<T, bool>)null : (v, ok) => func(v));
         }
 
         /// <summary>
@@ -225,6 +263,18 @@ namespace NsqSharp.Channels
         public SelectCase CaseReceive<T>(IReceiveOnlyChan<T> c, Action<T> func = null)
         {
             return CaseReceive(null, c, func);
+        }
+
+        /// <summary>
+        /// Creates a case for receiving from the specific channel.
+        /// </summary>
+        /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
+        /// <param name="func">The function to execute with the data received from the channel.</param>
+        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
+        /// Default or NoDefault.</returns>
+        public SelectCase CaseReceiveOk<T>(IReceiveOnlyChan<T> c, Action<T, bool> func)
+        {
+            return CaseReceiveOk(null, c, func);
         }
 
         /// <summary>
@@ -270,30 +320,33 @@ namespace NsqSharp.Channels
                 var f = kvp.Value;
 
                 object o = null;
+                bool ok = false;
                 bool gotValue = false;
 
-                if (c.IsClosed)
+                if (c.TryLockReceive())
                 {
-                    Debug.WriteLine("[{0}] Closed channel {1}...", GetThreadName(), kvp.Key.DebugName);
-                    gotValue = true;
-                }
-                else
-                {
-                    if (c.TryLockReceive())
+                    try
                     {
-                        try
+                        if (c.IsReadyToSend)
                         {
-                            if (c.IsReadyToSend)
+                            Debug.WriteLine("[{0}] Trying {1}...", GetThreadName(), kvp.Key.DebugName);
+                            var valOk = c.ReceiveOk();
+                            o = valOk.Value;
+                            ok = valOk.Ok;
+                            gotValue = true;
+                        }
+                        else
+                        {
+                            if (c.IsClosed)
                             {
-                                Debug.WriteLine("[{0}] Trying {1}...", GetThreadName(), kvp.Key.DebugName);
-                                o = c.Receive();
+                                Debug.WriteLine("[{0}] Closed channel {1}...", GetThreadName(), kvp.Key.DebugName);
                                 gotValue = true;
-                            }
+                            }                            
                         }
-                        finally
-                        {
-                            c.UnlockReceive();
-                        }
+                    }
+                    finally
+                    {
+                        c.UnlockReceive();
                     }
                 }
 
@@ -304,7 +357,7 @@ namespace NsqSharp.Channels
                     {
                         try
                         {
-                            f(o);
+                            f(o, ok);
                         }
                         catch (Exception ex)
                         {

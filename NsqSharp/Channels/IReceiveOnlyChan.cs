@@ -14,10 +14,16 @@
     public interface IReceiveOnlyChan : IChan
     {
         /// <summary>
-        /// Receives a message from the channel. Blocks until a message is ready.
+        /// Receives a message from the channel. Blocks until a message is ready or channel is closed.
         /// </summary>
         /// <returns>The message received.</returns>
         object Receive();
+
+        /// <summary>
+        /// Receives a message from the channel. Blocks until a message is ready or channel is closed.
+        /// </summary>
+        /// <returns>The message received.</returns>
+        IReceiveOk ReceiveOk();
 
         /// <summary>
         /// Gets a value indicating if the channel is ready to send and waiting for a receiver.

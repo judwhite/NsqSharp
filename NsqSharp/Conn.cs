@@ -505,7 +505,7 @@ namespace NsqSharp
                     catch (Exception ex)
                     {
                         // TODO: determine equivalent exception type from .NET runtime
-                        if (ex is IOException)
+                        if (_closeFlag != 1)
                         {
                             log(LogLevel.Error, "IO error - {0}", ex.Message);
                             _delegate.OnIOError(this, ex);
@@ -522,8 +522,11 @@ namespace NsqSharp
                         }
                         catch (Exception ex)
                         {
-                            log(LogLevel.Error, "IO error - {0}", ex.Message);
-                            _delegate.OnIOError(this, ex);
+                            if (_closeFlag != 1)
+                            {
+                                log(LogLevel.Error, "IO error - {0}", ex.Message);
+                                _delegate.OnIOError(this, ex);
+                            }
                             break;
                         }
                         continue;

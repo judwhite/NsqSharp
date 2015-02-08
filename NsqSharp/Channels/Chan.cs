@@ -28,7 +28,7 @@ namespace NsqSharp.Channels
         private bool _isClosed;
 
         private readonly int _bufferSize;
-        private readonly Stack<T> _buffer;
+        private readonly Queue<T> _buffer;
         private readonly object _bufferLocker = new object();
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace NsqSharp.Channels
                 throw new ArgumentOutOfRangeException("bufferSize", bufferSize, "bufferSize must be >= 0");
 
             _bufferSize = bufferSize;
-            _buffer = new Stack<T>(_bufferSize + 1);
+            _buffer = new Queue<T>(_bufferSize + 1);
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace NsqSharp.Channels
                 if (waitForReceive)
                     _isReadyToReceive = false;
 
-                Push((T)message);
+                Enqueue((T)message);
 
                 if (waitForReceive)
                 {
@@ -119,19 +119,19 @@ namespace NsqSharp.Channels
             }
         }
 
-        private void Push(T value)
+        private void Enqueue(T value)
         {
             lock (_bufferLocker)
             {
-                _buffer.Push(value);
+                _buffer.Enqueue(value);
             }
         }
 
-        private T Pop()
+        private T Dequeue()
         {
             lock (_bufferLocker)
             {
-                return _buffer.Pop();
+                return _buffer.Dequeue();
             }
         }
 
@@ -145,6 +145,11 @@ namespace NsqSharp.Channels
             return valueOk.Value;
         }
 
+        IReceiveOk IReceiveOnlyChan.ReceiveOk()
+        {
+            return ReceiveOk();
+        }
+
         /// <summary>
         /// Receives a message from the channel. Blocks until a message is ready or the channel is closed.
         /// </summary>
@@ -152,9 +157,6 @@ namespace NsqSharp.Channels
         /// whether the channel was closed or not.</returns>
         public ReceiveOk<T> ReceiveOk()
         {
-            if (_isClosed)
-                return new ReceiveOk<T> { Value = default(T), Ok = false };
-
             T data;
             lock (_receiveLocker)
             {
@@ -162,9 +164,12 @@ namespace NsqSharp.Channels
                 {
                     if (_buffer.Count > 0)
                     {
-                        return new ReceiveOk<T> { Value = Pop(), Ok = true };
+                        return new ReceiveOk<T> { Value = Dequeue(), Ok = true };
                     }
                 }
+
+                if (_isClosed)
+                    return new ReceiveOk<T> { Value = default(T), Ok = false };
 
                 _isReadyToReceive = true;
                 _readyToReceive.Set();
@@ -181,7 +186,7 @@ namespace NsqSharp.Channels
                     }
                     else
                     {
-                        data = Pop();
+                        data = Dequeue();
                         _isReadyToSend = (_buffer.Count > 0);
                     }
                 }
@@ -310,11 +315,29 @@ namespace NsqSharp.Channels
     /// <see cref="Value"/>, <see cref="Ok"/> return type from <see cref="Chan&lt;T&gt;.ReceiveOk"/>
     /// </summary>
     /// <typeparam name="T">The item type</typeparam>
-    public class ReceiveOk<T>
+    public class ReceiveOk<T> : IReceiveOk
     {
         /// <summary>The value</summary>
         public T Value { get; set; }
         /// <summary><c>true</c> if the value was read from a sent value; <c>false</c> if the channel is closed</summary>
         public bool Ok { get; set; }
+
+        /// <summary>The value</summary>
+        object IReceiveOk.Value
+        {
+            get { return Value; }
+            set { Value = (T) value; }
+        }
+    }
+
+    /// <summary>
+    /// <see cref="Value"/>, <see cref="Ok"/> return type from <see cref="Chan&lt;T&gt;.ReceiveOk"/>
+    /// </summary>
+    public interface IReceiveOk
+    {
+        /// <summary>The value</summary>
+        object Value { get; set; }
+        /// <summary><c>true</c> if the value was read from a sent value; <c>false</c> if the channel is closed</summary>
+        bool Ok { get; set; }
     }
 }
