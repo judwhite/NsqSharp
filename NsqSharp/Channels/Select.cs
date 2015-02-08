@@ -432,7 +432,7 @@ namespace NsqSharp.Channels
                         {
 
 #if DEBUG
-                            bool signaled = ready.WaitOne(TimeSpan.FromMilliseconds(50));
+                            bool signaled = ready.WaitOne(TimeSpan.FromMilliseconds(20));
                             if (!signaled && !string.IsNullOrEmpty(DebugName))
                             {
                                 Debug.WriteLine(string.Format("[{0}] Waiting...", GetThreadName()));
@@ -440,7 +440,7 @@ namespace NsqSharp.Channels
                                 var activeThreads = GetActiveThreads();
                                 foreach (var threadId in activeThreads)
                                 {
-                                    Debug.WriteLine("[{0}] Thread: {1}", GetThreadName(), threadId);
+                                    Debug.WriteLine("[{0}] Thread: {1}", GetThreadName(), threadId.DebugName);
                                 }
                             }
 #else
@@ -472,13 +472,13 @@ namespace NsqSharp.Channels
         }
 
 #if DEBUG
-        private static readonly List<string> _activeThreads = new List<string>();
+        private static readonly List<SelectCase> _activeThreads = new List<SelectCase>();
 
         private void RemoveThreadFromDebugLog()
         {
             lock (_activeThreads)
             {
-                _activeThreads.Remove(GetThreadName());
+                _activeThreads.Remove(this);
             }
         }
 
@@ -486,11 +486,11 @@ namespace NsqSharp.Channels
         {
             lock (_activeThreads)
             {
-                _activeThreads.Add(GetThreadName());
+                _activeThreads.Add(this);
             }
         }
 
-        private string[] GetActiveThreads()
+        private SelectCase[] GetActiveThreads()
         {
             lock (_activeThreads)
             {

@@ -23,11 +23,34 @@ namespace NsqSharp.Channels
 
         private readonly TimeSpan _infiniteTimeSpan = TimeSpan.FromMilliseconds(-1);
 
-        private T _data;
-
         private bool _isReadyToSend;
         private bool _isReadyToReceive;
         private bool _isClosed;
+
+        private readonly int _bufferSize;
+        private readonly Stack<T> _buffer;
+        private readonly object _bufferLocker = new object();
+
+        /// <summary>
+        /// Initializes a new unbuffered channel.
+        /// </summary>
+        public Chan()
+            : this(bufferSize: 0)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new channel with specified <paramref name="bufferSize"/>.
+        /// </summary>
+        /// <param name="bufferSize">The size of the send buffer.</param>
+        public Chan(int bufferSize)
+        {
+            if (bufferSize < 0)
+                throw new ArgumentOutOfRangeException("bufferSize", bufferSize, "bufferSize must be >= 0");
+
+            _bufferSize = bufferSize;
+            _buffer = new Stack<T>(_bufferSize + 1);
+        }
 
         /// <summary>
         /// Sends a message to the channel. Blocks until the message is received.
@@ -45,22 +68,71 @@ namespace NsqSharp.Channels
 
             lock (_sendLocker)
             {
+                lock (_bufferLocker)
+                {
+                    if (_buffer.Count < _bufferSize)
+                    {
+                        if (timeout == _infiniteTimeSpan)
+                            timeout = TimeSpan.FromMilliseconds(20);
+                    }
+                }
+
                 _isReadyToSend = true;
 
                 PumpListeners();
 
                 bool success = _readyToReceive.WaitOne(timeout.Milliseconds);
-                _isReadyToReceive = false;
-                if (!success)
-                    return false;
                 if (_isClosed)
+                {
+                    _isReadyToSend = false;
                     throw new ChannelClosedException();
-                _data = (T)message;
-                _sent.Set();
-                _receiveComplete.WaitOne();
-            }
+                }
+                bool waitForReceive = true;
+                if (!success)
+                {
+                    lock (_bufferLocker)
+                    {
+                        if (_buffer.Count == _bufferSize)
+                        {
+                            _isReadyToSend = false;
+                            return false;
+                        }
+                        else
+                        {
+                            waitForReceive = false;
+                        }
+                    }
+                }
 
-            return true;
+                if (waitForReceive)
+                    _isReadyToReceive = false;
+
+                Push((T)message);
+
+                if (waitForReceive)
+                {
+                    _sent.Set();
+                    _receiveComplete.WaitOne();
+                }
+
+                return true;
+            }
+        }
+
+        private void Push(T value)
+        {
+            lock (_bufferLocker)
+            {
+                _buffer.Push(value);
+            }
+        }
+
+        private T Pop()
+        {
+            lock (_bufferLocker)
+            {
+                return _buffer.Pop();
+            }
         }
 
         /// <summary>
@@ -86,22 +158,38 @@ namespace NsqSharp.Channels
             T data;
             lock (_receiveLocker)
             {
+                lock (_bufferLocker)
+                {
+                    if (_buffer.Count > 0)
+                    {
+                        return new ReceiveOk<T> { Value = Pop(), Ok = true };
+                    }
+                }
+
                 _isReadyToReceive = true;
                 _readyToReceive.Set();
 
                 PumpListeners();
 
                 _sent.WaitOne();
-                _isReadyToSend = false;
-                data = _data;
+                lock (_bufferLocker)
+                {
+                    if (_buffer.Count == 0 && _isClosed)
+                    {
+                        data = default(T);
+                        _isReadyToSend = false;
+                    }
+                    else
+                    {
+                        data = Pop();
+                        _isReadyToSend = (_buffer.Count > 0);
+                    }
+                }
                 _receiveComplete.Set();
             }
 
             // TODO: Race condition, but can't lock _isClosedLocker in this method. Fix.
-            if (_isClosed)
-                return new ReceiveOk<T> { Value = default(T), Ok = false };
-            else
-                return new ReceiveOk<T> { Value = data, Ok = true };
+            return new ReceiveOk<T> { Value = data, Ok = !_isClosed };
         }
 
         /// <summary>Returns an enumerator that iterates through the collection.</summary>

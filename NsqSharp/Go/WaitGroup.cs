@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace NsqSharp.Go
@@ -57,7 +58,12 @@ namespace NsqSharp.Go
                 if (_count < 0)
                     throw new Exception("sync: negative WaitGroup counter");
 
-                _wait.WaitOne();
+                while (true)
+                {
+                    if (_wait.WaitOne(TimeSpan.FromMilliseconds(100)) || _count <= 0)
+                        break;
+                    Debug.WriteLine("WaitGroup.Wait...");
+                }
 
                 if (_count < 0)
                     throw new Exception("sync: negative WaitGroup counter");

@@ -18,5 +18,13 @@ namespace NsqSharp.Extensions
         {
             return (dateTime - _epoch).Ticks * 100;
         }
+
+        /// <summary>
+        /// Unix returns t as a Unix time, the number of seconds elapsed since January 1, 1970 UTC.
+        /// </summary>
+        public static long Unix(this DateTime dateTime)
+        {
+            return (long)((dateTime - _epoch).TotalSeconds);
+        }
     }
 }

@@ -109,7 +109,7 @@ namespace NsqSharp
         /// </summary>
         /// <param name="l">The <see cref="Logger"/></param>
         /// <param name="lvl">The <see cref="LogLevel"/></param>
-        public void SetLogger(Logger l, LogLevel lvl)
+        public void SetLogger(ILogger l, LogLevel lvl)
         {
             _logger = l;
             _logLvl = lvl;
@@ -160,6 +160,35 @@ namespace NsqSharp
         }
 
         /// <summary>
+        /// PublishAsync publishes a message body to the specified topic
+        /// but does not wait for the response from `nsqd`.
+        ///
+        /// When the Producer eventually receives the response from `nsqd`,
+        /// the supplied `doneChan` (if specified)
+        /// will receive a `ProducerTransaction` instance with the supplied variadic arguments
+        /// and the response error if present
+        /// </summary>
+        public void PublishAsync(string topic, string value, Chan<ProducerTransaction> doneChan, params object[] args)
+        {
+            sendCommandAsync(Command.Publish(topic, Encoding.UTF8.GetBytes(value)), doneChan, args);
+        }
+
+        /// <summary>
+        /// PublishAsync publishes a message body to the specified topic
+        /// but does not wait for the response from `nsqd`.
+        ///
+        /// When the Producer eventually receives the response from `nsqd`,
+        /// the supplied `doneChan` (if specified)
+        /// will receive a `ProducerTransaction` instance with the supplied variadic arguments
+        /// and the response error if present
+        /// </summary>
+        public void PublishAsync<T>(string topic, T value, Chan<ProducerTransaction> doneChan, params object[] args)
+        {
+            string json = (value != null ? JsonConvert.SerializeObject(value) : null);
+            sendCommandAsync(Command.Publish(topic, Encoding.UTF8.GetBytes(json)), doneChan, args);
+        }
+
+        /// <summary>
         /// MultiPublishAsync publishes a slice of message bodies to the specified topic
         /// but does not wait for the response from `nsqd`.
         ///
@@ -189,8 +218,17 @@ namespace NsqSharp
         /// </summary>
         public void Publish<T>(string topic, T value)
         {
-            string json = (value != null ? JsonConvert.SerializeObject(value) : "");
+            string json = (value != null ? JsonConvert.SerializeObject(value) : null);
             Publish(topic, Encoding.UTF8.GetBytes(json));
+        }
+
+        /// <summary>
+        /// Publish synchronously publishes a string to the specified topic, returning
+        /// an error if publish failed
+        /// </summary>
+        public void Publish(string topic, string value)
+        {
+            Publish(topic, Encoding.UTF8.GetBytes(value));
         }
 
         /// <summary>
@@ -239,10 +277,10 @@ namespace NsqSharp
                             Args = args,
                         };
 
-                // TODO: No debug name for debug perf, add back if you get stuck
                 Select
-                    .CaseSend(_transactionChan, t, () => { })
-                    .CaseReceive(_exitChan, m => { throw new ErrStopped(); })
+                    .DebugName("Producer::sendCommandAsync")
+                    .CaseSend("_transactionChan", _transactionChan, t, () => { })
+                    .CaseReceive("_exitChan", _exitChan, m => { throw new ErrStopped(); })
                     .NoDefault();
             }
             finally
@@ -317,7 +355,7 @@ namespace NsqSharp
             {
                 Select
                     .DebugName("Producer::router")
-                    .CaseReceive(_transactionChan, t =>
+                    .CaseReceive("_transactionChan", _transactionChan, t =>
                     {
                         _transactions.Add(t);
                         try

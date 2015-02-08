@@ -13,6 +13,8 @@ namespace NsqSharp.Go
         private readonly NetworkStream _stream;
         private readonly object _readLocker = new object();
         private readonly object _writeLocker = new object();
+        private readonly object _closeLocker = new object();
+        private bool _isClosed;
 
         public TcpConn(string hostname, int port)
         {
@@ -53,8 +55,19 @@ namespace NsqSharp.Go
 
         public void Close()
         {
-            _stream.Close();
-            _tcpClient.Close();
+            if (_isClosed)
+                return;
+
+            lock (_closeLocker)
+            {
+                if (_isClosed)
+                    return;
+
+                _isClosed = true;
+
+                _stream.Close();
+                _tcpClient.Close();
+            }
         }
 
         public void CloseRead()
