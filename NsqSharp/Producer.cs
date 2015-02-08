@@ -107,7 +107,7 @@ namespace NsqSharp
         ///    Output(calldepth int, s string)
         ///
         /// </summary>
-        /// <param name="l">The <see cref="Logger"/></param>
+        /// <param name="l">The <see cref="ILogger"/></param>
         /// <param name="lvl">The <see cref="LogLevel"/></param>
         public void SetLogger(ILogger l, LogLevel lvl)
         {
@@ -441,7 +441,7 @@ namespace NsqSharp
 
         private void log(LogLevel lvl, string line, params object[] args)
         {
-            // TODO: Create PR on go-nsq, possible race condition on w.logger
+            // TODO: fix race condition on w.logger
             var logger = _logger;
             if (logger == null)
                 return;
@@ -449,6 +449,7 @@ namespace NsqSharp
             if (_logLvl > lvl)
                 return;
 
+            // TODO: proper width formatting
             logger.Output(2, string.Format("{0} {1} {2}", Log.Prefix(lvl), _id, string.Format(line, args)));
         }
 

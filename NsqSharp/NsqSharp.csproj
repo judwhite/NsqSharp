@@ -58,7 +58,6 @@
     <Compile Include="Channels\ISendOnlyChan.cs" />
     <Compile Include="Channels\Select.cs" />
     <Compile Include="Conn.cs" />
-    <Compile Include="Consumer.cs" />
     <Compile Include="Errors.cs" />
     <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />

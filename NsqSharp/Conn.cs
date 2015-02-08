@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
@@ -70,10 +69,10 @@ namespace NsqSharp
     {
         private static readonly byte[] HEARTBEAT_BYTES = Encoding.UTF8.GetBytes("_heartbeat_");
 
-        private long _messagesInFlight;
+        internal long _messagesInFlight;
         private long _maxRdyCount;
         private long _rdyCount;
-        private long _lastRdyCount;
+        internal long _lastRdyCount;
         private long _lastMsgTimestamp;
 
         private readonly object _mtx = new object();

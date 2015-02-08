@@ -326,7 +326,7 @@ namespace NsqSharp.Channels
         object IReceiveOk.Value
         {
             get { return Value; }
-            set { Value = (T) value; }
+            set { Value = (T)value; }
         }
     }
 
