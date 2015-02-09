@@ -24,7 +24,7 @@ namespace NsqSharp.Channels
         private readonly object _listenForSendLocker = new object();
         private readonly object _listenForReceiveLocker = new object();
 
-        private readonly TimeSpan _infiniteTimeSpan = TimeSpan.FromMilliseconds(-1);
+        private static readonly TimeSpan _infiniteTimeSpan = TimeSpan.FromMilliseconds(-1);
 
         private bool _isReadyToSend;
         private bool _isReadyToReceive;
@@ -38,8 +38,9 @@ namespace NsqSharp.Channels
         /// Initializes a new unbuffered channel.
         /// </summary>
         public Chan()
-            : this(bufferSize: 0)
         {
+            _bufferSize = 0;
+            _buffer = new Queue<T>(1);
         }
 
         /// <summary>
@@ -48,9 +49,6 @@ namespace NsqSharp.Channels
         /// <param name="bufferSize">The size of the send buffer.</param>
         public Chan(int bufferSize)
         {
-            if (bufferSize < 0)
-                throw new ArgumentOutOfRangeException("bufferSize", bufferSize, "bufferSize must be >= 0");
-
             _bufferSize = bufferSize;
             _buffer = new Queue<T>(_bufferSize + 1);
         }
@@ -147,13 +145,14 @@ namespace NsqSharp.Channels
         /// <returns>The message received; or default(T) if the channel was closed.</returns>
         public T Receive()
         {
-            var valueOk = ReceiveOk();
-            return valueOk.Value;
+            bool ok;
+            var value = ReceiveOk(out ok);
+            return value;
         }
 
-        IReceiveOk IReceiveOnlyChan.ReceiveOk()
+        object IReceiveOnlyChan.ReceiveOk(out bool ok)
         {
-            return ReceiveOk();
+            return ReceiveOk(out ok);
         }
 
         /// <summary>
@@ -161,8 +160,10 @@ namespace NsqSharp.Channels
         /// </summary>
         /// <returns>The message received; or default(T) if the channel was closed. Includes an indicator
         /// whether the channel was closed or not.</returns>
-        public ReceiveOk<T> ReceiveOk()
+        public T ReceiveOk(out bool ok)
         {
+            ok = false;
+
             T data;
             lock (_receiveLocker)
             {
@@ -170,12 +171,15 @@ namespace NsqSharp.Channels
                 {
                     if (_buffer.Count > 0)
                     {
-                        return new ReceiveOk<T> { Value = Dequeue(), Ok = true };
+                        ok = true;
+                        return Dequeue();
                     }
                 }
 
                 if (_isClosed)
-                    return new ReceiveOk<T> { Value = default(T), Ok = false };
+                {
+                    return default(T);
+                }
 
                 _isReadyToReceive = true;
                 _readyToReceive.Set();
@@ -200,7 +204,8 @@ namespace NsqSharp.Channels
             }
 
             // TODO: Race condition, but can't lock _isClosedLocker in this method. Fix.
-            return new ReceiveOk<T> { Value = data, Ok = !_isClosed };
+            ok = !_isClosed;
+            return data;
         }
 
         /// <summary>Returns an enumerator that iterates through the collection.</summary>
@@ -209,12 +214,13 @@ namespace NsqSharp.Channels
         {
             while (true)
             {
-                var valueOk = ReceiveOk();
+                bool ok;
+                var value = ReceiveOk(out ok);
 
-                if (!valueOk.Ok)
+                if (!ok)
                     yield break;
                 else
-                    yield return valueOk.Value;
+                    yield return value;
             }
         }
 
@@ -343,35 +349,5 @@ namespace NsqSharp.Channels
         {
             return GetEnumerator();
         }
-    }
-
-    /// <summary>
-    /// <see cref="Value"/>, <see cref="Ok"/> return type from <see cref="Chan&lt;T&gt;.ReceiveOk"/>
-    /// </summary>
-    /// <typeparam name="T">The item type</typeparam>
-    public class ReceiveOk<T> : IReceiveOk
-    {
-        /// <summary>The value</summary>
-        public T Value { get; set; }
-        /// <summary><c>true</c> if the value was read from a sent value; <c>false</c> if the channel is closed</summary>
-        public bool Ok { get; set; }
-
-        /// <summary>The value</summary>
-        object IReceiveOk.Value
-        {
-            get { return Value; }
-            set { Value = (T)value; }
-        }
-    }
-
-    /// <summary>
-    /// <see cref="Value"/>, <see cref="Ok"/> return type from <see cref="Chan&lt;T&gt;.ReceiveOk"/>
-    /// </summary>
-    public interface IReceiveOk
-    {
-        /// <summary>The value</summary>
-        object Value { get; set; }
-        /// <summary><c>true</c> if the value was read from a sent value; <c>false</c> if the channel is closed</summary>
-        bool Ok { get; set; }
     }
 }

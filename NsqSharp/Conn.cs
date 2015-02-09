@@ -300,8 +300,8 @@ namespace NsqSharp
             return _w.Write(p, offset, length);
         }
 
-        private const int _bigBufSize = 4096;
-        private static readonly byte[] _bigBuf = new byte[_bigBufSize];
+        private int _bigBufSize = 4096;
+        private byte[] _bigBuf = new byte[4096];
 
         /// <summary>
         /// WriteCommand is a goroutine safe method to write a Command
@@ -316,12 +316,14 @@ namespace NsqSharp
             {
                 lock (_mtx)
                 {
-                    byte[] buf = _bigBuf;
                     int size = cmd.GetByteCount();
-                    if (_bigBufSize > size)
-                        buf = new byte[size];
+                    if (size > _bigBufSize)
+                    {
+                        _bigBuf = new byte[size];
+                        _bigBufSize = size;
+                    }
 
-                    cmd.WriteTo(this, buf);
+                    cmd.WriteTo(this, _bigBuf);
 
                     Flush();
                 }
@@ -608,18 +610,16 @@ namespace NsqSharp
         private void writeLoop()
         {
             bool doLoop = true;
-            while (doLoop)
-            {
+            using (var select =
                 Select
-                    .DebugName("Conn::writeLoop")
-                    .CaseReceive("_exitChan", _exitChan, o =>
+                    .CaseReceive(_exitChan, o =>
                     {
                         log(LogLevel.Info, "breaking out of writeLoop");
                         // Indicate drainReady because we will not pull any more off msgResponseChan
                         _drainReady.Close();
                         doLoop = false;
                     })
-                    .CaseReceive("_cmdChan", _cmdChan, cmd =>
+                    .CaseReceive(_cmdChan, cmd =>
                     {
                         try
                         {
@@ -633,7 +633,7 @@ namespace NsqSharp
                             // https://github.com/bitly/go-nsq/blob/v1.0.2/conn.go#L544
                         }
                     })
-                    .CaseReceive("_msgResponseChan", _msgResponseChan, resp =>
+                    .CaseReceive(_msgResponseChan, resp =>
                     {
                         // Decrement this here so it is correct even if we can't respond to nsqd
                         var msgsInFlight = Interlocked.Decrement(ref _messagesInFlight);
@@ -672,7 +672,13 @@ namespace NsqSharp
                             close();
                         }
                     })
-                    .NoDefault();
+                    .Defer()
+                    .NoDefault())
+            {
+                while (doLoop)
+                {
+                    select.Execute();
+                }
             }
 
             _wg.Done();
@@ -737,9 +743,8 @@ namespace NsqSharp
                 long msgsInFlight = _messagesInFlight;
 
                 Select
-                    .DebugName("Conn:cleanup")
-                    .CaseReceive("_msgResponseChan", _msgResponseChan, o => msgsInFlight = Interlocked.Decrement(ref _messagesInFlight))
-                    .CaseReceive("ticker.C", ticker.C, o => msgsInFlight = _messagesInFlight)
+                    .CaseReceive(_msgResponseChan, o => msgsInFlight = Interlocked.Decrement(ref _messagesInFlight))
+                    .CaseReceive(ticker.C, o => msgsInFlight = _messagesInFlight)
                     .NoDefault();
 
                 if (msgsInFlight > 0)

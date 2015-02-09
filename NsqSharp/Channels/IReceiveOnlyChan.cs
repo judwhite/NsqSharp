@@ -23,7 +23,7 @@
         /// Receives a message from the channel. Blocks until a message is ready or channel is closed.
         /// </summary>
         /// <returns>The message received.</returns>
-        IReceiveOk ReceiveOk();
+        object ReceiveOk(out bool ok);
 
         /// <summary>
         /// Gets a value indicating if the channel is ready to send and waiting for a receiver.

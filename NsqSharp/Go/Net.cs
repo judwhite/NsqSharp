@@ -49,9 +49,8 @@ namespace NsqSharp.Go
             IConn conn = null;
 
             Select
-                .DebugName("Net::DialTimeout")
-                .CaseReceive("dialChan", dialChan, c => conn = c)
-                .CaseReceive("timeoutChan", timeoutChan, o =>
+                .CaseReceive(dialChan, c => conn = c)
+                .CaseReceive(timeoutChan, o =>
                 {
                     throw new TimeoutException(string.Format("timeout {0} exceed when dialing {1}", timeout, address));
                 })

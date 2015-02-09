@@ -157,7 +157,7 @@ namespace NsqSharp.Channels
     /// Control structure to send or receive from the first available channel. Chain Case methods and end with a call to
     /// Default or NoDefault.
     /// </summary>
-    public class SelectCase
+    public class SelectCase : IDisposable
     {
         private class ReceiveCase
         {
@@ -184,6 +184,8 @@ namespace NsqSharp.Channels
         private bool _hasDefault;
         private AutoResetEvent _ready;
 
+        private bool _defer;
+
         private bool _isExecuteCalled;
 
         /// <summary>
@@ -201,6 +203,9 @@ namespace NsqSharp.Channels
         /// Default or NoDefault.</returns>
         public SelectCase CaseReceiveOk<T>(string debugName, IReceiveOnlyChan<T> c, Action<T, bool> func)
         {
+            if (_isExecuteCalled)
+                throw new Exception("select already executed");
+
             if (c != null)
             {
                 _receiveFuncs.Add(
@@ -228,7 +233,9 @@ namespace NsqSharp.Channels
         /// Default or NoDefault.</returns>
         public SelectCase CaseReceive<T>(string debugName, IReceiveOnlyChan<T> c, Action<T> func = null)
         {
-            //return CaseReceiveOk(debugName, c, func == null ? (Action<T, bool>)null : (v, ok) => func(v));
+            if (_isExecuteCalled)
+                throw new Exception("select already executed");
+
             if (c != null)
             {
                 _receiveFuncs.Add(
@@ -257,6 +264,9 @@ namespace NsqSharp.Channels
         /// Default or NoDefault.</returns>
         public SelectCase CaseSend<T>(string debugName, ISendOnlyChan<T> c, T message, Action func = null)
         {
+            if (_isExecuteCalled)
+                throw new Exception("select already executed");
+
             if (c != null)
             {
                 _sendFuncs.Add(
@@ -281,6 +291,9 @@ namespace NsqSharp.Channels
         /// Default or NoDefault.</returns>
         public SelectCase CaseReceive<T>(IReceiveOnlyChan<T> c, Action<T> func = null)
         {
+            if (_isExecuteCalled)
+                throw new Exception("select already executed");
+
             return CaseReceive(null, c, func);
         }
 
@@ -293,6 +306,9 @@ namespace NsqSharp.Channels
         /// Default or NoDefault.</returns>
         public SelectCase CaseReceiveOk<T>(IReceiveOnlyChan<T> c, Action<T, bool> func)
         {
+            if (_isExecuteCalled)
+                throw new Exception("select already executed");
+
             return CaseReceiveOk(null, c, func);
         }
 
@@ -306,27 +322,50 @@ namespace NsqSharp.Channels
         /// Default or NoDefault.</returns>
         public SelectCase CaseSend<T>(ISendOnlyChan<T> c, T message, Action func = null)
         {
+            if (_isExecuteCalled)
+                throw new Exception("select already executed");
+
             return CaseSend(null, c, message, func);
+        }
+
+        /// <summary>
+        /// Defers execution to use the same build-up in a loop. Call <see cref="Execute"/> inside the loop, and wrap
+        /// in a using or manually call <see cref="Dispose"/> whend one.
+        /// </summary>
+        public SelectCase Defer()
+        {
+            _defer = true;
+            return this;
         }
 
         /// <summary>
         /// Executes a default action if no channels are ready.
         /// </summary>
         /// <param name="func">The callback function to execute if no channels are ready. Can be <c>null</c>.</param>
-        public void Default(Action func)
+        public SelectCase Default(Action func)
         {
+            if (_isExecuteCalled)
+                throw new Exception("select already executed");
+
             _default = func;
             _hasDefault = true;
-            Execute();
+            if (!_defer)
+                Execute();
+            return this;
         }
 
         /// <summary>
         /// Specifies that no action should be taken if no channels are ready. Blocks until one channel is ready and its
         /// callback function has been executed.
         /// </summary>
-        public void NoDefault()
+        public SelectCase NoDefault()
         {
-            Execute();
+            if (_isExecuteCalled)
+                throw new Exception("select already executed");
+
+            if (!_defer)
+                Execute();
+            return this;
         }
 
         private bool CheckCases(out Exception exception)
@@ -352,9 +391,7 @@ namespace NsqSharp.Channels
                         if (c.IsReadyToSend)
                         {
                             Debug.WriteLine("[{0}] Trying {1}...", GetThreadName(), kvp.Key.DebugName);
-                            var valOk = c.ReceiveOk();
-                            o = valOk.Value;
-                            ok = valOk.Ok;
+                            o = c.ReceiveOk(out ok);
                             gotValue = true;
                         }
                         else
@@ -432,16 +469,15 @@ namespace NsqSharp.Channels
             return false;
         }
 
-        private void Execute()
+        /// <summary>
+        /// Executes the select. Only necessary if <see cref="Defer"/> was called.
+        /// </summary>
+        public void Execute()
         {
-            Exception caseHandlerException;
+            Exception caseHandlerException = null;
 
             try
             {
-                if (_isExecuteCalled)
-                    throw new Exception("Default/NoDefault can only be called once per select");
-
-                _isExecuteCalled = true;
 
 #if DEBUG
                 AddThreadToDebugLog();
@@ -479,22 +515,31 @@ namespace NsqSharp.Channels
                             }
                         }
                     }
+
+                    _isExecuteCalled = true;
                 }
                 else
                 {
-                    _ready = new AutoResetEvent(initialState: false);
+                    bool isDone = false;
 
-                    foreach (var c in _sendFuncs.Keys)
+                    if (!_isExecuteCalled)
                     {
-                        c.Chan.AddListenForReceive(_ready);
-                    }
+                        _ready = new AutoResetEvent(initialState: false);
 
-                    foreach (var c in _receiveFuncs.Keys)
-                    {
-                        c.Chan.AddListenForSend(_ready);
-                    }
+                        foreach (var c in _sendFuncs.Keys)
+                        {
+                            c.Chan.AddListenForReceive(_ready);
+                        }
 
-                    bool isDone = CheckCases(out caseHandlerException);
+                        foreach (var c in _receiveFuncs.Keys)
+                        {
+                            c.Chan.AddListenForSend(_ready);
+                        }
+
+                        _isExecuteCalled = true;
+
+                        isDone = CheckCases(out caseHandlerException);
+                    }
 
                     if (!isDone)
                     {
@@ -522,7 +567,8 @@ namespace NsqSharp.Channels
                     }
                 }
 
-                CleanUp();
+                if (!_defer)
+                    Dispose();
 
 #if DEBUG
                 RemoveThreadFromDebugLog();
@@ -532,7 +578,7 @@ namespace NsqSharp.Channels
             }
             catch (Exception)
             {
-                CleanUp();
+                Dispose();
 #if DEBUG
                 RemoveThreadFromDebugLog();
 #endif
@@ -577,7 +623,10 @@ namespace NsqSharp.Channels
             return string.Format("{0}/{1}", Thread.CurrentThread.ManagedThreadId, DebugName);
         }
 
-        private void CleanUp()
+        /// <summary>
+        /// Clean up references. Only necessary if <see cref="Defer"/> was called.
+        /// </summary>
+        public void Dispose()
         {
             if (_ready != null)
             {

@@ -32,7 +32,7 @@ namespace NsqSharp
         private Chan<int> _closeChan;
 
         private readonly Chan<ProducerTransaction> _transactionChan;
-        private readonly List<ProducerTransaction> _transactions = new List<ProducerTransaction>();
+        private readonly Queue<ProducerTransaction> _transactions = new Queue<ProducerTransaction>();
         private int _state;
 
         private int _concurrentProducers;
@@ -279,9 +279,8 @@ namespace NsqSharp
                         };
 
                 Select
-                    .DebugName("Producer::sendCommandAsync")
-                    .CaseSend("_transactionChan", _transactionChan, t, () => { })
-                    .CaseReceive("_exitChan", _exitChan, m => { throw new ErrStopped(); })
+                    .CaseSend(_transactionChan, t, () => { })
+                    .CaseReceive(_exitChan, m => { throw new ErrStopped(); })
                     .NoDefault();
             }
             finally
@@ -352,12 +351,12 @@ namespace NsqSharp
         private void router()
         {
             bool doLoop = true;
-            while (doLoop)
-            {
+
+            using (var select =
                 Select
                     .CaseReceive(_transactionChan, t =>
                     {
-                        _transactions.Add(t);
+                        _transactions.Enqueue(t);
                         try
                         {
                             _conn.WriteCommand(t._cmd);
@@ -382,7 +381,13 @@ namespace NsqSharp
                     {
                         doLoop = false;
                     })
-                    .NoDefault();
+                    .Defer()
+                    .NoDefault())
+            {
+                while (doLoop)
+                {
+                    select.Execute();
+                }
             }
 
             transactionCleanup();
@@ -392,8 +397,7 @@ namespace NsqSharp
 
         private void popTransaction(FrameType frameType, byte[] data)
         {
-            var t = _transactions[0];
-            _transactions.RemoveAt(0);
+            var t = _transactions.Dequeue();
             if (frameType == FrameType.Error)
             {
                 t.Error = new ErrProtocol(Encoding.UTF8.GetString(data));
@@ -418,8 +422,7 @@ namespace NsqSharp
             while (doLoop)
             {
                 Select
-                    .DebugName("Producer::transactionCleanup")
-                    .CaseReceive("_transactionChan", _transactionChan, t =>
+                    .CaseReceive(_transactionChan, t =>
                     {
                         t.Error = new ErrNotConnected();
                         t.finish();
