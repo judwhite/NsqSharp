@@ -220,5 +220,13 @@ namespace NsqSharp.Go
 
             return f;
         }
+
+        /// <summary>
+        /// Converts nanoseconds to <see cref="TimeSpan"/>.
+        /// </summary>
+        public static TimeSpan Duration(long nanoseconds)
+        {
+            return new TimeSpan(nanoseconds / 100);
+        }
     }
 }

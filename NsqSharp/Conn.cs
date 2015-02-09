@@ -672,8 +672,7 @@ namespace NsqSharp
                             close();
                         }
                     })
-                    .Defer()
-                    .NoDefault())
+                    .NoDefault(defer: true))
             {
                 while (doLoop)
                 {

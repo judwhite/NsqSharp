@@ -381,8 +381,7 @@ namespace NsqSharp
                     {
                         doLoop = false;
                     })
-                    .Defer()
-                    .NoDefault())
+                    .NoDefault(defer: true))
             {
                 while (doLoop)
                 {

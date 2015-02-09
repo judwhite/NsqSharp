@@ -38,7 +38,8 @@ namespace NsqSharp
 
     public static partial class Protocol
     {
-        private static readonly Regex _validTopicChannelNameRegex = new Regex(@"^[\.a-zA-Z0-9_-]+(#ephemeral)?$", RegexOptions.Compiled);
+        private static readonly Regex _validTopicChannelNameRegex =
+            new Regex(@"^[\.a-zA-Z0-9_-]+(#ephemeral)?$", RegexOptions.Compiled);
 
         /// <summary>
         /// IsValidTopicName checks a topic name for correctness

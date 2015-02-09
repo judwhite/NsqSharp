@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Net;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Web;
+using Newtonsoft.Json.Linq;
 using NsqSharp.Channels;
+using NsqSharp.Extensions;
 using NsqSharp.Go;
 
 namespace NsqSharp
@@ -46,11 +50,9 @@ namespace NsqSharp
     public interface IDiscoveryFilter
     {
         /// <summary>
-        /// TODO
+        /// Filters a list of NSQD addresses.
         /// </summary>
-        /// <param name="nsqds">TODO</param>
-        /// <returns>TODO</returns>
-        string[] Filter(string[] nsqds);
+        Collection<string> Filter(IEnumerable<string> nsqds);
     }
 
     /// <summary>
@@ -408,7 +410,109 @@ namespace NsqSharp
         {
             // add some jitter so that multiple consumers discovering the same topic,
             // when restarted at the same time, dont all connect at once.
-            var jitter = _rng.
+            var jitter = new TimeSpan((long)(_rng.Float64() * _config.LookupdPollJitter * _config.LookupdPollInterval.Ticks));
+
+            bool doLoop = true;
+
+            Select
+                .CaseReceive(Time.After(jitter))
+                .CaseReceive(_exitChan, o => doLoop = false)
+                .NoDefault();
+
+            var ticker = new Ticker(_config.LookupdPollInterval);
+
+            using (var select =
+                    Select
+                        .CaseReceive(ticker.C, o => queryLookupd())
+                        .CaseReceive(_lookupdRecheckChan, o => queryLookupd())
+                        .CaseReceive(_exitChan, o => doLoop = false)
+                        .NoDefault(defer: true))
+            {
+                while (doLoop)
+                {
+                    select.Execute();
+                }
+            }
+
+            ticker.Stop();
+            log(LogLevel.Info, "exiting lookupdLoop");
+            _wg.Done();
+        }
+
+        private string nextLookupdEndpoint()
+        {
+            string addr;
+            int num;
+
+            _mtx.EnterReadLock();
+            try
+            {
+                addr = _lookupdHTTPAddrs[_lookupdQueryIndex];
+                num = _lookupdHTTPAddrs.Count;
+            }
+            finally
+            {
+                _mtx.ExitReadLock();
+            }
+
+            _lookupdQueryIndex = (_lookupdQueryIndex + 1) % num;
+
+            string urlString = addr;
+            if (!urlString.Contains("://"))
+                urlString = "http://" + addr;
+
+            // TODO: handle parsing url better... maybe
+            var u = new Uri(urlString);
+            urlString = string.Format("{0}://{1}/lookup?topic={2}", u.Scheme, u.Authority, _topic);
+            return urlString;
+        }
+
+        private void queryLookupd()
+        {
+            string endpoint = nextLookupdEndpoint();
+
+            log(LogLevel.Info, "querying nsqlookupd {0}", endpoint);
+
+            JObject data;
+            try
+            {
+                data = ApiRequest.NegotiateV1("GET", endpoint);
+            }
+            catch (Exception ex)
+            {
+                log(LogLevel.Error, "error querying nsqlookupd ({0}) - {1}", endpoint, ex);
+                return;
+            }
+
+            var nsqAddrs = new Collection<string>();
+            foreach (var producer in data["producers"])
+            {
+                var broadcastAddress = (string)producer["broadcast_address"];
+                var port = (int)producer["tcp_port"];
+                var joined = string.Format("{0}:{1}", broadcastAddress, port);
+                nsqAddrs.Add(joined);
+            }
+
+            if (_behaviorDelegate != null)
+            {
+                nsqAddrs = _behaviorDelegate.Filter(nsqAddrs);
+            }
+
+            foreach (var addr in nsqAddrs)
+            {
+                try
+                {
+                    ConnectToNSQLookupd(addr);
+                }
+                catch (ErrAlreadyConnected)
+                {
+                    // ignore
+                }
+                catch (Exception ex)
+                {
+                    log(LogLevel.Error, "({0}) error connecting to nsqd - {1}", addr, ex);
+                }
+            }
         }
 
         // TODO
@@ -418,12 +522,16 @@ namespace NsqSharp
             var redistributeTicker = new Ticker(TimeSpan.FromSeconds(5));
 
             bool doLoop = true;
-            while (doLoop)
+            using (var select =
+                    Select
+                        .CaseReceive(redistributeTicker.C, o => redistributeRDY())
+                        .CaseReceive(_exitChan, o => doLoop = false)
+                        .NoDefault(defer: true))
             {
-                Select
-                    .CaseReceive(redistributeTicker.C, o => redistributeRDY())
-                    .CaseReceive(_exitChan, o => doLoop = false)
-                    .NoDefault();
+                while (doLoop)
+                {
+                    select.Execute();
+                }
             }
 
             redistributeTicker.Stop();

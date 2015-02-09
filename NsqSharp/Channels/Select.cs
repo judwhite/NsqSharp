@@ -329,40 +329,31 @@ namespace NsqSharp.Channels
         }
 
         /// <summary>
-        /// Defers execution to use the same build-up in a loop. Call <see cref="Execute"/> inside the loop, and wrap
-        /// in a using or manually call <see cref="Dispose"/> whend one.
-        /// </summary>
-        public SelectCase Defer()
-        {
-            _defer = true;
-            return this;
-        }
-
-        /// <summary>
         /// Executes a default action if no channels are ready.
         /// </summary>
         /// <param name="func">The callback function to execute if no channels are ready. Can be <c>null</c>.</param>
-        public SelectCase Default(Action func)
+        public void Default(Action func)
         {
             if (_isExecuteCalled)
                 throw new Exception("select already executed");
 
             _default = func;
             _hasDefault = true;
-            if (!_defer)
-                Execute();
-            return this;
+            Execute();
         }
 
         /// <summary>
         /// Specifies that no action should be taken if no channels are ready. Blocks until one channel is ready and its
         /// callback function has been executed.
         /// </summary>
-        public SelectCase NoDefault()
+        /// <param name="defer">Defers execution to use the same build-up in a loop. Call <see cref="Execute"/> inside the
+        /// loop, and wrap in a using or manually call <see cref="Dispose"/> when done.</param>
+        public SelectCase NoDefault(bool defer = false)
         {
             if (_isExecuteCalled)
                 throw new Exception("select already executed");
 
+            _defer = defer;
             if (!_defer)
                 Execute();
             return this;
@@ -470,7 +461,7 @@ namespace NsqSharp.Channels
         }
 
         /// <summary>
-        /// Executes the select. Only necessary if <see cref="Defer"/> was called.
+        /// Executes the select. Only necessary if defer = <c>true</c> was passed to <see cref="NoDefault"/>.
         /// </summary>
         public void Execute()
         {
@@ -624,7 +615,7 @@ namespace NsqSharp.Channels
         }
 
         /// <summary>
-        /// Clean up references. Only necessary if <see cref="Defer"/> was called.
+        /// Clean up references. Only necessary if defer = <c>true</c> was passed to <see cref="NoDefault"/>.
         /// </summary>
         public void Dispose()
         {
