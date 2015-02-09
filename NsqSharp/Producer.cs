@@ -142,6 +142,7 @@ namespace NsqSharp
                 _exitChan.Close();
                 close();
                 _wg.Wait();
+                Thread.Sleep(500);
             }
         }
 
@@ -354,8 +355,7 @@ namespace NsqSharp
             while (doLoop)
             {
                 Select
-                    .DebugName("Producer::router")
-                    .CaseReceive("_transactionChan", _transactionChan, t =>
+                    .CaseReceive(_transactionChan, t =>
                     {
                         _transactions.Add(t);
                         try
@@ -368,17 +368,17 @@ namespace NsqSharp
                             close();
                         }
                     })
-                    .CaseReceive("_responseChan", _responseChan, data =>
+                    .CaseReceive(_responseChan, data =>
                         popTransaction(FrameType.Response, data)
                     )
-                    .CaseReceive("_errorChan", _errorChan, data =>
+                    .CaseReceive(_errorChan, data =>
                         popTransaction(FrameType.Error, data)
                     )
-                    .CaseReceive("_closeChan", _closeChan, o =>
+                    .CaseReceive(_closeChan, o =>
                     {
                         doLoop = false;
                     })
-                    .CaseReceive("_exitChan", _exitChan, o =>
+                    .CaseReceive(_exitChan, o =>
                     {
                         doLoop = false;
                     })

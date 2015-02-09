@@ -19,7 +19,10 @@ namespace NsqSharp.Channels
         private readonly AutoResetEvent _sent = new AutoResetEvent(initialState: false);
         private readonly AutoResetEvent _receiveComplete = new AutoResetEvent(initialState: false);
 
-        private readonly List<AutoResetEvent> _listeners = new List<AutoResetEvent>();
+        private readonly List<AutoResetEvent> _listenForSend = new List<AutoResetEvent>();
+        private readonly List<AutoResetEvent> _listenForReceive = new List<AutoResetEvent>();
+        private readonly object _listenForSendLocker = new object();
+        private readonly object _listenForReceiveLocker = new object();
 
         private readonly TimeSpan _infiniteTimeSpan = TimeSpan.FromMilliseconds(-1);
 
@@ -68,18 +71,21 @@ namespace NsqSharp.Channels
 
             lock (_sendLocker)
             {
-                lock (_bufferLocker)
+                if (_bufferSize != 0)
                 {
-                    if (_buffer.Count < _bufferSize)
+                    lock (_bufferLocker)
                     {
-                        if (timeout == _infiniteTimeSpan)
-                            timeout = TimeSpan.FromMilliseconds(20);
+                        if (_buffer.Count < _bufferSize)
+                        {
+                            if (timeout == _infiniteTimeSpan)
+                                timeout = TimeSpan.FromMilliseconds(20);
+                        }
                     }
                 }
 
                 _isReadyToSend = true;
 
-                PumpListeners();
+                PumpListenForSend();
 
                 bool success = _readyToReceive.WaitOne(timeout.Milliseconds);
                 if (_isClosed)
@@ -174,7 +180,7 @@ namespace NsqSharp.Channels
                 _isReadyToReceive = true;
                 _readyToReceive.Set();
 
-                PumpListeners();
+                PumpListenForReceive();
 
                 _sent.WaitOne();
                 lock (_bufferLocker)
@@ -226,18 +232,30 @@ namespace NsqSharp.Channels
 
                 _isClosed = true;
 
-                PumpListeners();
+                PumpListenForSend();
+                PumpListenForReceive();
 
                 _sent.Set();
                 _readyToReceive.Set();
             }
         }
 
-        private void PumpListeners()
+        private void PumpListenForSend()
         {
-            lock (_listeners)
+            lock (_listenForSendLocker)
             {
-                foreach (var listener in _listeners)
+                foreach (var listener in _listenForSend)
+                {
+                    listener.Set();
+                }
+            }
+        }
+
+        private void PumpListenForReceive()
+        {
+            lock (_listenForReceiveLocker)
+            {
+                foreach (var listener in _listenForReceive)
                 {
                     listener.Set();
                 }
@@ -289,19 +307,35 @@ namespace NsqSharp.Channels
             return Receive();
         }
 
-        void IChan.AddListener(AutoResetEvent func)
+        void IChan.AddListenForSend(AutoResetEvent func)
         {
-            lock (_listeners)
+            lock (_listenForSendLocker)
             {
-                _listeners.Add(func);
+                _listenForSend.Add(func);
             }
         }
 
-        void IChan.RemoveListener(AutoResetEvent autoResetEvent)
+        void IChan.AddListenForReceive(AutoResetEvent func)
         {
-            lock (_listeners)
+            lock (_listenForReceiveLocker)
             {
-                _listeners.Remove(autoResetEvent);
+                _listenForReceive.Add(func);
+            }
+        }
+
+        void IChan.RemoveListenForSend(AutoResetEvent autoResetEvent)
+        {
+            lock (_listenForSendLocker)
+            {
+                _listenForSend.Remove(autoResetEvent);
+            }
+        }
+
+        void IChan.RemoveListenForReceive(AutoResetEvent autoResetEvent)
+        {
+            lock (_listenForReceiveLocker)
+            {
+                _listenForReceive.Remove(autoResetEvent);
             }
         }
 

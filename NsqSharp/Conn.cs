@@ -306,6 +306,9 @@ namespace NsqSharp
         /// </summary>
         public void WriteCommand(Command cmd)
         {
+            if (cmd == null)
+                throw new ArgumentNullException("cmd");
+
             try
             {
                 lock (_mtx)
@@ -316,7 +319,7 @@ namespace NsqSharp
             }
             catch (Exception ex)
             {
-                log(LogLevel.Error, "IO error - {0}", ex.Message);
+                log(LogLevel.Error, "IO error - {0}", ex);
                 _delegate.OnIOError(this, ex);
                 throw;
             }
@@ -335,7 +338,7 @@ namespace NsqSharp
         /// </summary>
         public void Flush()
         {
-            // TODO: no-op for now. TcpClient doesn't nicely break apart read/write streams; may need to use Sockets
+            _conn.Flush();
         }
 
         private IdentifyResponse identify()
@@ -397,7 +400,7 @@ namespace NsqSharp
 
                 string respJson = Encoding.UTF8.GetString(data);
                 log(LogLevel.Debug, "IDENTIFY response: {0}", respJson);
-                
+
                 var resp = JsonConvert.DeserializeObject<IdentifyResponse>(respJson);
 
                 _maxRdyCount = resp.MaxRdyCount;
@@ -523,7 +526,7 @@ namespace NsqSharp
                         {
                             if (_closeFlag != 1)
                             {
-                                log(LogLevel.Error, "IO error - {0}", ex.Message);
+                                log(LogLevel.Error, "IO error - {0}", ex);
                                 _delegate.OnIOError(this, ex);
                             }
                             break;

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace NsqSharp.Go
 {
@@ -10,7 +12,8 @@ namespace NsqSharp.Go
         // https://msdn.microsoft.com/en-us/library/system.net.sockets.socket.setsocketoption.aspx
 
         private readonly TcpClient _tcpClient;
-        private readonly NetworkStream _stream;
+        private readonly NetworkStream _networkStream;
+        private readonly BufferedStream _bufferedStream;
         private readonly object _readLocker = new object();
         private readonly object _writeLocker = new object();
         private readonly object _closeLocker = new object();
@@ -20,7 +23,8 @@ namespace NsqSharp.Go
         {
             _tcpClient = new TcpClient();
             _tcpClient.Connect(hostname, port);
-            _stream = _tcpClient.GetStream();
+            _networkStream = _tcpClient.GetStream();
+            _bufferedStream = new BufferedStream(_networkStream);
         }
 
         public TimeSpan ReadTimeout
@@ -39,7 +43,7 @@ namespace NsqSharp.Go
         {
             lock (_readLocker)
             {
-                return _stream.Read(b, 0, b.Length);
+                return _networkStream.Read(b, 0, b.Length);
             }
         }
 
@@ -47,7 +51,7 @@ namespace NsqSharp.Go
         {
             lock (_writeLocker)
             {
-                _stream.Write(b, 0, b.Length);
+                _bufferedStream.Write(b, 0, b.Length);
                 Debug.WriteLine("[NET] wrote {0:#,0} bytes", b.Length);
                 return b.Length;
             }
@@ -58,15 +62,19 @@ namespace NsqSharp.Go
             if (_isClosed)
                 return;
 
-            lock (_closeLocker)
+            lock (_writeLocker)
             {
-                if (_isClosed)
-                    return;
+                lock (_closeLocker)
+                {
+                    if (_isClosed)
+                        return;
 
-                _isClosed = true;
+                    _isClosed = true;
 
-                _stream.Close();
-                _tcpClient.Close();
+                    _bufferedStream.Close();
+                    _networkStream.Close();
+                    _tcpClient.Close();
+                }
             }
         }
 
@@ -80,6 +88,11 @@ namespace NsqSharp.Go
         {
             // TODO - No separate read/write streams
             Close();
+        }
+
+        public void Flush()
+        {
+            _bufferedStream.Flush();
         }
     }
 }

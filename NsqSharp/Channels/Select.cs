@@ -177,8 +177,11 @@ namespace NsqSharp.Channels
         private readonly Dictionary<SendCase, Tuple<Action, object>> _sendFuncs =
             new Dictionary<SendCase, Tuple<Action, object>>();
 
+        private static readonly TimeSpan _trySendTimeout = TimeSpan.FromMilliseconds(20);
+
         private Action _default;
         private bool _hasDefault;
+        private AutoResetEvent _ready;
 
         private bool _isExecuteCalled;
 
@@ -207,7 +210,7 @@ namespace NsqSharp.Channels
                     },
                     func == null
                         ? (Action<object, bool>)null
-                        : (v, ok) => func(v != null ? (T)v : default(T), ok)
+                        : (v, ok) => func((T)v, ok)
                 );
             }
 
@@ -224,7 +227,22 @@ namespace NsqSharp.Channels
         /// Default or NoDefault.</returns>
         public SelectCase CaseReceive<T>(string debugName, IReceiveOnlyChan<T> c, Action<T> func = null)
         {
-            return CaseReceiveOk(debugName, c, func == null ? (Action<T, bool>)null : (v, ok) => func(v));
+            //return CaseReceiveOk(debugName, c, func == null ? (Action<T, bool>)null : (v, ok) => func(v));
+            if (c != null)
+            {
+                _receiveFuncs.Add(
+                    new ReceiveCase
+                    {
+                        Chan = c,
+                        DebugName = (debugName != null ? "<-" + DebugName + "::" + debugName : null)
+                    },
+                    func == null
+                        ? (Action<object, bool>)null
+                        : (v, ok) => func((T)v)
+                );
+            }
+
+            return this;
         }
 
         /// <summary>
@@ -319,6 +337,9 @@ namespace NsqSharp.Channels
                 var c = kvp.Key.Chan;
                 var f = kvp.Value;
 
+                if (!c.IsReadyToSend)
+                    continue;
+
                 object o = null;
                 bool ok = false;
                 bool gotValue = false;
@@ -341,7 +362,7 @@ namespace NsqSharp.Channels
                             {
                                 Debug.WriteLine("[{0}] Closed channel {1}...", GetThreadName(), kvp.Key.DebugName);
                                 gotValue = true;
-                            }                            
+                            }
                         }
                     }
                     finally
@@ -374,16 +395,13 @@ namespace NsqSharp.Channels
                 var f = kvp.Value.Item1;
                 var d = kvp.Value.Item2;
 
-                if (c.IsClosed)
-                    continue;
-
                 bool sentValue = false;
                 if (c.TryLockSend())
                 {
                     try
                     {
                         Debug.WriteLine("[{0}] Trying {1}...", GetThreadName(), kvp.Key.DebugName);
-                        sentValue = c.TrySend(d, TimeSpan.FromMilliseconds(20));
+                        sentValue = c.TrySend(d, _trySendTimeout);
                     }
                     finally
                     {
@@ -415,8 +433,7 @@ namespace NsqSharp.Channels
 
         private void Execute()
         {
-            Exception caseHandlerException = null;
-            AutoResetEvent ready = null;
+            Exception caseHandlerException;
 
             try
             {
@@ -464,16 +481,16 @@ namespace NsqSharp.Channels
                 }
                 else
                 {
-                    ready = new AutoResetEvent(initialState: false);
+                    _ready = new AutoResetEvent(initialState: false);
 
                     foreach (var c in _sendFuncs.Keys)
                     {
-                        c.Chan.AddListener(ready);
+                        c.Chan.AddListenForReceive(_ready);
                     }
 
                     foreach (var c in _receiveFuncs.Keys)
                     {
-                        c.Chan.AddListener(ready);
+                        c.Chan.AddListenForSend(_ready);
                     }
 
                     bool isDone = CheckCases(out caseHandlerException);
@@ -497,14 +514,14 @@ namespace NsqSharp.Channels
                                 }
                             }
 #else
-                            ready.WaitOne(TimeSpan.FromMilliseconds(50));
+                            _ready.WaitOne();
 #endif
                             done = CheckCases(out caseHandlerException);
                         } while (!done);
                     }
                 }
 
-                CleanUp(ready);
+                CleanUp();
 
 #if DEBUG
                 RemoveThreadFromDebugLog();
@@ -514,10 +531,11 @@ namespace NsqSharp.Channels
             }
             catch (Exception)
             {
-                CleanUp(ready);
+                CleanUp();
 #if DEBUG
                 RemoveThreadFromDebugLog();
 #endif
+                throw;
             }
 
             if (caseHandlerException != null)
@@ -558,21 +576,22 @@ namespace NsqSharp.Channels
             return string.Format("{0}/{1}", Thread.CurrentThread.ManagedThreadId, DebugName);
         }
 
-        private void CleanUp(AutoResetEvent ready)
+        private void CleanUp()
         {
-            if (ready != null)
+            if (_ready != null)
             {
                 foreach (var c in _receiveFuncs.Keys)
                 {
-                    c.Chan.RemoveListener(ready);
+                    c.Chan.RemoveListenForSend(_ready);
                 }
 
                 foreach (var c in _sendFuncs.Keys)
                 {
-                    c.Chan.RemoveListener(ready);
+                    c.Chan.RemoveListenForReceive(_ready);
                 }
 
-                ready.Dispose();
+                _ready.Dispose();
+                _ready = null;
             }
 
             _receiveFuncs.Clear();

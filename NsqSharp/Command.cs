@@ -17,6 +17,8 @@ namespace NsqSharp
     /// </summary>
     public class Command
     {
+        private static readonly BigEndian _bigEndian = Binary.BigEndian;
+
         private static readonly byte[] IDENTIFY_BYTES = Encoding.UTF8.GetBytes("IDENTIFY");
         private static readonly byte[] AUTH_BYTES = Encoding.UTF8.GetBytes("AUTH");
         private static readonly byte[] REGISTER_BYTES = Encoding.UTF8.GetBytes("REGISTER");
@@ -32,8 +34,8 @@ namespace NsqSharp
         private static readonly byte[] CLS_BYTES = Encoding.UTF8.GetBytes("CLS");
         private static readonly byte[] NOP_BYTES = Encoding.UTF8.GetBytes("NOP");
 
-        private static readonly byte[] byteSpace = Encoding.UTF8.GetBytes(" ");
-        private static readonly byte[] byteNewLine = Encoding.UTF8.GetBytes("\n");
+        private const byte byteSpace = (byte)' ';
+        private const byte byteNewLine = (byte)'\n';
 
         /// <summary>Name</summary>
         public byte[] Name { get; set; }
@@ -54,8 +56,18 @@ namespace NsqSharp
         /// Initializes a new instance of the <see cref="Command" /> class.
         /// </summary>
         public Command(byte[] name, byte[] body, params string[] parameters)
-            : this(name, body, parameters == null ? null : parameters.Select(p => string.IsNullOrEmpty(p) ? null : Encoding.UTF8.GetBytes(p)).Where(p => p != null).ToList())
         {
+            Name = name;
+            Body = body;
+
+            if (parameters != null)
+            {
+                Params = new List<byte[]>(parameters.Length);
+                foreach (var param in parameters)
+                {
+                    Params.Add(Encoding.UTF8.GetBytes(param));
+                }
+            }
         }
 
         /// <summary>
@@ -63,9 +75,6 @@ namespace NsqSharp
         /// </summary>
         public Command(byte[] name, byte[] body, List<byte[]> parameters)
         {
-            if (name == null)
-                throw new ArgumentNullException("name");
-
             Name = name;
             Body = body;
             Params = parameters;
@@ -93,30 +102,49 @@ namespace NsqSharp
         /// </summary>
         public long WriteTo(IWriter w)
         {
-            long total = 0;
+            int size = Name.Length + 1 + (Body == null ? 0 : Body.Length + 4);
+            if (Params != null)
+            {
+                foreach (var param in Params)
+                {
+                    size += param.Length + 1;
+                }
+            }
 
-            total += w.Write(Name);
+            var buf = new byte[size];
+            int j = 0;
+
+            for (int i = 0; i < Name.Length; i++, j++)
+            {
+                buf[j] = Name[i];
+            }
 
             if (Params != null)
             {
                 foreach (var param in Params)
                 {
-                    total += w.Write(byteSpace);
-                    total += w.Write(param);
+                    buf[j++] = byteSpace;
+                    for (int i = 0; i < param.Length; i++, j++)
+                    {
+                        buf[j] = param[i];
+                    }
                 }
             }
 
-            total += w.Write(byteNewLine);
+            buf[j++] = byteNewLine;
 
             if (Body != null)
             {
-                byte[] buf = new byte[4];
-                Binary.BigEndian.PutUint32(buf, Body.Length);
-                total += w.Write(buf);
-                total += w.Write(Body);
+                _bigEndian.PutUint32(buf, Body.Length, j);
+                j += 4;
+
+                for (int i = 0; i < Body.Length; i++, j++)
+                {
+                    buf[j] = Body[i];
+                }
             }
 
-            return total;
+            return w.Write(buf);
         }
 
         /// <summary>
