@@ -60,9 +60,9 @@ namespace NsqSharp.Go
         public void PutUint32(byte[] b, Int32 v, int offset)
         {
             b[offset] = (byte)(v >> 24);
-            b[offset+1] = (byte)((v >> 16) & 0xFF);
-            b[offset+2] = (byte)((v >> 8) & 0xFF);
-            b[offset+3] = (byte)(v & 0xFF);
+            b[offset + 1] = (byte)((v >> 16) & 0xFF);
+            b[offset + 2] = (byte)((v >> 8) & 0xFF);
+            b[offset + 3] = (byte)(v & 0xFF);
         }
 
         /// <summary>

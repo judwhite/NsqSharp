@@ -93,14 +93,7 @@ namespace NsqSharp
             return name;
         }
 
-        /// <summary>
-        /// WriteTo implements the WriterTo interface and
-        /// serializes the Command to the supplied Writer.
-        ///
-        /// It is suggested that the target Writer is buffered
-        /// to avoid performing many system calls.
-        /// </summary>
-        public long WriteTo(IWriter w)
+        internal int GetByteCount()
         {
             int size = Name.Length + 1 + (Body == null ? 0 : Body.Length + 4);
             if (Params != null)
@@ -111,7 +104,18 @@ namespace NsqSharp
                 }
             }
 
-            var buf = new byte[size];
+            return size;
+        }
+
+        /// <summary>
+        /// WriteTo implements the WriterTo interface and
+        /// serializes the Command to the supplied Writer.
+        ///
+        /// It is suggested that the target Writer is buffered
+        /// to avoid performing many system calls.
+        /// </summary>
+        public long WriteTo(IWriter w, byte[] buf)
+        {
             int j = 0;
 
             for (int i = 0; i < Name.Length; i++, j++)
@@ -144,7 +148,7 @@ namespace NsqSharp
                 }
             }
 
-            return w.Write(buf);
+            return w.Write(buf, 0, j);
         }
 
         /// <summary>

@@ -172,7 +172,7 @@ namespace NsqSharp
 
             try
             {
-                Write(Protocol.MagicV2);
+                Write(Protocol.MagicV2, 0, Protocol.MagicV2.Length);
             }
             catch (Exception ex)
             {
@@ -294,11 +294,14 @@ namespace NsqSharp
         /// <summary>
         /// Write performs a deadlined write on the underlying TCP connection
         /// </summary>
-        public int Write(byte[] p)
+        public int Write(byte[] p, int offset, int length)
         {
             // SetWriteDeadline handled in Connect
-            return _w.Write(p);
+            return _w.Write(p, offset, length);
         }
+
+        private const int _bigBufSize = 4096;
+        private static readonly byte[] _bigBuf = new byte[_bigBufSize];
 
         /// <summary>
         /// WriteCommand is a goroutine safe method to write a Command
@@ -313,7 +316,13 @@ namespace NsqSharp
             {
                 lock (_mtx)
                 {
-                    cmd.WriteTo(this);
+                    byte[] buf = _bigBuf;
+                    int size = cmd.GetByteCount();
+                    if (_bigBufSize > size)
+                        buf = new byte[size];
+
+                    cmd.WriteTo(this, buf);
+
                     Flush();
                 }
             }

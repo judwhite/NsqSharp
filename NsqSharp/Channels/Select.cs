@@ -178,6 +178,7 @@ namespace NsqSharp.Channels
             new Dictionary<SendCase, Tuple<Action, object>>();
 
         private static readonly TimeSpan _trySendTimeout = TimeSpan.FromMilliseconds(20);
+        private static readonly TimeSpan _pumpTimeout = TimeSpan.FromSeconds(5); // TODO: Remove
 
         private Action _default;
         private bool _hasDefault;
@@ -502,7 +503,7 @@ namespace NsqSharp.Channels
                         {
 
 #if DEBUG
-                            bool signaled = ready.WaitOne(TimeSpan.FromMilliseconds(20));
+                            bool signaled = _ready.WaitOne(_pumpTimeout);
                             if (!signaled && !string.IsNullOrEmpty(DebugName))
                             {
                                 Debug.WriteLine(string.Format("[{0}] Waiting...", GetThreadName()));
@@ -514,7 +515,7 @@ namespace NsqSharp.Channels
                                 }
                             }
 #else
-                            _ready.WaitOne();
+                            _ready.WaitOne(_pumpTimeout);
 #endif
                             done = CheckCases(out caseHandlerException);
                         } while (!done);

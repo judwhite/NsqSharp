@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
-using System.Threading;
 
 namespace NsqSharp.Go
 {
@@ -47,13 +46,13 @@ namespace NsqSharp.Go
             }
         }
 
-        public int Write(byte[] b)
+        public int Write(byte[] b, int offset, int length)
         {
             lock (_writeLocker)
             {
-                _bufferedStream.Write(b, 0, b.Length);
+                _networkStream.Write(b, offset, length);
                 Debug.WriteLine("[NET] wrote {0:#,0} bytes", b.Length);
-                return b.Length;
+                return length;
             }
         }
 
@@ -68,6 +67,8 @@ namespace NsqSharp.Go
                 {
                     if (_isClosed)
                         return;
+
+                    Flush();
 
                     _isClosed = true;
 

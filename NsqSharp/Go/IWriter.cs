@@ -8,8 +8,7 @@
         /// <summary>
         /// Write writes data to the connection.
         /// </summary>
-        /// <param name="b">The byte array to write.</param>
         /// <returns>The number of bytes written.</returns>
-        int Write(byte[] b);
+        int Write(byte[] b, int offset, int length);
     }
 }
