@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
-using System.Net;
 using System.Security.Cryptography;
 using System.Threading;
-using System.Web;
 using Newtonsoft.Json.Linq;
 using NsqSharp.Channels;
 using NsqSharp.Extensions;
@@ -101,9 +98,9 @@ namespace NsqSharp
     {
         private static long _instCount;
 
-        private ulong _messagesReceived;
-        private ulong _messagesFinished;
-        private ulong _messagesRequeued;
+        private long _messagesReceived;
+        private long _messagesFinished;
+        private long _messagesRequeued;
         private long _totalRdyCount;
         private long _backoffDuration;
         private int _maxInFlight;
@@ -439,6 +436,10 @@ namespace NsqSharp
             _wg.Done();
         }
 
+        /// <summary>
+        /// return the next lookupd endpoint to query
+        /// keeping track of which one was last used
+        /// </summary>
         private string nextLookupdEndpoint()
         {
             string addr;
@@ -537,6 +538,317 @@ namespace NsqSharp
             redistributeTicker.Stop();
             log(LogLevel.Info, "rdyLoop exiting");
             _wg.Done();
+        }
+
+        /// <summary>
+        /// ConnectToNSQD takes multiple nsqd addresses to connect directly to.
+        ///
+        /// It is recommended to use <see cref="ConnectToNSQLookupd"/> so that topics are discovered
+        /// automatically.  This method is useful when you want to connect to local instance.
+        /// </summary>
+        public void ConnectToNSQDs(IEnumerable<string> addresses)
+        {
+            if (addresses == null)
+                throw new ArgumentNullException("addresses");
+
+            foreach (var addr in addresses)
+            {
+                ConnectToNSQD(addr);
+            }
+        }
+
+        /// <summary>
+        /// ConnectToNSQD takes a nsqd address to connect directly to.
+        ///
+        /// It is recommended to use <see cref="ConnectToNSQLookupd"/> so that topics are discovered
+        /// automatically.  This method is useful when you want to connect to a single, local,
+        /// instance.
+        /// </summary>
+        public void ConnectToNSQD(string addr)
+        {
+            if (string.IsNullOrEmpty(addr))
+                throw new ArgumentNullException("addr");
+
+            if (_stopFlag == 1)
+            {
+                throw new Exception("consumer stopped");
+            }
+
+            if (_runningHandlers == 0)
+            {
+                throw new Exception("no handlers");
+            }
+
+            _connectedFlag = 1;
+
+            var conn = new Conn(addr, _config, new ConsumerConnDelegate { r = this });
+            // TODO: Check log format
+            conn.SetLogger(_logger, _logLvl, string.Format("{0} [{1}/{2}] ({{0}})", _id, _topic, _channel));
+
+            _mtx.EnterWriteLock();
+            try
+            {
+                bool pendingOk = _pendingConnections.ContainsKey(addr);
+                bool ok = _connections.ContainsKey(addr);
+                if (pendingOk || ok)
+                {
+                    throw new ErrAlreadyConnected();
+                }
+                _pendingConnections[addr] = conn;
+                if (!_nsqdTCPAddrs.Contains(addr))
+                    _nsqdTCPAddrs.Add(addr);
+            }
+            finally
+            {
+                _mtx.ExitWriteLock();
+            }
+
+            log(LogLevel.Info, "({0}) connecting to nsqd", addr);
+
+            var cleanupConnection = new Action(() =>
+            {
+                _mtx.EnterWriteLock();
+                try
+                {
+                    _pendingConnections.Remove(addr);
+                }
+                finally
+                {
+                    _mtx.ExitWriteLock();
+                }
+            });
+
+            IdentifyResponse resp;
+            try
+            {
+                resp = conn.Connect();
+            }
+            catch (Exception)
+            {
+                cleanupConnection();
+                throw;
+            }
+
+            if (resp != null)
+            {
+                if (resp.MaxRdyCount < getMaxInFlight())
+                {
+                    log(LogLevel.Warning, "({0}) max RDY count {1} < consumer max in flight {2}, truncation possible",
+                        conn, resp.MaxRdyCount, getMaxInFlight());
+                }
+            }
+
+            var cmd = Command.Subscribe(_topic, _channel);
+
+            try
+            {
+                conn.WriteCommand(cmd);
+            }
+            catch (Exception ex)
+            {
+                cleanupConnection();
+                throw new Exception(string.Format("[{0}] failed to subscribe to {1}:{2} - {3}",
+                    conn, _topic, _channel, ex));
+            }
+
+            _mtx.EnterWriteLock();
+            try
+            {
+                _pendingConnections.Remove(addr);
+                _connections[addr] = conn;
+            }
+            finally
+            {
+                _mtx.ExitWriteLock();
+            }
+
+            // pre-emptive signal to existing connections to lower their RDY count
+            foreach (var c in conns())
+            {
+                maybeUpdateRDY(c);
+            }
+        }
+
+        /// <summary>
+        /// DisconnectFromNSQD closes the connection to and removes the specified
+        /// `nsqd` address from the list
+        /// </summary>
+        public void DisconnectFromNSQD(string addr)
+        {
+            if (string.IsNullOrEmpty(addr))
+                throw new ArgumentNullException("addr");
+
+            _mtx.EnterWriteLock();
+            try
+            {
+                int idx = _nsqdTCPAddrs.IndexOf(addr);
+                if (idx != -1)
+                    throw new ErrNotConnected();
+
+                _nsqdTCPAddrs.RemoveAt(idx);
+
+                Conn pendingConn, conn;
+                if (_connections.TryGetValue(addr, out conn))
+                {
+                    conn.Close();
+                }
+                else if (_pendingConnections.TryGetValue(addr, out pendingConn))
+                {
+                    pendingConn.Close();
+                }
+            }
+            finally
+            {
+                _mtx.ExitWriteLock();
+            }
+        }
+
+        /// <summary>
+        /// DisconnectFromNSQLookupd removes the specified `nsqlookupd` address
+        /// from the list used for periodic discovery.
+        /// </summary>
+        public void DisconnectFromNSQLookupd(string addr)
+        {
+            if (string.IsNullOrEmpty(addr))
+                throw new ArgumentNullException("addr");
+
+            _mtx.EnterWriteLock();
+            try
+            {
+                if (!_lookupdHTTPAddrs.Contains(addr))
+                    throw new ErrNotConnected();
+
+                if (_lookupdHTTPAddrs.Count == 1)
+                    throw new Exception(string.Format("cannot disconnect from only remaining nsqlookupd HTTP address {0}", addr));
+
+                _lookupdHTTPAddrs.Remove(addr);
+            }
+            finally
+            {
+                _mtx.ExitWriteLock();
+            }
+        }
+
+        internal void onConnMessage(Conn c, Message msg)
+        {
+            Interlocked.Decrement(ref _totalRdyCount);
+            Interlocked.Increment(ref _messagesReceived);
+            _incomingMessages.Send(msg);
+            maybeUpdateRDY(c);
+        }
+
+        internal void onConnMessageFinished(Conn c, Message msg)
+        {
+            Interlocked.Increment(ref _messagesFinished);
+        }
+
+        internal void onConnMessageRequeued(Conn c, Message msg)
+        {
+            Interlocked.Increment(ref _messagesRequeued);
+        }
+
+        internal void onConnBackoff(Conn c)
+        {
+            startStopContinueBackoff(c, success: false);
+        }
+
+        internal void onConnResume(Conn c)
+        {
+            startStopContinueBackoff(c, success: true);
+        }
+
+        private void startStopContinueBackoff(Conn conn, bool success)
+        {
+            if (inBackoffBlock())
+                return;
+
+            bool backoffUpdated;
+            int backoffCounter;
+            _backoffMtx.EnterWriteLock();
+            try
+            {
+                backoffUpdated = false;
+                if (success)
+                {
+                    if (_backoffCounter > 0)
+                    {
+                        _backoffCounter--;
+                        backoffUpdated = true;
+                    }
+                }
+                else
+                {
+                    int maxBackoffCount = (int)Math.Max(1, Math.Ceiling(
+                        Math.Log(_config.MaxBackoffDuration.TotalSeconds, newBase: 2)));
+                    if (_backoffCounter < maxBackoffCount)
+                    {
+                        _backoffCounter++;
+                        backoffUpdated = true;
+                    }
+                }
+
+                // TODO: PR on go-nsq to store r.backoffCounter in local variable
+                backoffCounter = _backoffCounter;
+            }
+            finally
+            {
+                _backoffMtx.ExitWriteLock();
+            }
+
+            if (backoffCounter == 0 && backoffUpdated)
+            {
+                // exit backoff
+                long count = perConnMaxInFlighht();
+                log(LogLevel.Warning, "exiting backoff, returning all to RDY {0}", count);
+                foreach (var c in conns())
+                {
+                    updateRDY(c, count);
+                }
+            }
+            else if (backoffCounter > 0)
+            {
+                // start or continue backoff
+                var backoffDuration = backoffDurationForCount(backoffCounter);
+                _backoffDuration = backoffDuration.Nanoseconds();
+                Time.AfterFunc(backoffDuration, backoff);
+
+                // TODO: review log format
+                log(LogLevel.Warning, "backing off for {0:0.0000} seconds (backoff level {1}), setting all to RDY 0",
+                    backoffDuration.TotalSeconds, backoffCounter);
+
+                // send RDY 0 immediately (to *all* connections)
+                foreach (var c in conns())
+                {
+                    updateRDY(c, 0);
+                }
+            }
+        }
+
+        private void backoff()
+        {
+            _backoffDuration = 0;
+
+            if (_stopFlag == 1)
+                return;
+
+            // pick a random connection to test the waters
+            var connections = conns();
+            if (connections.Count == 0)
+            {
+                // backoff again
+                var backoffDuration = TimeSpan.FromSeconds(1);
+                _backoffDuration = backoffDuration.Nanoseconds();
+                Time.AfterFunc(backoffDuration, backoff);
+                return;
+            }
+            var idx = _rng.Intn(connections.Count);
+            var choice = connections[idx];
+
+            log(LogLevel.Warning,
+                "({0}) backoff timeout expired, sending RDY 1",
+                choice);
+            // while in backoff only ever let 1 message at a time through
+            updateRDY(choice, 1);
         }
 
         // TODO

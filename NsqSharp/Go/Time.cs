@@ -32,24 +32,37 @@ namespace NsqSharp.Go
         /// </summary>
         public static Chan<bool> After(TimeSpan timeout)
         {
-            var fireAt = DateTime.UtcNow + timeout;
+            if (timeout < TimeSpan.Zero)
+                throw new ArgumentOutOfRangeException("timeout", timeout, "timeout must be >= 0");
 
             var timeoutChan = new Chan<bool>();
 
-            Thread t = new Thread(() =>
-                                  {
-                                      var sleep = (fireAt - DateTime.UtcNow);
-                                      if (sleep > TimeSpan.Zero)
-                                      {
-                                          Thread.Sleep(sleep);
-                                      }
-
-                                      timeoutChan.Send(default(bool));
-                                  });
-            t.IsBackground = true;
-            t.Start();
+            GoFunc.Run(() =>
+            {
+                Thread.Sleep(timeout);
+                timeoutChan.Send(default(bool));
+            });
 
             return timeoutChan;
+        }
+
+        /// <summary>
+        /// AfterFunc waits for the duration to elapse and then calls f in its own goroutine.
+        /// </summary>
+        public static void AfterFunc(TimeSpan duration, Action f)
+        {
+            // TODO: It returns a Timer that can be used to cancel the call using its Stop method.
+
+            if (duration < TimeSpan.Zero)
+                throw new ArgumentOutOfRangeException("duration", duration, "duration must be >= 0");
+            if (f == null)
+                throw new ArgumentNullException("f");
+
+            GoFunc.Run(() =>
+            {
+                Thread.Sleep(duration);
+                f();
+            });
         }
 
         /// <summary>

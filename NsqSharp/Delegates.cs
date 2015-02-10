@@ -99,14 +99,6 @@ namespace NsqSharp
         void OnTouch(Message m);
     }
 
-    // TODO
-
-    /*// TODO: Placeholder. Remove.
-    // TODO: Placeholder. Remove.
-    public class Consumer
-    {
-    }*/
-
     internal class ConnMessageDelegate : IMessageDelegate
     {
         public Conn c { get; set; }

@@ -118,20 +118,18 @@ namespace NsqSharp
         {
             int j = 0;
 
-            for (int i = 0; i < Name.Length; i++, j++)
-            {
-                buf[j] = Name[i];
-            }
+            int count = Name.Length;
+            Buffer.BlockCopy(Name, 0, buf, j, count);
+            j += count;
 
             if (Params != null)
             {
                 foreach (var param in Params)
                 {
                     buf[j++] = byteSpace;
-                    for (int i = 0; i < param.Length; i++, j++)
-                    {
-                        buf[j] = param[i];
-                    }
+                    count = param.Length;
+                    Buffer.BlockCopy(param, 0, buf, j, count);
+                    j += count;
                 }
             }
 
@@ -142,10 +140,9 @@ namespace NsqSharp
                 _bigEndian.PutUint32(buf, Body.Length, j);
                 j += 4;
 
-                for (int i = 0; i < Body.Length; i++, j++)
-                {
-                    buf[j] = Body[i];
-                }
+                count = Body.Length;
+                Buffer.BlockCopy(Body, 0, buf, j, count);
+                j += count;
             }
 
             return w.Write(buf, 0, j);
