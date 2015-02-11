@@ -34,17 +34,6 @@ namespace NsqSharp
     }
 
     /// <summary>
-    /// HandlerFunc is a convenience type to avoid having to declare a struct
-    /// to implement the Handler interface, it can be used like this:
-    ///
-    /// 	consumer.AddHandler(new HandlerFunc(m => {
-    /// 		// handle the message
-    /// 	}));
-    /// </summary>
-    /// <param name="message">The message.</param>
-    public delegate void HandlerFunc(Message message);
-
-    /// <summary>
     /// DiscoveryFilter is an interface accepted by `SetBehaviorDelegate()`
     /// for filtering the nsqds returned from discovery via nsqlookupd
     /// </summary>
@@ -224,12 +213,12 @@ namespace NsqSharp
         public ConsumerStats Stats()
         {
             return new ConsumerStats
-                   {
-                       MessagesReceived = _messagesReceived,
-                       MessagesFinished = _messagesFinished,
-                       MessagesRequeued = _messagesRequeued,
-                       Connections = conns().Count
-                   };
+            {
+                MessagesReceived = _messagesReceived,
+                MessagesFinished = _messagesFinished,
+                MessagesRequeued = _messagesRequeued,
+                Connections = conns().Count
+            };
         }
 
         private List<Conn> conns()
@@ -532,13 +521,12 @@ namespace NsqSharp
                 {
                     ConnectToNSQLookupd(addr);
                 }
-                catch (ErrAlreadyConnected)
-                {
-                    // ignore
-                }
                 catch (Exception ex)
                 {
-                    log(LogLevel.Error, "({0}) error connecting to nsqd - {1}", addr, ex);
+                    if (!(ex is ErrAlreadyConnected))
+                    {
+                        log(LogLevel.Error, "({0}) error connecting to nsqd - {1}", addr, ex);
+                    }
                 }
             }
         }
@@ -1131,6 +1119,8 @@ namespace NsqSharp
                 }
                 throw new ErrOverMaxInFlight();
             }
+
+            sendRDY(c, count);
         }
 
         private void sendRDY(Conn c, long count)
@@ -1366,8 +1356,6 @@ namespace NsqSharp
             }
             return false;
         }
-
-        // TODO
 
         private void exit()
         {
