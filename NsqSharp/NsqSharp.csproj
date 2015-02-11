@@ -68,10 +68,11 @@
     <Compile Include="Go\Binary.cs" />
     <Compile Include="Go\GoFunc.cs" />
     <Compile Include="Go\IConn.cs" />
+    <Compile Include="Go\ILogger.cs" />
     <Compile Include="Go\IReader.cs" />
     <Compile Include="Go\ITcpConn.cs" />
     <Compile Include="Go\IWriter.cs" />
-    <Compile Include="Go\Logger.cs" />
+    <Compile Include="Utils\Logger.cs" />
     <Compile Include="Go\Net.cs" />
     <Compile Include="Go\Once.cs" />
     <Compile Include="Go\OS.cs" />

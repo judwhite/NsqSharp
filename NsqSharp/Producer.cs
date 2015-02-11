@@ -5,6 +5,7 @@ using System.Threading;
 using Newtonsoft.Json;
 using NsqSharp.Channels;
 using NsqSharp.Go;
+using NsqSharp.Utils;
 
 namespace NsqSharp
 {
@@ -89,7 +90,7 @@ namespace NsqSharp
             _addr = addr;
             _config = config.Clone();
 
-            _logger = new Logger(); // TODO
+            _logger = new ConsoleLogger(); // TODO
             _logLvl = LogLevel.Info;
 
             _transactionChan = new Chan<ProducerTransaction>();

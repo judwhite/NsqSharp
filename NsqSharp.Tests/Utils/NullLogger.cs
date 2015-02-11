@@ -1,4 +1,6 @@
-﻿namespace NsqSharp.Tests.Utils
+﻿using NsqSharp.Go;
+
+namespace NsqSharp.Tests.Utils
 {
     public class NullLogger : ILogger
     {
