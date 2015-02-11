@@ -52,7 +52,8 @@ namespace NsqSharp
 
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
-                    throw new Exception(string.Format("got response {0} {1}", response.StatusDescription, Encoding.UTF8.GetString(respBody)));
+                    throw new Exception(string.Format("got response {0} {1}",
+                        response.StatusDescription, Encoding.UTF8.GetString(respBody)));
                 }
 
                 if (response.Headers.Get("X-NSQ-Content-Type") == "nsq; version=1.0")

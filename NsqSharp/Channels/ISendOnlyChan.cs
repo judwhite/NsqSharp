@@ -16,17 +16,6 @@ namespace NsqSharp.Channels
     public interface ISendOnlyChan : IChan
     {
         /// <summary>
-        /// Sends a message to the channel. Blocks until the message is received.
-        /// </summary>
-        /// <param name="message">The message to send.</param>
-        void Send(object message);
-
-        /// <summary>
-        /// Gets a value indicating if the channel is ready to receive and waiting for a sender.
-        /// </summary>
-        bool IsReadyToReceive { get; }
-
-        /// <summary>
         /// Tries to lock the send method to the current thread.
         /// </summary>
         /// <returns><c>true</c> if the lock was successful; otherwise, <c>false</c>.</returns>

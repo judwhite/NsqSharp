@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Security.Authentication;
 using NsqSharp.Attributes;
 using NsqSharp.Extensions;
@@ -107,8 +106,8 @@ namespace NsqSharp.Tests
             Assert.AreEqual(TimeSpan.FromSeconds(1), c.BackoffMultiplier, "backoff_multiplier");
             Assert.AreEqual(5, c.MaxAttempts, "max_attempts");
             Assert.AreEqual(TimeSpan.FromSeconds(10), c.LowRdyIdleTimeout, "low_rdy_idle_timeout");
-            Assert.AreEqual(Dns.GetHostName().Split(new[] { '.' })[0], c.ClientID, "client_id");
-            Assert.AreEqual(Dns.GetHostName(), c.Hostname, "hostname");
+            Assert.AreEqual(OS.Hostname().Split(new[] { '.' })[0], c.ClientID, "client_id");
+            Assert.AreEqual(OS.Hostname(), c.Hostname, "hostname");
             Assert.AreEqual("NsqSharp/0.0.2", c.UserAgent, "user_agent");
             Assert.AreEqual(TimeSpan.FromSeconds(30), c.HeartbeatInterval, "heartbeat_interval");
             Assert.AreEqual(0, c.SampleRate, "sample_rate");
@@ -340,8 +339,8 @@ namespace NsqSharp.Tests
             Assert.AreEqual(TimeSpan.FromSeconds(1), c2.BackoffMultiplier, "backoff_multiplier");
             Assert.AreEqual(5, c2.MaxAttempts, "max_attempts");
             Assert.AreEqual(TimeSpan.FromSeconds(10), c2.LowRdyIdleTimeout, "low_rdy_idle_timeout");
-            Assert.AreEqual(Dns.GetHostName().Split(new[] { '.' })[0], c2.ClientID, "client_id");
-            Assert.AreEqual(Dns.GetHostName(), c2.Hostname, "hostname");
+            Assert.AreEqual(OS.Hostname().Split(new[] { '.' })[0], c2.ClientID, "client_id");
+            Assert.AreEqual(OS.Hostname(), c2.Hostname, "hostname");
             Assert.AreEqual("NsqSharp/0.0.2", c2.UserAgent, "user_agent");
             Assert.AreEqual(TimeSpan.FromSeconds(2), c2.HeartbeatInterval, "heartbeat_interval");
             Assert.AreEqual(0, c2.SampleRate, "sample_rate");

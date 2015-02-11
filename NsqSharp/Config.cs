@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using NsqSharp.Attributes;
@@ -292,7 +291,7 @@ namespace NsqSharp
                     c.Set(opt.Name, defaultValue.Value);
                 }
 
-                string hostname = Dns.GetHostName();
+                string hostname = OS.Hostname();
 
                 c.ClientID = hostname.Split(new[] { '.' })[0];
                 c.Hostname = hostname;

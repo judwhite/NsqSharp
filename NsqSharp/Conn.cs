@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
@@ -164,6 +165,8 @@ namespace NsqSharp
         {
             var conn = Net.DialTimeout("tcp", _addr, TimeSpan.FromSeconds(1));
             _conn = (ITcpConn)conn;
+            if (_conn == null)
+                throw new Exception("Net.DialTimeout returned null");
             _r = conn;
             _w = conn;
 
@@ -457,7 +460,7 @@ namespace NsqSharp
             }
         }
 
-        private void upgradeTLS()
+        /*private void upgradeTLS()
         {
             // TODO
         }
@@ -470,7 +473,7 @@ namespace NsqSharp
         private void upgradeSnappy()
         {
             // TODO
-        }
+        }*/
 
         private void auth(string secret)
         {
@@ -526,7 +529,7 @@ namespace NsqSharp
                         break;
                     }
 
-                    if (frameType == FrameType.Response && Bytes.Equal(data, HEARTBEAT_BYTES))
+                    if (frameType == FrameType.Response && HEARTBEAT_BYTES.SequenceEqual(data))
                     {
                         _delegate.OnHeartbeat(this);
                         try

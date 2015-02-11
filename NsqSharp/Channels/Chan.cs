@@ -27,7 +27,6 @@ namespace NsqSharp.Channels
         private static readonly TimeSpan _infiniteTimeSpan = TimeSpan.FromMilliseconds(-1);
 
         private bool _isReadyToSend;
-        private bool _isReadyToReceive;
         private bool _isClosed;
 
         private readonly int _bufferSize;
@@ -108,9 +107,6 @@ namespace NsqSharp.Channels
                     }
                 }
 
-                if (waitForReceive)
-                    _isReadyToReceive = false;
-
                 Enqueue((T)message);
 
                 if (waitForReceive)
@@ -181,7 +177,6 @@ namespace NsqSharp.Channels
                     return default(T);
                 }
 
-                _isReadyToReceive = true;
                 _readyToReceive.Set();
 
                 PumpListenForReceive();
@@ -209,7 +204,8 @@ namespace NsqSharp.Channels
         }
 
         /// <summary>Returns an enumerator that iterates through the collection.</summary>
-        /// <returns>A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.</returns>
+        /// <returns>A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate
+        /// through the collection.</returns>
         public IEnumerator<T> GetEnumerator()
         {
             while (true)
@@ -288,11 +284,6 @@ namespace NsqSharp.Channels
             Monitor.Exit(_sendLocker);
         }
 
-        bool ISendOnlyChan.IsReadyToReceive
-        {
-            get { return _isReadyToReceive; }
-        }
-
         bool IReceiveOnlyChan.IsReadyToSend
         {
             get { return _isReadyToSend || _isClosed; }
@@ -301,16 +292,6 @@ namespace NsqSharp.Channels
         bool IChan.IsClosed
         {
             get { return _isClosed; }
-        }
-
-        void ISendOnlyChan.Send(object message)
-        {
-            Send((T)message);
-        }
-
-        object IReceiveOnlyChan.Receive()
-        {
-            return Receive();
         }
 
         void IChan.AddListenForSend(AutoResetEvent func)

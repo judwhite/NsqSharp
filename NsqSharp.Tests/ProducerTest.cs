@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using NsqSharp.Channels;
 using NsqSharp.Extensions;
@@ -161,11 +162,29 @@ namespace NsqSharp.Tests
         }
     }
 
+    [Serializable]
     internal class FailThisMessageException : Exception
     {
+        public FailThisMessageException()
+        {
+        }
+
+        protected FailThisMessageException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
     }
 
+    [Serializable]
     internal class IncorrectMessageException : Exception
     {
+        public IncorrectMessageException()
+        {
+        }
+
+        protected IncorrectMessageException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
     }
 }
