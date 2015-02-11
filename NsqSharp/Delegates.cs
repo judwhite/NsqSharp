@@ -160,7 +160,7 @@ namespace NsqSharp
         void OnClose(Conn c);
     }
 
-    /*internal class ConsumerConnDelegate : IConnDelegate
+    internal class ConsumerConnDelegate : IConnDelegate
     {
         public Consumer r { get; set; }
 
@@ -174,7 +174,7 @@ namespace NsqSharp
         public void OnIOError(Conn c, Exception err) { r.onConnIOError(c, err); }
         public void OnHeartbeat(Conn c) { r.onConnHeartbeat(c); }
         public void OnClose(Conn c) { r.onConnClose(c); }
-    }*/
+    }
 
     internal class ProducerConnDelegate : IConnDelegate
     {

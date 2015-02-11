@@ -71,7 +71,7 @@ namespace NsqSharp
         [Opt("max_attempts"), Min(0), Max(65535), Default(5)]
         public ushort MaxAttempts { get; set; }
 
-        /// <summary>Amount of time in seconds to wait for a message from a producer when in a state where RDY
+        /// <summary>Amount of time to wait for a message from a producer when in a state where RDY
         /// counts are re-distributed (ie. max_in_flight &lt; num_producers)</summary>
         [Opt("low_rdy_idle_timeout"), Min("1s"), Max("5m"), Default("10s")]
         public TimeSpan LowRdyIdleTimeout { get; set; }

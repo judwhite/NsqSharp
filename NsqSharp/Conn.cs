@@ -73,7 +73,7 @@ namespace NsqSharp
         internal long _messagesInFlight;
         private long _maxRdyCount;
         private long _rdyCount;
-        internal long _lastRdyCount;
+        private long _lastRdyCount;
         private long _lastMsgTimestamp;
 
         private readonly object _mtx = new object();

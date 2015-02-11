@@ -25,15 +25,25 @@ namespace NsqSharp.Extensions
         /// </summary>
         /// <param name="rng">The <see cref="RNGCryptoServiceProvider"/>.</param>
         /// <param name="n">The exclusive upper bound. Must be > 0.</param>
-        /// <returns>A cryptographically secure double.</returns>
+        /// <returns>A cryptographically secure integer in [0,<paramref name="n"/>).</returns>
         public static int Intn(this RNGCryptoServiceProvider rng, int n)
         {
             if (n <= 0)
                 throw new ArgumentOutOfRangeException("n", n, "n must be > 0");
 
+            return Int(rng) % n;
+        }
+
+        /// <summary>
+        /// Int returns a non-negative cryptographically secure random number.
+        /// </summary>
+        /// <param name="rng">The <see cref="RNGCryptoServiceProvider"/>.</param>
+        /// <returns>A cryptographically secure integer.</returns>
+        public static int Int(this RNGCryptoServiceProvider rng)
+        {
             byte[] value = new byte[4];
             rng.GetBytes(value);
-            return Math.Abs(BitConverter.ToInt32(value, 0)) % n;
+            return Math.Abs(BitConverter.ToInt32(value, 0));
         }
     }
 }

@@ -250,7 +250,7 @@ namespace NsqSharp
         /// Ready creates a new Command to specify
         /// the number of messages a client is willing to receive
         /// </summary>
-        public static Command Ready(int count)
+        public static Command Ready(long count)
         {
             return new Command(RDY_BYTES, (byte[])null, count.ToString(CultureInfo.InvariantCulture));
         }

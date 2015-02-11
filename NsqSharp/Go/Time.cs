@@ -48,21 +48,29 @@ namespace NsqSharp.Go
 
         /// <summary>
         /// AfterFunc waits for the duration to elapse and then calls f in its own goroutine.
+        /// It returns a <see cref="Timer"/> that can be used to cancel the call using its Stop method.
         /// </summary>
-        public static void AfterFunc(TimeSpan duration, Action f)
+        public static Timer AfterFunc(TimeSpan duration, Action f)
         {
-            // TODO: It returns a Timer that can be used to cancel the call using its Stop method.
-
             if (duration < TimeSpan.Zero)
                 throw new ArgumentOutOfRangeException("duration", duration, "duration must be >= 0");
             if (f == null)
                 throw new ArgumentNullException("f");
 
+            var timer = new Timer(duration);
+
             GoFunc.Run(() =>
-            {
-                Thread.Sleep(duration);
-                f();
-            });
+                Select
+                    .CaseReceiveOk(timer.C, (v, ok) =>
+                    {
+                        if (ok)
+                            f();
+                    })
+                    .CaseReceive(After(duration + TimeSpan.FromSeconds(5))) // clean up if the timer was stopped
+                    .NoDefault()
+            );
+
+            return timer;
         }
 
         /// <summary>

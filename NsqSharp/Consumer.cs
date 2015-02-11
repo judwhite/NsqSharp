@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using Newtonsoft.Json.Linq;
 using NsqSharp.Channels;
 using NsqSharp.Extensions;
 using NsqSharp.Go;
+using NsqSharp.Utils;
+using Timer = NsqSharp.Go.Timer;
 
 namespace NsqSharp
 {
@@ -74,11 +78,11 @@ namespace NsqSharp
     public class ConsumerStats
     {
         /// <summary>Messages Received</summary>
-        public ulong MessagesReceived { get; set; }
+        public long MessagesReceived { get; set; }
         /// <summary>Messages Finished</summary>
-        public ulong MessagesFinished { get; set; }
+        public long MessagesFinished { get; set; }
         /// <summary>Messages Requeued</summary>
-        public ulong MessagesRequeued { get; set; }
+        public long MessagesRequeued { get; set; }
         /// <summary>Connections</summary>
         public int Connections { get; set; }
     }
@@ -96,6 +100,8 @@ namespace NsqSharp
     /// </summary>
     public class Consumer
     {
+        private static readonly byte[] CLOSE_WAIT_BYTES = Encoding.UTF8.GetBytes("CLOSE_WAIT");
+
         private static long _instCount;
 
         private long _messagesReceived;
@@ -132,7 +138,7 @@ namespace NsqSharp
         private readonly Dictionary<string, Conn> _pendingConnections;
         private readonly Dictionary<string, Conn> _connections;
 
-        private readonly List<string> _nsqdTCPAddrs;
+        private readonly List<string> _nsqdTCPAddrs = new List<string>();
 
         // used at connection close to force a possible reconnect
         private readonly Chan<int> _lookupdRecheckChan;
@@ -147,7 +153,7 @@ namespace NsqSharp
         private readonly Once _exitHandler = new Once();
 
         // read from this channel to block until consumer is cleanly stopped
-        private readonly Chan<int> _StopChan;
+        private readonly Chan<int> _stopChan;
         private readonly Chan<int> _exitChan;
 
         /// <summary>
@@ -184,7 +190,7 @@ namespace NsqSharp
             _channel = channel;
             _config = config.Clone();
 
-            _logger = new Logger(); // TODO: writes to stderr, not console
+            _logger = new ConsoleLogger(); // TODO: writes to stderr, not console
             _logLvl = LogLevel.Info;
             _maxInFlight = config.MaxInFlight;
 
@@ -198,12 +204,20 @@ namespace NsqSharp
 
             _rng = new RNGCryptoServiceProvider();
 
-            _StopChan = new Chan<int>();
+            _stopChan = new Chan<int>();
             _exitChan = new Chan<int>();
 
             _wg.Add(1);
 
             GoFunc.Run(rdyLoop);
+        }
+
+        /// <summary>
+        /// Receive on StopChan to block until <see cref="Stop"/> completes.
+        /// </summary>
+        public IReceiveOnlyChan<int> StopChan
+        {
+            get { return _stopChan; }
         }
 
         /// <summary>Stats retrieves the current connection and message statistics for a Consumer</summary>
@@ -269,11 +283,11 @@ namespace NsqSharp
         /// This may change dynamically based on the number of connections to nsqd the Consumer
         /// is responsible for.
         /// </summary>
-        private long perConnMaxInFlighht()
+        private long perConnMaxInFlight()
         {
             long b = getMaxInFlight();
             int connCount = conns().Count;
-            long s = (connCount == 0 ? 0 : b / connCount);
+            long s = (connCount == 0 ? 1 : b / connCount);
             return Math.Min(Math.Max(1, s), b);
         }
 
@@ -285,7 +299,9 @@ namespace NsqSharp
         {
             foreach (var conn in conns())
             {
-                long threshold = (long)(conn._lastRdyCount * 0.85);
+                // TODO: if in backoff, would IsStarved return true? what's the impact?
+                // TODO: go-nsq PR, use conn.LastRDY() which does the atomic load for us
+                long threshold = (long)(conn.LastRDY * 0.85);
                 long inFlight = conn._messagesInFlight;
                 if (inFlight >= threshold && inFlight > 0 && !conn.IsClosing)
                 {
@@ -310,7 +326,7 @@ namespace NsqSharp
         /// </summary>
         public void ChangeMaxInFlight(int maxInFlight)
         {
-            if (getMaxInFlight() == _maxInFlight)
+            if (getMaxInFlight() == maxInFlight)
                 return;
 
             _maxInFlight = maxInFlight;
@@ -485,6 +501,17 @@ namespace NsqSharp
                 return;
             }
 
+            // {
+            //     "channels": [],
+            //     "producers": [
+            //         {
+            //             "broadcast_address": "jehiah-air.local",
+            //             "http_port": 4151,
+            //             "tcp_port": 4150
+            //         }
+            //     ],
+            //     "timestamp": 1340152173
+            // }
             var nsqAddrs = new Collection<string>();
             foreach (var producer in data["producers"])
             {
@@ -514,30 +541,6 @@ namespace NsqSharp
                     log(LogLevel.Error, "({0}) error connecting to nsqd - {1}", addr, ex);
                 }
             }
-        }
-
-        // TODO
-
-        private void rdyLoop()
-        {
-            var redistributeTicker = new Ticker(TimeSpan.FromSeconds(5));
-
-            bool doLoop = true;
-            using (var select =
-                    Select
-                        .CaseReceive(redistributeTicker.C, o => redistributeRDY())
-                        .CaseReceive(_exitChan, o => doLoop = false)
-                        .NoDefault(defer: true))
-            {
-                while (doLoop)
-                {
-                    select.Execute();
-                }
-            }
-
-            redistributeTicker.Stop();
-            log(LogLevel.Info, "rdyLoop exiting");
-            _wg.Done();
         }
 
         /// <summary>
@@ -759,6 +762,13 @@ namespace NsqSharp
 
         private void startStopContinueBackoff(Conn conn, bool success)
         {
+            // TODO: conn isn't used
+            // TODO: a REQ sets ALL connections to RDY 0. this seems to assume this service or a downstream service is having
+            // TODO: intermittent issues. this may not be the case, it could be an unexpected exception we'd want to see in
+            // TODO: the error log. if these are frequent it could choke message processing with backoffs. maybe this is right,
+            // TODO: as it's a per Consumer (topic) backoff, wouldn't apply to Conns held by other Consumers. Action: determine
+            // TODO: if this is the behavior, thought behind it, and impact when unexpected exceptions occur.
+
             if (inBackoffBlock())
                 return;
 
@@ -798,7 +808,7 @@ namespace NsqSharp
             if (backoffCounter == 0 && backoffUpdated)
             {
                 // exit backoff
-                long count = perConnMaxInFlighht();
+                long count = perConnMaxInFlight();
                 log(LogLevel.Warning, "exiting backoff, returning all to RDY {0}", count);
                 foreach (var c in conns())
                 {
@@ -851,6 +861,512 @@ namespace NsqSharp
             updateRDY(choice, 1);
         }
 
+        internal void onConnResponse(Conn c, byte[] data)
+        {
+            if (CLOSE_WAIT_BYTES.SequenceEqual(data))
+            {
+                // server is ready for us to close (it ack'd our StartClose)
+                // we can assume we will not receive any more messages over this channel
+                // (but we can still write back responses)
+                log(LogLevel.Info, "({0}) received CLOSE_WAIT from nsqd", c);
+                c.Close();
+            }
+        }
+
+        internal void onConnError(Conn c, byte[] data)
+        {
+        }
+
+        internal void onConnHeartbeat(Conn c)
+        {
+        }
+
+        internal void onConnIOError(Conn c, Exception err)
+        {
+            c.Close();
+        }
+
+        internal void onConnClose(Conn c)
+        {
+            bool hasRDYRetryTimer = false;
+
+            string connAddr = c.ToString();
+
+            // remove this connections RDY count from the consumer's total
+            long rdyCount = c.RDY;
+            Interlocked.Add(ref _totalRdyCount, rdyCount * -1);
+
+            _rdyRetryMtx.EnterWriteLock();
+            try
+            {
+                Timer timer;
+                if (_rdyRetryTimers.TryGetValue(connAddr, out timer))
+                {
+                    // stop any pending retry of an old RDY update
+                    timer.Stop();
+                    _rdyRetryTimers.Remove(connAddr);
+                    hasRDYRetryTimer = true;
+                }
+            }
+            finally
+            {
+                _rdyRetryMtx.ExitWriteLock();
+            }
+
+            int left;
+
+            _mtx.EnterWriteLock();
+            try
+            {
+                _connections.Remove(connAddr);
+                left = _connections.Count;
+            }
+            finally
+            {
+                _mtx.ExitWriteLock();
+            }
+
+            log(LogLevel.Warning, "there are {0} connections left alive", left);
+
+            if ((hasRDYRetryTimer || rdyCount > 0) &&
+                (left == getMaxInFlight() || inBackoff()))
+            {
+                // we're toggling out of (normal) redistribution cases and this conn
+                // had a RDY count...
+                //
+                // trigger RDY redistribution to make sure this RDY is moved
+                // to a new connection
+                _needRDYRedistributed = 1;
+            }
+
+            if (_stopFlag == 1)
+            {
+                if (left == 0)
+                {
+                    stopHandlers();
+                }
+                return;
+            }
+
+            int numLookupd;
+            bool reconnect;
+
+            _mtx.EnterReadLock();
+            try
+            {
+                numLookupd = _lookupdHTTPAddrs.Count;
+                reconnect = _nsqdTCPAddrs.Contains(connAddr);
+            }
+            finally
+            {
+                _mtx.ExitReadLock();
+            }
+
+            if (numLookupd > 0)
+            {
+                // trigger a poll of the lookupd
+                Select
+                    .CaseSend(_lookupdRecheckChan, 1)
+                    .Default(func: null);
+            }
+            else if (reconnect)
+            {
+                // there are no lookupd and we still have this nsqd TCP address in our list...
+                // try to reconnect after a bit
+                GoFunc.Run(() =>
+                {
+                    while (true)
+                    {
+                        log(LogLevel.Info, "({0}) re-connecting in 15 seconds...", connAddr);
+                        Thread.Sleep(TimeSpan.FromSeconds(15));
+                        if (_stopFlag == 1)
+                        {
+                            break;
+                        }
+                        _mtx.EnterReadLock();
+                        reconnect = _nsqdTCPAddrs.Contains(connAddr);
+                        _mtx.ExitReadLock();
+                        if (!reconnect)
+                        {
+                            log(LogLevel.Warning, "({0}) skipped reconnect after removal...", connAddr);
+                            return;
+                        }
+                        try
+                        {
+                            ConnectToNSQD(connAddr);
+                        }
+                        catch (Exception ex)
+                        {
+                            if (!(ex is ErrAlreadyConnected))
+                            {
+                                log(LogLevel.Error, "({0}) error connecting to nsqd - {1}", connAddr, ex);
+                                continue;
+                            }
+                            throw;
+                        }
+                        break;
+                    }
+                });
+            }
+        }
+
+        private TimeSpan backoffDurationForCount(int count)
+        {
+            var backoffDuration = new TimeSpan((long)(_config.BackoffMultiplier.Ticks * Math.Pow(2, count)));
+            if (_config.MaxBackoffDuration > backoffDuration)
+            {
+                backoffDuration = _config.MaxBackoffDuration;
+            }
+            return backoffDuration;
+        }
+
+        private bool inBackoff()
+        {
+            return _backoffCounter > 0;
+        }
+
+        private bool inBackoffBlock()
+        {
+            return _backoffDuration > 0;
+        }
+
+        private void maybeUpdateRDY(Conn conn)
+        {
+            if (inBackoff() || inBackoffBlock())
+                return;
+
+            long remain = conn.RDY;
+            long lastRdyCount = conn.LastRDY;
+            long count = perConnMaxInFlight();
+
+            // refill when at 1, or at 25%, or if connections have changed and we're imbalanced
+            if (remain <= 1 || remain < (lastRdyCount / 4) || (count > 0 && count < remain))
+            {
+                log(LogLevel.Debug, "({0}) sending RDY {1} ({2} remain from last RDY {3})",
+                    conn, count, remain, lastRdyCount);
+                updateRDY(conn, count);
+            }
+            else
+            {
+                log(LogLevel.Debug, "({0}) skip sending RDY {1} ({2} remain out of last RDY {3})",
+                    conn, count, remain, lastRdyCount);
+            }
+        }
+
+        private void rdyLoop()
+        {
+            var redistributeTicker = new Ticker(TimeSpan.FromSeconds(5));
+
+            bool doLoop = true;
+            using (var select =
+                    Select
+                        .CaseReceive(redistributeTicker.C, o => redistributeRDY())
+                        .CaseReceive(_exitChan, o => doLoop = false)
+                        .NoDefault(defer: true))
+            {
+                while (doLoop)
+                {
+                    select.Execute();
+                }
+            }
+
+            redistributeTicker.Stop();
+            log(LogLevel.Info, "rdyLoop exiting");
+            _wg.Done();
+        }
+
+        private void updateRDY(Conn c, long count)
+        {
+            if (c.IsClosing)
+                return;
+
+            // never exceed the nsqd's configured max RDY count
+            if (count > c.MaxRDY)
+                count = c.MaxRDY;
+
+            string connAddr = c.ToString();
+
+            // stop any pending retry of an old RDY update
+            _rdyRetryMtx.EnterWriteLock();
+            try
+            {
+                Timer timer;
+                if (_rdyRetryTimers.TryGetValue(connAddr, out timer))
+                {
+                    timer.Stop();
+                    _rdyRetryTimers.Remove(connAddr);
+                }
+            }
+            finally
+            {
+                _rdyRetryMtx.ExitWriteLock();
+            }
+
+            // never exceed our global max in flight. truncate if possible.
+            // this could help a new connection get partial max-in-flight
+            long rdyCount = c.RDY;
+            long maxPossibleRdy = getMaxInFlight() - _totalRdyCount + rdyCount;
+            if (maxPossibleRdy > 0 && maxPossibleRdy < count)
+            {
+                count = maxPossibleRdy;
+            }
+            else if (maxPossibleRdy <= 0 && count > 0)
+            {
+                // TODO: PR go-nsq: add "else" for clarity
+                if (rdyCount == 0)
+                {
+                    // we wanted to exit a zero RDY count but we couldn't send it...
+                    // in order to prevent eternal starvation we reschedule this attempt
+                    // (if any other RDY update succeeds this timer will be stopped)
+                    _rdyRetryMtx.EnterWriteLock();
+                    try
+                    {
+                        _rdyRetryTimers[connAddr] = Time.AfterFunc(TimeSpan.FromSeconds(5),
+                            () => updateRDY(c, count));
+                    }
+                    finally
+                    {
+                        _rdyRetryMtx.ExitWriteLock();
+                    }
+                }
+                throw new ErrOverMaxInFlight();
+            }
+        }
+
+        private void sendRDY(Conn c, long count)
+        {
+            if (count == 00 && c.LastRDY == 0)
+            {
+                // no need to send. It's already that RDY count
+                return;
+            }
+
+            Interlocked.Add(ref _totalRdyCount, -c.RDY + count);
+            c.SetRDY(count);
+            try
+            {
+                c.WriteCommand(Command.Ready(count));
+            }
+            catch (Exception ex)
+            {
+                log(LogLevel.Error, "({0}) error sending RDY {1} - {2}", c, count, ex);
+                throw;
+            }
+        }
+
+        private void redistributeRDY()
+        {
+            if (inBackoffBlock())
+                return;
+
+            int numConns = conns().Count;
+            int maxInFlight = getMaxInFlight();
+            if (numConns > maxInFlight)
+            {
+                log(LogLevel.Debug, "redistributing RDY state ({0} conns > {1} max_in_flight)",
+                    numConns, maxInFlight);
+                _needRDYRedistributed = 1;
+            }
+
+            if (inBackoff() && numConns > 1)
+            {
+                log(LogLevel.Debug, "redistributing RDY state (in backoff and {0} conns > 1)", numConns);
+                _needRDYRedistributed = 1;
+            }
+
+            if (Interlocked.CompareExchange(ref _needRDYRedistributed, value: 0, comparand: 1) != 1)
+            {
+                return;
+            }
+
+            var connections = conns();
+            var possibleConns = new List<Conn>();
+            foreach (var c in connections)
+            {
+                var lastMsgDuration = DateTime.Now.Subtract(c.LastMessageTime);
+                long rdyCount = c.RDY;
+                log(LogLevel.Debug, "({0}) rdy: {1} (last message received {2})",
+                    c, rdyCount, lastMsgDuration);
+                if (rdyCount > 0 && lastMsgDuration > _config.LowRdyIdleTimeout)
+                {
+                    log(LogLevel.Debug, "({0}) idle connection, giving up RDY", c);
+                    updateRDY(c, 0);
+                }
+                possibleConns.Add(c);
+            }
+
+            long availableMaxInFlight = maxInFlight - _totalRdyCount;
+            if (inBackoff())
+            {
+                availableMaxInFlight = 1 - _totalRdyCount;
+            }
+
+            while (possibleConns.Count > 0 && availableMaxInFlight > 0)
+            {
+                availableMaxInFlight--;
+                int i = _rng.Intn(possibleConns.Count);
+                var c = possibleConns[i];
+                // delete
+                possibleConns.Remove(c);
+                log(LogLevel.Debug, "({0}) redistributing RDY", c);
+                updateRDY(c, 1);
+            }
+        }
+
+        /// <summary>
+        /// <see cref="Stop"/> will initiate a graceful stop of the <see cref="Consumer" /> (permanent)
+        ///
+        /// NOTE: receive on <see cref="StopChan"/> to block until this process completes
+        /// </summary>
+        public void Stop()
+        {
+            if (Interlocked.CompareExchange(ref _stopFlag, value: 1, comparand: 0) != 0)
+            {
+                return;
+            }
+
+            log(LogLevel.Info, "stopping...");
+
+            var connections = conns();
+            if (connections.Count == 0)
+            {
+                stopHandlers();
+            }
+            else
+            {
+                foreach (var c in connections)
+                {
+                    try
+                    {
+                        c.WriteCommand(Command.StartClose());
+                    }
+                    catch (Exception ex)
+                    {
+                        log(LogLevel.Error, "({0}) error sending CLS - {1}", c, ex);
+                    }
+
+                    // if we've waited this long handlers are blocked on processing messages
+                    // so we can't just stopHandlers (if any adtl. messages were pending processing
+                    // we would cause a panic on channel close)
+                    //
+                    // instead, we just bypass handler closing and skip to the final exit
+                    Time.AfterFunc(TimeSpan.FromSeconds(30), exit);
+                }
+            }
+        }
+
+        private void stopHandlers()
+        {
+            _stopHandler.Do(() =>
+            {
+                log(LogLevel.Info, "stopping handlers");
+                _incomingMessages.Close();
+            });
+        }
+
+        /// <summary>
+        /// AddHandler sets the Handler for messages received by this Consumer. This can be called
+        /// multiple times to add additional handlers. Handler will have a 1:1 ratio to message handling goroutines.
+        ///
+        /// This panics if called after connecting to NSQD or NSQ Lookupd
+        ///
+        /// (see IHandler or HandlerFunc for details on implementing this interface)
+        /// </summary>
+        public void AddHandler(IHandler handler)
+        {
+            if (handler == null)
+                throw new ArgumentNullException("handler");
+
+            AddConcurrentHandlers(handler, 1);
+        }
+
+        /// <summary>
+        /// AddConcurrentHandlers sets the Handler for messages received by this Consumer.  It
+        /// takes a second argument which indicates the number of goroutines to spawn for
+        /// message handling.
+        ///
+        /// This panics if called after connecting to NSQD or NSQ Lookupd
+        ///
+        /// (see Handler or HandlerFunc for details on implementing this interface)
+        /// </summary>
+        public void AddConcurrentHandlers(IHandler handler, int concurrency)
+        {
+            if (handler == null)
+                throw new ArgumentNullException("handler");
+            if (concurrency <= 0)
+                throw new ArgumentOutOfRangeException("concurrency", concurrency, "concurrency must be > 0");
+
+            if (_connectedFlag == 1)
+            {
+                throw new Exception("already connected");
+            }
+
+            Interlocked.Add(ref _runningHandlers, concurrency);
+            for (int i = 0; i < concurrency; i++)
+            {
+                GoFunc.Run(() => handlerLoop(handler));
+            }
+        }
+
+        private void handlerLoop(IHandler handler)
+        {
+            log(LogLevel.Debug, "starting Handler");
+
+            while (true)
+            {
+                bool ok;
+                var message = _incomingMessages.ReceiveOk(out ok);
+                if (!ok)
+                {
+                    break;
+                }
+
+                if (shouldFailMessage(message, handler))
+                {
+                    message.Finish();
+                    continue;
+                }
+
+                try
+                {
+                    handler.HandleMessage(message);
+                }
+                catch (Exception ex)
+                {
+                    log(LogLevel.Error, "Handler returned error for msg {0} - {1}", message.ID, ex);
+                    if (!message.IsAutoResponseDisabled())
+                        message.Requeue(null);
+                    continue;
+                }
+
+                if (!message.IsAutoResponseDisabled())
+                    message.Finish();
+            }
+
+            //exit:
+            log(LogLevel.Debug, "stopping Handler");
+            if (Interlocked.Decrement(ref _runningHandlers) == 0)
+            {
+                exit();
+            }
+        }
+
+        private bool shouldFailMessage(Message message, IHandler handler)
+        {
+            if (_config.MaxAttempts > 0 && message.Attempts > _config.MaxAttempts)
+            {
+                log(LogLevel.Warning, "msg {0} attempted {1} times, giving up",
+                    message.ID, message.Attempts);
+
+                IFailedMessageLogger logger = handler as IFailedMessageLogger;
+                if (logger != null)
+                    logger.LogFailedMessage(message);
+
+                return true;
+            }
+            return false;
+        }
+
         // TODO
 
         private void exit()
@@ -859,7 +1375,7 @@ namespace NsqSharp
             {
                 _exitChan.Close();
                 _wg.Wait();
-                _StopChan.Close();
+                _stopChan.Close();
             });
         }
 
