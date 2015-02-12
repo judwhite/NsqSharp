@@ -25,6 +25,8 @@ w.Publish("string-topicName", "Hello!");
 w.Publish("bytes-topicName", new byte[] { 1, 2, 3, 4 });
 w.Publish("json-topicName", new { Message = "Serialize me!" });
 
+// ...
+
 w.Stop();
 ```
 
