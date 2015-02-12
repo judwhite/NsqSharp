@@ -11,7 +11,38 @@ This project is currently under development.
 
 If you want to use NSQ within .NET today, check out [NSQnet](https://github.com/ClothesHorse/NSQnet).
 
-## Goals
+## Examples
+
+#### Publisher
+
+```C#
+var config = new Config();
+
+var w = new Producer("127.0.0.1:4150", config);
+w.SetLogger(new ConsoleLogger(), LogLevel.Debug);
+
+w.Publish("string-topicName", "Hello!");
+w.Publish("bytes-topicName", new byte[] { 1, 2, 3, 4 });
+w.Publish("json-topicName", new { Message = "Serialize me!" });
+
+w.Stop();
+```
+
+#### Consumer
+
+```C#
+var config = new Config();
+            
+var r = new Consumer("string-topicName", "channel-name", config);
+r.AddHandler(/* instance of IHandler */);
+r.ConnectToNSQD("127.0.0.1:4150");
+
+// ...
+
+r.Stop();
+```
+
+## Project Goals
 - Structurally similar to the official [go-nsq](https://github.com/bitly/go-nsq) client.
 - Up to date with the latest stable release of go-nsq.
 - Provide similar behavior and semantics as the official package.
