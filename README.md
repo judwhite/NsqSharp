@@ -21,9 +21,9 @@ var config = new Config();
 var w = new Producer("127.0.0.1:4150", config);
 w.SetLogger(new ConsoleLogger(), LogLevel.Debug);
 
-w.Publish("string-topicName", "Hello!");
-w.Publish("bytes-topicName", new byte[] { 1, 2, 3, 4 });
-w.Publish("json-topicName", new { Message = "Serialize me!" });
+w.Publish("string-topic-name", "Hello!");
+w.Publish("bytes-topic-name", new byte[] { 1, 2, 3, 4 });
+w.Publish("json-topic-name", new { Message = "Serialize me!" });
 
 // ...
 
@@ -35,7 +35,7 @@ w.Stop();
 ```C#
 var config = new Config();
             
-var r = new Consumer("string-topicName", "channel-name", config);
+var r = new Consumer("string-topic-name", "channel-name", config);
 r.AddHandler(/* instance of IHandler */);
 r.ConnectToNSQD("127.0.0.1:4150");
 
