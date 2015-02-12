@@ -39,7 +39,9 @@ w.Stop();
 
 var config = new Config();
             
+// Create a new Consumer for each topic or channel
 var r = new Consumer("string-topic-name", "channel-name", config);
+r.SetLogger(new ConsoleLogger(), LogLevel.Debug);
 r.AddHandler(/* instance of IHandler */);
 r.ConnectToNSQD("127.0.0.1:4150");
 
