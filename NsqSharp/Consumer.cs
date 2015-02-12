@@ -50,7 +50,7 @@ namespace NsqSharp
     /// to receive a callback when a message is deemed "failed" (i.e. the number of attempts
     /// exceeded the Consumer specified MaxAttemptCount)
     /// </summary>
-    public interface IFailedMessageLogger
+    public interface IFailedMessageLogger : IHandler
     {
         /// <summary>
         /// Called when a message is deemed "failed" (i.e. the number of attempts
@@ -678,13 +678,16 @@ namespace NsqSharp
 
                 _nsqdTCPAddrs.RemoveAt(idx);
 
+                // TODO: PR go-nsq remove from connections/pendingConnections
                 Conn pendingConn, conn;
                 if (_connections.TryGetValue(addr, out conn))
                 {
+                    _connections.Remove(addr);
                     conn.Close();
                 }
                 else if (_pendingConnections.TryGetValue(addr, out pendingConn))
                 {
+                    _pendingConnections.Remove(addr);
                     pendingConn.Close();
                 }
             }
@@ -1065,67 +1068,75 @@ namespace NsqSharp
 
         private void updateRDY(Conn c, long count)
         {
-            if (c.IsClosing)
-                return;
-
-            // never exceed the nsqd's configured max RDY count
-            if (count > c.MaxRDY)
-                count = c.MaxRDY;
-
-            string connAddr = c.ToString();
-
-            // stop any pending retry of an old RDY update
-            _rdyRetryMtx.EnterWriteLock();
             try
             {
-                Timer timer;
-                if (_rdyRetryTimers.TryGetValue(connAddr, out timer))
-                {
-                    timer.Stop();
-                    _rdyRetryTimers.Remove(connAddr);
-                }
-            }
-            finally
-            {
-                _rdyRetryMtx.ExitWriteLock();
-            }
+                if (c.IsClosing)
+                    return;
 
-            // never exceed our global max in flight. truncate if possible.
-            // this could help a new connection get partial max-in-flight
-            long rdyCount = c.RDY;
-            long maxPossibleRdy = getMaxInFlight() - _totalRdyCount + rdyCount;
-            if (maxPossibleRdy > 0 && maxPossibleRdy < count)
-            {
-                count = maxPossibleRdy;
-            }
-            else if (maxPossibleRdy <= 0 && count > 0)
-            {
-                // TODO: PR go-nsq: add "else" for clarity
-                if (rdyCount == 0)
+                // never exceed the nsqd's configured max RDY count
+                if (count > c.MaxRDY)
+                    count = c.MaxRDY;
+
+                string connAddr = c.ToString();
+
+                // stop any pending retry of an old RDY update
+                _rdyRetryMtx.EnterWriteLock();
+                try
                 {
-                    // we wanted to exit a zero RDY count but we couldn't send it...
-                    // in order to prevent eternal starvation we reschedule this attempt
-                    // (if any other RDY update succeeds this timer will be stopped)
-                    _rdyRetryMtx.EnterWriteLock();
-                    try
+                    Timer timer;
+                    if (_rdyRetryTimers.TryGetValue(connAddr, out timer))
                     {
-                        _rdyRetryTimers[connAddr] = Time.AfterFunc(TimeSpan.FromSeconds(5),
-                            () => updateRDY(c, count));
-                    }
-                    finally
-                    {
-                        _rdyRetryMtx.ExitWriteLock();
+                        timer.Stop();
+                        _rdyRetryTimers.Remove(connAddr);
                     }
                 }
-                throw new ErrOverMaxInFlight();
-            }
+                finally
+                {
+                    _rdyRetryMtx.ExitWriteLock();
+                }
 
-            sendRDY(c, count);
+                // never exceed our global max in flight. truncate if possible.
+                // this could help a new connection get partial max-in-flight
+                long rdyCount = c.RDY;
+                long maxPossibleRdy = getMaxInFlight() - _totalRdyCount + rdyCount;
+                if (maxPossibleRdy > 0 && maxPossibleRdy < count)
+                {
+                    count = maxPossibleRdy;
+                }
+                else if (maxPossibleRdy <= 0 && count > 0)
+                {
+                    // TODO: PR go-nsq: add "else" for clarity
+                    if (rdyCount == 0)
+                    {
+                        // we wanted to exit a zero RDY count but we couldn't send it...
+                        // in order to prevent eternal starvation we reschedule this attempt
+                        // (if any other RDY update succeeds this timer will be stopped)
+                        _rdyRetryMtx.EnterWriteLock();
+                        try
+                        {
+                            _rdyRetryTimers[connAddr] = Time.AfterFunc(TimeSpan.FromSeconds(5),
+                                () => updateRDY(c, count));
+                        }
+                        finally
+                        {
+                            _rdyRetryMtx.ExitWriteLock();
+                        }
+                    }
+                    throw new ErrOverMaxInFlight();
+                }
+
+                sendRDY(c, count);
+            }
+            catch (Exception ex)
+            {
+                // NOTE: errors intentionally not rethrown
+                log(LogLevel.Error, "({0}) error in updateRDY {1} - {2}", c, count, ex);
+            }
         }
 
         private void sendRDY(Conn c, long count)
         {
-            if (count == 00 && c.LastRDY == 0)
+            if (count == 0 && c.LastRDY == 0)
             {
                 // no need to send. It's already that RDY count
                 return;

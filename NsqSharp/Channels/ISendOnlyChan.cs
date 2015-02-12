@@ -8,6 +8,11 @@ namespace NsqSharp.Channels
     /// <typeparam name="T">The type of data sent on the channel</typeparam>
     public interface ISendOnlyChan<T> : ISendOnlyChan
     {
+        /// <summary>
+        /// Sends a message to the channel. Blocks until the message is received.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        void Send(T message);
     }
 
     /// <summary>

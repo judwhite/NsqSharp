@@ -6,6 +6,11 @@
     /// <typeparam name="T">The type of data received on the channel.</typeparam>
     public interface IReceiveOnlyChan<T> : IReceiveOnlyChan
     {
+        /// <summary>
+        /// Receives a message from the channel. Blocks until a message is ready or channel is closed.
+        /// </summary>
+        /// <returns>The message received.</returns>
+        T Receive();
     }
 
     /// <summary>

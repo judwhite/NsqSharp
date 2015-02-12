@@ -454,6 +454,10 @@ namespace NsqSharp
 
                 return resp;
             }
+            catch (ErrIdentify)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 throw new ErrIdentify(ex.Message, ex);

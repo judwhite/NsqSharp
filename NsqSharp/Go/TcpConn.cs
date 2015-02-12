@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net.Sockets;
 
 namespace NsqSharp.Go
@@ -12,7 +11,6 @@ namespace NsqSharp.Go
 
         private readonly TcpClient _tcpClient;
         private readonly NetworkStream _networkStream;
-        private readonly BufferedStream _bufferedStream;
         private readonly object _readLocker = new object();
         private readonly object _writeLocker = new object();
         private readonly object _closeLocker = new object();
@@ -23,7 +21,6 @@ namespace NsqSharp.Go
             _tcpClient = new TcpClient();
             _tcpClient.Connect(hostname, port);
             _networkStream = _tcpClient.GetStream();
-            _bufferedStream = new BufferedStream(_networkStream);
         }
 
         public TimeSpan ReadTimeout
@@ -51,7 +48,7 @@ namespace NsqSharp.Go
             lock (_writeLocker)
             {
                 _networkStream.Write(b, offset, length);
-                Debug.WriteLine("[NET] wrote {0:#,0} bytes", b.Length);
+                Debug.WriteLine("[NET] wrote {0:#,0} bytes", length);
                 return length;
             }
         }
@@ -72,28 +69,30 @@ namespace NsqSharp.Go
 
                     _isClosed = true;
 
-                    _bufferedStream.Close();
-                    _networkStream.Close();
-                    _tcpClient.Close();
+                    ReadTimeout = TimeSpan.FromMilliseconds(10);
+                    WriteTimeout = TimeSpan.FromMilliseconds(10);
+
+                    Time.AfterFunc(TimeSpan.FromSeconds(2), () =>
+                    {
+                        _networkStream.Close();
+                        _tcpClient.Close();
+                    });
                 }
             }
         }
 
         public void CloseRead()
         {
-            // TODO - No separate read/write streams
             Close();
         }
 
         public void CloseWrite()
         {
-            // TODO - No separate read/write streams
             Close();
         }
 
         public void Flush()
         {
-            _bufferedStream.Flush();
         }
     }
 }

@@ -25,7 +25,7 @@ namespace NsqSharp.Go
             // NOTE: Departing from "binary.Read", don't want to box/unbox for this low-level call
 
             var buf = new byte[4];
-            r.Read(buf); // TODO: What if return value != buf.Length ?
+            r.Read(buf);
             return order.Int32(buf);
         }
     }

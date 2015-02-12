@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Threading;
 using NsqSharp.Channels;
 using NsqSharp.Extensions;
-using NsqSharp.Tests.Utils;
+using NsqSharp.Utils;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests
@@ -17,7 +18,7 @@ namespace NsqSharp.Tests
         {
             var config = new Config();
             var w = new Producer("127.0.0.1:4150", config);
-            w.SetLogger(new NullLogger(), LogLevel.Info);
+            w.SetLogger(new ConsoleLogger(), LogLevel.Debug);
 
             w.Publish("write_test", "test");
 
@@ -34,7 +35,7 @@ namespace NsqSharp.Tests
 
             var config = new Config();
             var w = new Producer("127.0.0.1:4150", config);
-            w.SetLogger(new NullLogger(), LogLevel.Info);
+            w.SetLogger(new ConsoleLogger(), LogLevel.Debug);
             try
             {
                 for (int i = 0; i < msgCount; i++)
@@ -60,7 +61,7 @@ namespace NsqSharp.Tests
 
             var config = new Config();
             var w = new Producer("127.0.0.1:4150", config);
-            w.SetLogger(new NullLogger(), LogLevel.Info);
+            w.SetLogger(new ConsoleLogger(), LogLevel.Debug);
             try
             {
                 var testData = new List<byte[]>();
@@ -88,7 +89,7 @@ namespace NsqSharp.Tests
 
             var config = new Config();
             var w = new Producer("127.0.0.1:4150", config);
-            w.SetLogger(new NullLogger(), LogLevel.Info);
+            w.SetLogger(new ConsoleLogger(), LogLevel.Debug);
             try
             {
                 var responseChan = new Chan<ProducerTransaction>(msgCount);
@@ -118,33 +119,131 @@ namespace NsqSharp.Tests
             }
         }
 
+        [Test]
         public void TestProducerMultiPublishAsync()
         {
-            // TODO
+            var topicName = "multi_publish" + DateTime.Now.Unix();
+            const int msgCount = 10;
+
+            var config = new Config();
+            var w = new Producer("127.0.0.1:4150", config);
+            w.SetLogger(new ConsoleLogger(), LogLevel.Debug);
+            try
+            {
+                var testData = new List<byte[]>();
+                for (int i = 0; i < msgCount; i++)
+                {
+                    testData.Add(Encoding.UTF8.GetBytes("multipublish_test_case"));
+                }
+
+                var responseChan = new Chan<ProducerTransaction>(msgCount);
+                w.MultiPublishAsync(topicName, testData, responseChan, "test0", 1);
+
+                var trans = responseChan.Receive();
+
+                Assert.IsNull(trans.Error);
+                Assert.IsNotNull(trans.Args);
+                Assert.AreEqual(2, trans.Args.Length);
+                Assert.AreEqual("test0", trans.Args[0]);
+                Assert.AreEqual(1, trans.Args[1]);
+
+                w.Publish(topicName, "bad_test_case");
+
+                readMessages(topicName, msgCount);
+            }
+            finally
+            {
+                w.Stop();
+            }
         }
 
+        [Test]
         public void TestProducerHeartbeat()
         {
-            // TODO
+            var topicName = "heartbeat" + DateTime.Now.Unix();
+
+            var config = new Config();
+            config.HeartbeatInterval = TimeSpan.FromMilliseconds(100);
+            var w = new Producer("127.0.0.1:4150", config);
+            w.SetLogger(new ConsoleLogger(), LogLevel.Debug);
+
+            try
+            {
+                ErrIdentify errIdentify = null;
+                try
+                {
+                    w.Publish(topicName, "publish_test_case");
+                }
+                catch (ErrIdentify ex)
+                {
+                    errIdentify = ex;
+                }
+
+                Assert.IsNotNull(errIdentify, "ErrIdentify not thrown");
+                Assert.AreEqual("E_BAD_BODY IDENTIFY heartbeat interval (100) is invalid", errIdentify.Reason);
+            }
+            finally
+            {
+                w.Stop();
+            }
+
+            try
+            {
+                config = new Config();
+                config.HeartbeatInterval = TimeSpan.FromMilliseconds(1000);
+                w = new Producer("127.0.0.1:4150", config);
+                w.SetLogger(new ConsoleLogger(), LogLevel.Debug);
+
+                w.Publish(topicName, "publish_test_case");
+
+                // TODO: what are we testing here?
+                Thread.Sleep(1100);
+
+                const int msgCount = 10;
+                for (int i = 0; i < msgCount; i++)
+                {
+                    w.Publish(topicName, "publish_test_case");
+                }
+
+                w.Publish(topicName, "bad_test_case");
+
+                readMessages(topicName, msgCount + 1);
+            }
+            finally
+            {
+                w.Stop();
+            }
         }
 
         private void readMessages(string topicName, int msgCount)
         {
-            // TODO: some of these tests are useless without implementing this method; depends on Consumer
+            var config = new Config();
+            config.DefaultRequeueDelay = TimeSpan.Zero;
+            config.MaxBackoffDuration = TimeSpan.FromMilliseconds(50);
+            var q = new Consumer(topicName, "ch", config);
+            q.SetLogger(new ConsoleLogger(), LogLevel.Debug);
+
+            var h = new ConsumerHandler { q = q };
+            q.AddHandler(h);
+
+            q.ConnectToNSQD("127.0.0.1:4150");
+            q.StopChan.Receive();
+
+            Assert.AreEqual(msgCount, h.messagesGood, "should have handled a diff number of messages");
+            Assert.AreEqual(1, h.messagesFailed, "failed message not done");
         }
     }
 
-    internal class ConsumerHandler
+    internal class ConsumerHandler : IHandler, IFailedMessageLogger
     {
-        //public Consumer q { get; set; } // TODO
+        public Consumer q { get; set; }
         public int messagesGood { get; set; }
         public int messagesFailed { get; set; }
 
         public void LogFailedMessage(Message message)
         {
-            // TODO
             messagesFailed++;
-            //q.Stop();
+            q.Stop();
         }
 
         public void HandleMessage(Message message)
@@ -154,7 +253,7 @@ namespace NsqSharp.Tests
             {
                 throw new FailThisMessageException();
             }
-            if (msg != "multipublish_test_case" && msg != "public_test_case")
+            if (msg != "multipublish_test_case" && msg != "publish_test_case")
             {
                 throw new Exception(string.Format("message 'action' was not correct {0}", msg));
             }

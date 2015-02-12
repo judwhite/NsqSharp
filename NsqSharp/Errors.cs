@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Security.Permissions;
 
 namespace NsqSharp
 {
@@ -127,7 +129,7 @@ namespace NsqSharp
     {
         /// <summary>Initializes a new instance of the ErrIdentify class.</summary>
         public ErrIdentify(string reason)
-            : base(string.Format("failed to IDENTIFY - {0}", reason))
+            : this(reason, null)
         {
         }
 
@@ -135,6 +137,7 @@ namespace NsqSharp
         public ErrIdentify(string reason, Exception innerException)
             : base(string.Format("failed to IDENTIFY - {0}", reason), innerException)
         {
+            Reason = reason;
         }
 
         /// <summary>
@@ -150,7 +153,32 @@ namespace NsqSharp
         protected ErrIdentify(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
+            Reason = info.GetString("Reason");
         }
+
+        /// <summary>
+        /// Sets the <see cref="SerializationInfo"/> with information about the exception.
+        /// </summary>
+        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception 
+        /// being thrown.</param>
+        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or
+        /// destination.</param>
+        /// <exception cref="ArgumentNullException">The <paramref name="info"/> parameter is a null reference.</exception>
+        [SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            if (info == null)
+                throw new ArgumentNullException("info");
+
+            info.AddValue("Reason", Reason);
+
+            base.GetObjectData(info, context);
+        }
+
+        /// <summary>
+        /// Gets or sets the reason
+        /// </summary>
+        public string Reason { get; set; }
     }
 
     /// <summary>

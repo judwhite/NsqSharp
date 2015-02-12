@@ -66,7 +66,7 @@ namespace NsqSharp.Go
                         if (ok)
                             f();
                     })
-                    .CaseReceive(After(duration + TimeSpan.FromSeconds(5))) // clean up if the timer was stopped
+                    .CaseReceive(After(duration + TimeSpan.FromSeconds(120))) // clean up if the timer was stopped
                     .NoDefault()
             );
 
