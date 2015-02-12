@@ -16,6 +16,8 @@ If you want to use NSQ within .NET today, check out [NSQnet](https://github.com/
 #### Publisher
 
 ```C#
+// NOTE: Work in progress
+
 var config = new Config();
 
 var w = new Producer("127.0.0.1:4150", config);
@@ -33,6 +35,8 @@ w.Stop();
 #### Consumer
 
 ```C#
+// NOTE: Work in progress
+
 var config = new Config();
             
 var r = new Consumer("string-topic-name", "channel-name", config);
