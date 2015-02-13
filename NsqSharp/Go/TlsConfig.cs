@@ -14,7 +14,11 @@ namespace NsqSharp.Go
         public TlsConfig()
         {
             MinVersion = SslProtocols.Ssl3;
+#if NET40
+            MaxVersion = SslProtocols.Tls;
+#else
             MaxVersion = SslProtocols.Tls12;
+#endif
             Certificates = new X509Certificate2Collection();
             RootCAs = new X509Certificate2Collection();
         }

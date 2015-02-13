@@ -28,7 +28,9 @@ namespace NsqSharp.Tests
             c.Set("tls-insecure-skip-verify", true);
             Assert.IsTrue(c.TlsConfig.InsecureSkipVerify);
 
+#if !NET40
             c.Set("tls-min-version", "tls1.2");
+#endif
 
             Assert.Throws<Exception>(() => c.Set("tls-min-version", "tls1.3"),
                 "No error when setting `tls-min-version` to an invalid value");
@@ -374,11 +376,13 @@ namespace NsqSharp.Tests
             c.Set("tls_min_version", "tls1.0");
             Assert.AreEqual(SslProtocols.Tls, c.TlsConfig.MinVersion);
 
+#if !NET40
             c.Set("tls_min_version", "tls1.1");
             Assert.AreEqual(SslProtocols.Tls11, c.TlsConfig.MinVersion);
 
             c.Set("tls_min_version", "tls1.2");
             Assert.AreEqual(SslProtocols.Tls12, c.TlsConfig.MinVersion);
+#endif
 
             Assert.Throws<Exception>(() => c.Set("tls_min_version", "ssl2.0"));
         }

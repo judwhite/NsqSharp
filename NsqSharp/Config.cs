@@ -271,7 +271,7 @@ namespace NsqSharp
                             throw new Exception(string.Format("invalid {0} ! {1} > {2}", opt.Name, coercedVal, coercedMaxVal));
                     }
 
-                    field.SetValue(c, coercedVal);
+                    field.SetValue(c, coercedVal, index: null);
                     return;
                 }
 
@@ -309,7 +309,7 @@ namespace NsqSharp
                     if (min == null && max == null)
                         continue;
 
-                    object value = field.GetValue(c);
+                    object value = field.GetValue(c, index: null);
 
                     var opt = field.Get<OptAttribute>();
                     if (min != null)
@@ -360,7 +360,11 @@ namespace NsqSharp
                     c.TlsConfig = new TlsConfig
                     {
                         MinVersion = SslProtocols.Tls,
+#if NET40
+                        MaxVersion = SslProtocols.Tls
+#else
                         MaxVersion = SslProtocols.Tls12
+#endif
                     };
                 }
 
@@ -404,12 +408,14 @@ namespace NsqSharp
                             case "tls1.0":
                                 c.TlsConfig.MinVersion = SslProtocols.Tls;
                                 break;
+#if !NET40
                             case "tls1.1":
                                 c.TlsConfig.MinVersion = SslProtocols.Tls11;
                                 return;
                             case "tls1.2":
                                 c.TlsConfig.MinVersion = SslProtocols.Tls12;
                                 return;
+#endif
                             default:
                                 throw new Exception(string.Format("ERROR: {0} is not a tls version", value));
                         }
@@ -468,7 +474,7 @@ namespace NsqSharp
                 var opt = field.Get<OptAttribute>();
                 if (opt != null)
                 {
-                    newConfig.Set(opt.Name, field.GetValue(this));
+                    newConfig.Set(opt.Name, field.GetValue(this, index: null));
                 }
             }
 

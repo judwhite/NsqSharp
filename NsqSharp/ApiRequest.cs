@@ -21,7 +21,7 @@ namespace NsqSharp
         {
             const int timeoutMilliseconds = 2000;
 
-            var httpclient = WebRequest.CreateHttp(endpoint);
+            var httpclient = (HttpWebRequest)WebRequest.Create(endpoint);
             httpclient.Proxy = WebRequest.DefaultWebProxy;
             httpclient.Method = method;
             httpclient.Timeout = timeoutMilliseconds;
