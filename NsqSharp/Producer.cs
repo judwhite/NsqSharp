@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using Newtonsoft.Json;
 using NsqSharp.Channels;
 using NsqSharp.Go;
 using NsqSharp.Utils;
@@ -76,10 +75,21 @@ namespace NsqSharp
         /// Initializes a new instance of the Producer class.
         /// </summary>
         /// <param name="addr">The address.</param>
+        public Producer(string addr)
+            : this(addr, new Config())
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the Producer class.
+        /// </summary>
+        /// <param name="addr">The address.</param>
         /// <param name="config">The config. After Config is passed into NewProducer the values are
         /// no longer mutable (they are copied).</param>
         public Producer(string addr, Config config)
         {
+            if (string.IsNullOrEmpty(addr))
+                throw new ArgumentNullException("addr");
             if (config == null)
                 throw new ArgumentNullException("config");
 
@@ -97,8 +107,6 @@ namespace NsqSharp
             _exitChan = new Chan<int>();
             _responseChan = new Chan<byte[]>();
             _errorChan = new Chan<byte[]>();
-
-            connect();
         }
 
         /// <summary>
@@ -178,21 +186,6 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// PublishAsync publishes a message body to the specified topic
-        /// but does not wait for the response from `nsqd`.
-        ///
-        /// When the Producer eventually receives the response from `nsqd`,
-        /// the supplied `doneChan` (if specified)
-        /// will receive a `ProducerTransaction` instance with the supplied variadic arguments
-        /// and the response error if present
-        /// </summary>
-        public void PublishAsync<T>(string topic, T value, Chan<ProducerTransaction> doneChan, params object[] args)
-        {
-            string json = (value != null ? JsonConvert.SerializeObject(value) : null);
-            sendCommandAsync(Command.Publish(topic, Encoding.UTF8.GetBytes(json)), doneChan, args);
-        }
-
-        /// <summary>
         /// MultiPublishAsync publishes a slice of message bodies to the specified topic
         /// but does not wait for the response from `nsqd`.
         ///
@@ -214,16 +207,6 @@ namespace NsqSharp
         public void Publish(string topic, byte[] body)
         {
             sendCommand(Command.Publish(topic, body));
-        }
-
-        /// <summary>
-        /// Publish synchronously publishes a JSON serialized object to the specified topic, returning
-        /// an error if publish failed
-        /// </summary>
-        public void Publish<T>(string topic, T value)
-        {
-            string json = (value != null ? JsonConvert.SerializeObject(value) : null);
-            Publish(topic, Encoding.UTF8.GetBytes(json));
         }
 
         /// <summary>

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Json;
 using System.Text;
-using Newtonsoft.Json;
 using NsqSharp.Extensions;
 using NsqSharp.Go;
 
@@ -158,9 +158,17 @@ namespace NsqSharp
         /// See http://bitly.github.io/nsq/clients/tcp_protocol_spec.html#identify for information
         /// on the supported options
         /// </summary>
-        public static Command Identify(Dictionary<string, object> js)
+        public static Command Identify(IdentifyRequest request)
         {
-            var body = JsonConvert.SerializeObject(js);
+            byte[] body;
+
+            var serializer = new DataContractJsonSerializer(typeof(IdentifyRequest));
+
+            using (var memoryStream = new MemoryStream())
+            {
+                serializer.WriteObject(memoryStream, request);
+                body = memoryStream.ToArray();
+            }
 
             return new Command(IDENTIFY_BYTES, body);
         }

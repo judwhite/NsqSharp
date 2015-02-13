@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.Text;
-using Newtonsoft.Json.Linq;
 
 namespace NsqSharp
 {
@@ -15,9 +16,41 @@ namespace NsqSharp
     // consider time to first byte under the advisement of the
     // go-nsq team.
 
+    [DataContract]
+    internal class NsqLookupdApiResponse : INsqLookupdApiResponseProducers
+    {
+        [DataMember(Name = "data")]
+        public NsqLookupdApiResponseData data { get; set; }
+        [DataMember(Name = "producers")]
+        public NsqLookupdApiResponseProducer[] producers { get; set; }
+    }
+
+    [DataContract]
+    internal class NsqLookupdApiResponseData : INsqLookupdApiResponseProducers
+    {
+        [DataMember(Name = "producers")]
+        public NsqLookupdApiResponseProducer[] producers { get; set; }
+    }
+
+    [DataContract]
+    internal class NsqLookupdApiResponseProducer
+    {
+        [DataMember(Name = "broadcast_address")]
+        public string broadcast_address { get; set; }
+        [DataMember(Name = "http_port")]
+        public int http_port { get; set; }
+        [DataMember(Name = "tcp_port")]
+        public int tcp_port { get; set; }
+    }
+
+    internal interface INsqLookupdApiResponseProducers
+    {
+        NsqLookupdApiResponseProducer[] producers { get; set; }
+    }
+
     internal static class ApiRequest
     {
-        public static JObject NegotiateV1(string method, string endpoint)
+        public static INsqLookupdApiResponseProducers NegotiateV1(string method, string endpoint)
         {
             const int timeoutMilliseconds = 2000;
 
@@ -67,13 +100,17 @@ namespace NsqSharp
                 respBody = Encoding.UTF8.GetBytes(@"{}");
             }
 
-            string json = Encoding.UTF8.GetString(respBody);
-            var data = JToken.Parse(json);
-            if (isNsqv1)
+            //string json = Encoding.UTF8.GetString(respBody);
+            var serializer = new DataContractJsonSerializer(typeof(NsqLookupdApiResponse));
+            using (var memoryStream = new MemoryStream(respBody))
             {
-                return (JObject)data;
+                var apiResponse = (NsqLookupdApiResponse)serializer.ReadObject(memoryStream);
+                if (isNsqv1)
+                {
+                    return apiResponse;
+                }
+                return apiResponse.data;
             }
-            return data["data"].Value<JObject>();
         }
     }
 }

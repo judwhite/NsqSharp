@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading;
-using Newtonsoft.Json;
 using NsqSharp.Channels;
 using NsqSharp.Extensions;
 using NsqSharp.Go;
@@ -16,22 +17,23 @@ namespace NsqSharp
     /// IdentifyResponse represents the metadata
     /// returned from an IDENTIFY command to nsqd
     /// </summary>
+    [DataContract]
     public class IdentifyResponse
     {
         /// <summary>Max RDY count</summary>
-        [JsonProperty("max_rdy_count")]
+        [DataMember(Name = "max_rdy_count")]
         public long MaxRdyCount { get; set; }
         /// <summary>Use TLSv1</summary>
-        [JsonProperty("tls_v1")]
+        [DataMember(Name = "tls_v1")]
         public bool TLSv1 { get; set; }
         /// <summary>Use Deflate compression</summary>
-        [JsonProperty("deflate")]
+        [DataMember(Name = "deflate")]
         public bool Deflate { get; set; }
         /// <summary>Use Snappy compression</summary>
-        [JsonProperty("snappy")]
+        [DataMember(Name = "snappy")]
         public bool Snappy { get; set; }
         /// <summary>Auth required</summary>
-        [JsonProperty("auth_required")]
+        [DataMember(Name = "auth_required")]
         public bool AuthRequired { get; set; }
     }
 
@@ -39,16 +41,17 @@ namespace NsqSharp
     /// AuthResponse represents the metadata
     /// returned from an AUTH command to nsqd
     /// </summary>
+    [DataContract]
     public class AuthResponse
     {
         /// <summary>Identity</summary>
-        [JsonProperty("identity")]
+        [DataMember(Name = "identity")]
         public string Identity { get; set; }
         /// <summary>Identity URL</summary>
-        [JsonProperty("identity_url")]
+        [DataMember(Name = "identity_url")]
         public string IdentityUrl { get; set; }
         /// <summary>Permission Count</summary>
-        [JsonProperty("permission_count")]
+        [DataMember(Name = "permission_count")]
         public long PermissionCount { get; set; }
     }
 
@@ -357,41 +360,40 @@ namespace NsqSharp
 
         private IdentifyResponse identify()
         {
-            var ci = new Dictionary<string, object>();
-            ci["client_id"] = _config.ClientID;
-            ci["hostname"] = _config.Hostname;
-            ci["user_agent"] = _config.UserAgent;
-            ci["short_id"] = _config.ClientID; // deprecated
-            ci["long_id"] = _config.Hostname;  // deprecated
-            ci["tls_v1"] = _config.TlsV1;
-            ci["deflate"] = _config.Deflate;
-            ci["deflate_level"] = _config.DeflateLevel;
-            ci["snappy"] = _config.Snappy;
-            ci["feature_negotiation"] = true;
+            var ci = new IdentifyRequest();
+            ci.client_id = _config.ClientID;
+            ci.hostname = _config.Hostname;
+            ci.user_agent = _config.UserAgent;
+            ci.short_id = _config.ClientID; // deprecated
+            ci.long_id = _config.Hostname;  // deprecated
+            ci.tls_v1 = _config.TlsV1;
+            ci.deflate = _config.Deflate;
+            ci.deflate_level = _config.DeflateLevel;
+            ci.snappy = _config.Snappy;
+            ci.feature_negotiation = true;
             if (_config.HeartbeatInterval <= TimeSpan.Zero)
             {
-                ci["heartbeat_interval"] = -1;
+                ci.heartbeat_interval = -1;
             }
             else
             {
-                ci["heartbeat_interval"] = (int)_config.HeartbeatInterval.TotalMilliseconds;
+                ci.heartbeat_interval = (int)_config.HeartbeatInterval.TotalMilliseconds;
             }
-            ci["sample_rate"] = _config.SampleRate;
-            ci["output_buffer_size"] = _config.OutputBufferSize;
+            ci.sample_rate = _config.SampleRate;
+            ci.output_buffer_size = _config.OutputBufferSize;
             if (_config.OutputBufferTimeout <= TimeSpan.Zero)
             {
-                ci["output_buffer_timeout"] = -1;
+                ci.output_buffer_timeout = -1;
             }
             else
             {
-                ci["output_buffer_timeout"] = (int)_config.OutputBufferTimeout.TotalMilliseconds;
+                ci.output_buffer_timeout = (int)_config.OutputBufferTimeout.TotalMilliseconds;
             }
-            ci["msg_timeout"] = (int)_config.MsgTimeout.TotalMilliseconds;
+            ci.msg_timeout = (int)_config.MsgTimeout.TotalMilliseconds;
 
-            Command cmd;
             try
             {
-                cmd = Command.Identify(ci);
+                var cmd = Command.Identify(ci);
                 WriteCommand(cmd);
 
                 FrameType frameType;
@@ -415,7 +417,12 @@ namespace NsqSharp
                 string respJson = Encoding.UTF8.GetString(data);
                 log(LogLevel.Debug, "IDENTIFY response: {0}", respJson);
 
-                var resp = JsonConvert.DeserializeObject<IdentifyResponse>(respJson);
+                IdentifyResponse resp;
+                var serializer = new DataContractJsonSerializer(typeof(IdentifyResponse));
+                using (var memoryStream = new MemoryStream(data))
+                {
+                    resp = (IdentifyResponse)serializer.ReadObject(memoryStream);
+                }
 
                 _maxRdyCount = resp.MaxRdyCount;
 
@@ -496,7 +503,12 @@ namespace NsqSharp
                 throw new Exception(string.Format("Error authenticating {0}", json));
             }
 
-            var resp = JsonConvert.DeserializeObject<AuthResponse>(json);
+            AuthResponse resp;
+            var serializer = new DataContractJsonSerializer(typeof(AuthResponse));
+            using (var memoryStream = new MemoryStream(data))
+            {
+                resp = (AuthResponse)serializer.ReadObject(memoryStream);
+            }
 
             log(LogLevel.Info, "Auth accepted. Identity: {0} {1} Permissions: {2}",
                 resp.Identity, resp.IdentityUrl, resp.PermissionCount);
@@ -844,5 +856,58 @@ namespace NsqSharp
                 string.Format(_logFmt, ToString()),
                 string.Format(line, args)));
         }
+    }
+
+    /// <summary>
+    /// Identify request.
+    /// </summary>
+    [DataContract]
+    public class IdentifyRequest
+    {
+        /// <summary>client_id</summary>
+        [DataMember(Name = "client_id")]
+        public string client_id { get; set; }
+        /// <summary>hostname</summary>
+        [DataMember(Name = "hostname")]
+        public string hostname { get; set; }
+        /// <summary>user_agent</summary>
+        [DataMember(Name = "user_agent")]
+        public string user_agent { get; set; }
+        /// <summary>short_id (deprecated)</summary>
+        [DataMember(Name = "short_id")]
+        public string short_id { get; set; }
+        /// <summary>long_id (deprecated)</summary>
+        [DataMember(Name = "long_id")]
+        public string long_id { get; set; }
+        /// <summary>tls_v1</summary>
+        [DataMember(Name = "tls_v1")]
+        public bool tls_v1 { get; set; }
+        /// <summary>deflate</summary>
+        [DataMember(Name = "deflate")]
+        public bool deflate { get; set; }
+        /// <summary>deflate_level</summary>
+        [DataMember(Name = "deflate_level")]
+        public int deflate_level { get; set; }
+        /// <summary>snappy</summary>
+        [DataMember(Name = "snappy")]
+        public bool snappy { get; set; }
+        /// <summary>feature_negotiation</summary>
+        [DataMember(Name = "feature_negotiation")]
+        public bool feature_negotiation { get; set; }
+        /// <summary>heartbeat_interval</summary>
+        [DataMember(Name = "heartbeat_interval")]
+        public int heartbeat_interval { get; set; }
+        /// <summary>sample_rate</summary>
+        [DataMember(Name = "sample_rate")]
+        public int sample_rate { get; set; }
+        /// <summary>output_buffer_size</summary>
+        [DataMember(Name = "output_buffer_size")]
+        public long output_buffer_size { get; set; }
+        /// <summary>output_buffer_timeout</summary>
+        [DataMember(Name = "output_buffer_timeout")]
+        public int output_buffer_timeout { get; set; }
+        /// <summary>msg_timeout</summary>
+        [DataMember(Name = "msg_timeout")]
+        public int msg_timeout { get; set; }
     }
 }

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using Newtonsoft.Json.Linq;
 using NsqSharp.Channels;
 using NsqSharp.Extensions;
 using NsqSharp.Go;
@@ -136,6 +135,16 @@ namespace NsqSharp
         // read from this channel to block until consumer is cleanly stopped
         private readonly Chan<int> _stopChan;
         private readonly Chan<int> _exitChan;
+
+        /// <summary>
+        /// Creates a new instance of Consumer for the specified topic/channel
+        /// </summary>
+        /// <param name="topic">The topic.</param>
+        /// <param name="channel">The channel.</param>
+        public Consumer(string topic, string channel)
+            : this(topic, channel, new Config())
+        {
+        }
 
         /// <summary>
         /// Creates a new instance of Consumer for the specified topic/channel
@@ -475,7 +484,7 @@ namespace NsqSharp
 
             log(LogLevel.Info, "querying nsqlookupd {0}", endpoint);
 
-            JObject data;
+            INsqLookupdApiResponseProducers data;
             try
             {
                 data = ApiRequest.NegotiateV1("GET", endpoint);
@@ -498,12 +507,15 @@ namespace NsqSharp
             //     "timestamp": 1340152173
             // }
             var nsqAddrs = new Collection<string>();
-            foreach (var producer in data["producers"])
+            if (data.producers != null)
             {
-                var broadcastAddress = (string)producer["broadcast_address"];
-                var port = (int)producer["tcp_port"];
-                var joined = string.Format("{0}:{1}", broadcastAddress, port);
-                nsqAddrs.Add(joined);
+                foreach (var producer in data.producers)
+                {
+                    var broadcastAddress = producer.broadcast_address;
+                    var port = producer.tcp_port;
+                    var joined = string.Format("{0}:{1}", broadcastAddress, port);
+                    nsqAddrs.Add(joined);
+                }
             }
 
             if (_behaviorDelegate != null)
@@ -515,7 +527,7 @@ namespace NsqSharp
             {
                 try
                 {
-                    ConnectToNSQLookupd(addr);
+                    ConnectToNSQD(addr);
                 }
                 catch (Exception ex)
                 {
