@@ -31,6 +31,13 @@ namespace NsqSharp
         /// </summary>
         /// <param name="message">The message.</param>
         void HandleMessage(Message message);
+
+        /// <summary>
+        /// Called when a message is deemed "failed" (i.e. the number of attempts
+        /// exceeded the Consumer specified MaxAttemptCount)
+        /// </summary>
+        /// <param name="message">The failed message.</param>
+        void LogFailedMessage(Message message);
     }
 
     /// <summary>
@@ -43,21 +50,6 @@ namespace NsqSharp
         /// Filters a list of NSQD addresses.
         /// </summary>
         Collection<string> Filter(IEnumerable<string> nsqds);
-    }
-
-    /// <summary>
-    /// FailedMessageLogger is an interface that can be implemented by handlers that wish
-    /// to receive a callback when a message is deemed "failed" (i.e. the number of attempts
-    /// exceeded the Consumer specified MaxAttemptCount)
-    /// </summary>
-    public interface IFailedMessageLogger : IHandler
-    {
-        /// <summary>
-        /// Called when a message is deemed "failed" (i.e. the number of attempts
-        /// exceeded the Consumer specified MaxAttemptCount)
-        /// </summary>
-        /// <param name="message">The failed message.</param>
-        void LogFailedMessage(Message message);
     }
 
     /// <summary>
@@ -453,6 +445,10 @@ namespace NsqSharp
             _mtx.EnterReadLock();
             try
             {
+                if (_lookupdQueryIndex >= _lookupdHTTPAddrs.Count)
+                {
+                    _lookupdQueryIndex = 0;
+                }
                 addr = _lookupdHTTPAddrs[_lookupdQueryIndex];
                 num = _lookupdHTTPAddrs.Count;
             }
@@ -993,7 +989,7 @@ namespace NsqSharp
                                 log(LogLevel.Error, "({0}) error connecting to nsqd - {1}", connAddr, ex);
                                 continue;
                             }
-                            throw;
+                            // TODO: PR go-nsq if we get DialTimeout this loop stops. check other exceptions.
                         }
                         break;
                     }
@@ -1359,9 +1355,14 @@ namespace NsqSharp
                 log(LogLevel.Warning, "msg {0} attempted {1} times, giving up",
                     message.ID, message.Attempts);
 
-                IFailedMessageLogger logger = handler as IFailedMessageLogger;
-                if (logger != null)
-                    logger.LogFailedMessage(message);
+                try
+                {
+                    handler.LogFailedMessage(message);
+                }
+                catch (Exception ex)
+                {
+                    log(LogLevel.Error, "LogFailedMessage returned error for msg {0} - {1}", message.ID, ex);
+                }
 
                 return true;
             }

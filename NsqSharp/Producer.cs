@@ -97,6 +97,8 @@ namespace NsqSharp
             _exitChan = new Chan<int>();
             _responseChan = new Chan<byte[]>();
             _errorChan = new Chan<byte[]>();
+
+            connect();
         }
 
         /// <summary>

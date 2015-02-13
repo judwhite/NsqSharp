@@ -169,17 +169,8 @@ namespace NsqSharp.Tests
 
             try
             {
-                ErrIdentify errIdentify = null;
-                try
-                {
-                    w.Publish(topicName, "publish_test_case");
-                }
-                catch (ErrIdentify ex)
-                {
-                    errIdentify = ex;
-                }
+                ErrIdentify errIdentify = Assert.Throws<ErrIdentify>(() => w.Publish(topicName, "publish_test_case"));
 
-                Assert.IsNotNull(errIdentify, "ErrIdentify not thrown");
                 Assert.AreEqual("E_BAD_BODY IDENTIFY heartbeat interval (100) is invalid", errIdentify.Reason);
             }
             finally
@@ -234,7 +225,7 @@ namespace NsqSharp.Tests
         }
     }
 
-    internal class ConsumerHandler : IHandler, IFailedMessageLogger
+    internal class ConsumerHandler : IHandler
     {
         public Consumer q { get; set; }
         public int messagesGood { get; set; }
