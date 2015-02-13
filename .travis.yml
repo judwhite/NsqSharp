@@ -5,3 +5,5 @@ install:
 script:
   - xbuild /p:Configuration=Release NsqSharp.sln
   - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Tests/bin/Release/NsqSharp.Tests.dll
+  - xbuild /p:Configuration=Release NsqSharp.Net40.sln
+  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Tests/bin/Release-net40/NsqSharp.Tests.dll
