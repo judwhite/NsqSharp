@@ -18,14 +18,11 @@ If you want to use NSQ within .NET today, check out [NSQnet](https://github.com/
 ```C#
 // NOTE: Work in progress
 
-var config = new Config();
-
-var w = new Producer("127.0.0.1:4150", config);
+var w = new Producer("127.0.0.1:4150");
 w.SetLogger(new ConsoleLogger(), LogLevel.Debug);
 
 w.Publish("string-topic-name", "Hello!");
 w.Publish("bytes-topic-name", new byte[] { 1, 2, 3, 4 });
-w.Publish("json-topic-name", new { Message = "Serialize me!" });
 
 // ...
 
@@ -37,13 +34,14 @@ w.Stop();
 ```C#
 // NOTE: Work in progress
 
-var config = new Config();
-            
 // Create a new Consumer for each topic or channel
-var r = new Consumer("string-topic-name", "channel-name", config);
+var r = new Consumer("string-topic-name", "channel-name");
 r.SetLogger(new ConsoleLogger(), LogLevel.Debug);
+
 r.AddHandler(/* instance of IHandler */);
+
 r.ConnectToNSQD("127.0.0.1:4150");
+// or r.ConnectToNSQLookupd("127.0.0.1:4161");
 
 // ...
 
