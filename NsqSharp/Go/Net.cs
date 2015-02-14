@@ -42,8 +42,15 @@ namespace NsqSharp.Go
 
             GoFunc.Run(() =>
             {
-                var tmpConn = Dial(network, address);
-                dialChan.Send(tmpConn);
+                try
+                {
+                    var tmpConn = Dial(network, address);
+                    dialChan.Send(tmpConn);
+                }
+                catch
+                {
+                    // handling timeout below, don't bring down the whole app with an unhandled thread exception
+                }
             });
 
             IConn conn = null;

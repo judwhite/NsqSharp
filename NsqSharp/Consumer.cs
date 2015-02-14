@@ -681,7 +681,7 @@ namespace NsqSharp
             try
             {
                 int idx = _nsqdTCPAddrs.IndexOf(addr);
-                if (idx != -1)
+                if (idx == -1)
                     throw new ErrNotConnected();
 
                 _nsqdTCPAddrs.RemoveAt(idx);

@@ -110,7 +110,7 @@ namespace NsqSharp.Tests
             Assert.AreEqual(TimeSpan.FromSeconds(10), c.LowRdyIdleTimeout, "low_rdy_idle_timeout");
             Assert.AreEqual(OS.Hostname().Split(new[] { '.' })[0], c.ClientID, "client_id");
             Assert.AreEqual(OS.Hostname(), c.Hostname, "hostname");
-            Assert.AreEqual("NsqSharp/0.0.2", c.UserAgent, "user_agent");
+            Assert.AreEqual(string.Format("{0}/{1}", ClientInfo.ClientName, ClientInfo.Version), c.UserAgent, "user_agent");
             Assert.AreEqual(TimeSpan.FromSeconds(30), c.HeartbeatInterval, "heartbeat_interval");
             Assert.AreEqual(0, c.SampleRate, "sample_rate");
             Assert.AreEqual(false, c.TlsV1, "tls_v1");
@@ -343,7 +343,7 @@ namespace NsqSharp.Tests
             Assert.AreEqual(TimeSpan.FromSeconds(10), c2.LowRdyIdleTimeout, "low_rdy_idle_timeout");
             Assert.AreEqual(OS.Hostname().Split(new[] { '.' })[0], c2.ClientID, "client_id");
             Assert.AreEqual(OS.Hostname(), c2.Hostname, "hostname");
-            Assert.AreEqual("NsqSharp/0.0.2", c2.UserAgent, "user_agent");
+            Assert.AreEqual(string.Format("{0}/{1}", ClientInfo.ClientName, ClientInfo.Version), c2.UserAgent, "user_agent");
             Assert.AreEqual(TimeSpan.FromSeconds(2), c2.HeartbeatInterval, "heartbeat_interval");
             Assert.AreEqual(0, c2.SampleRate, "sample_rate");
             Assert.AreEqual(false, c2.TlsV1, "tls_v1");
