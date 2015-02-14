@@ -48,7 +48,7 @@ namespace NsqSharp.Tests
                             new instruction(20 * Time.Millisecond, FrameType.Message, msgBytesGood),
                             new instruction(20 * Time.Millisecond, FrameType.Message, msgBytesGood),
                             // needed to exit test
-                            new instruction(500 * Time.Millisecond, -1, "exit")
+                            new instruction(1000 * Time.Millisecond, -1, "exit")
                          };
 
             var n = new mockNSQD(script);
@@ -195,8 +195,7 @@ namespace NsqSharp.Tests
 
                 var rdr = new BinaryReader(conn.GetStream());
                 var connw = new BinaryWriter(conn.GetStream());
-                var buf = rdr.ReadBytes(4);
-                Console.WriteLine(buf);
+                rdr.ReadBytes(4);
 
                 var readChan = new Chan<byte[]>();
                 var readDoneChan = new Chan<int>();
