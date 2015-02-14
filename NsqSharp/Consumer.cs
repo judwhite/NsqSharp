@@ -1402,7 +1402,7 @@ namespace NsqSharp
                 return;
 
             // TODO: proper width formatting
-            logger.Output(2, string.Format("{0} {1} [{2}/{3}] {4}",
+            logger.Output(string.Format("{0} {1} [{2}/{3}] {4}",
                 Log.Prefix(lvl), _id, _topic, _channel,
                 string.Format(line, args)));
         }

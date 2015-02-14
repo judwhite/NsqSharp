@@ -1,6 +1,6 @@
 ﻿namespace NsqSharp
 {
-    // https://github.com/bitly/go-nsq/blob/v1.0.2/version.go
+    // https://github.com/bitly/go-nsq/blob/master/version.go
 
     /// <summary>
     /// NSQ Client Information

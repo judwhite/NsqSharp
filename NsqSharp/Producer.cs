@@ -8,7 +8,7 @@ using NsqSharp.Utils;
 
 namespace NsqSharp
 {
-    // https://github.com/bitly/go-nsq/blob/v1.0.2/producer.go
+    // https://github.com/bitly/go-nsq/blob/master/producer.go
 
     /// <summary>
     /// Producer is a high-level type to publish to NSQ.
@@ -438,7 +438,7 @@ namespace NsqSharp
                 return;
 
             // TODO: proper width formatting
-            logger.Output(2, string.Format("{0} {1} {2}", Log.Prefix(lvl), _id, string.Format(line, args)));
+            logger.Output(string.Format("{0} {1} {2}", Log.Prefix(lvl), _id, string.Format(line, args)));
         }
 
         internal void onConnResponse(Conn c, byte[] data) { _responseChan.Send(data); }

@@ -7,7 +7,7 @@ using System.Text;
 
 namespace NsqSharp
 {
-    // https://github.com/bitly/go-nsq/blob/v1.0.2/api_request.go
+    // https://github.com/bitly/go-nsq/blob/master/api_request.go
 
     // NOTE: deadlinedConn from the original go source is a timeout
     // on the http request and reading the response off the wire.

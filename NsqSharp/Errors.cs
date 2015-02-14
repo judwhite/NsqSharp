@@ -5,7 +5,7 @@ using System.Security.Permissions;
 
 namespace NsqSharp
 {
-    // https://github.com/bitly/go-nsq/blob/v1.0.2/errors.go
+    // https://github.com/bitly/go-nsq/blob/master/errors.go
 
     /// <summary>
     /// ErrNotConnected is returned when a publish command is made

@@ -2,7 +2,7 @@
 
 namespace NsqSharp
 {
-    // https://github.com/bitly/go-nsq/blob/v1.0.2/delegates.go#L50
+    // https://github.com/bitly/go-nsq/blob/master/delegates.go#L50
 
     /// <summary>
     /// LogLevel specifies the severity of a given log message

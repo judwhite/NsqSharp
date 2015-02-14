@@ -5,7 +5,7 @@ using NsqSharp.Go;
 
 namespace NsqSharp
 {
-    // https://github.com/bitly/go-nsq/blob/v1.0.2/protocol.go
+    // https://github.com/bitly/go-nsq/blob/master/protocol.go
 
     /// <summary>
     /// Protocol

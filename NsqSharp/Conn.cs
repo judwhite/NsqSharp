@@ -11,7 +11,7 @@ using NsqSharp.Go;
 
 namespace NsqSharp
 {
-    // https://github.com/bitly/go-nsq/blob/v1.0.2/conn.go
+    // https://github.com/bitly/go-nsq/blob/master/conn.go
 
     /// <summary>
     /// IdentifyResponse represents the metadata
@@ -598,7 +598,7 @@ namespace NsqSharp
                             break;
                         default:
                             // TODO: what would 'err' be in this case?
-                            // https://github.com/bitly/go-nsq/blob/v1.0.2/conn.go#L510
+                            // https://github.com/bitly/go-nsq/blob/v1.0.3/conn.go#L518
                             log(LogLevel.Error, "IO error");
                             _delegate.OnIOError(this, new Exception(string.Format("unknown frame type {0}", frameType)));
                             break;
@@ -649,7 +649,7 @@ namespace NsqSharp
                             log(LogLevel.Error, "error sending command {0} - {1}", cmd, ex.Message);
                             close();
                             // TODO: Create PR to remove unnecessary continue in go-nsq
-                            // https://github.com/bitly/go-nsq/blob/v1.0.2/conn.go#L544
+                            // https://github.com/bitly/go-nsq/blob/v1.0.3/conn.go#L552
                         }
                     })
                     .CaseReceive(_msgResponseChan, resp =>
@@ -852,7 +852,7 @@ namespace NsqSharp
             }
 
             // TODO: Review format string
-            _logger.Output(2, string.Format("{0} {1} {2}", Log.Prefix(lvl),
+            _logger.Output(string.Format("{0} {1} {2}", Log.Prefix(lvl),
                 string.Format(_logFmt, ToString()),
                 string.Format(line, args)));
         }

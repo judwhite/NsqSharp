@@ -4,7 +4,7 @@ using NsqSharp.Extensions;
 
 namespace NsqSharp
 {
-    // https://github.com/bitly/go-nsq/blob/v1.0.2/message.go
+    // https://github.com/bitly/go-nsq/blob/master/message.go
 
     /// <summary>
     /// Message is the fundamental data type containing
