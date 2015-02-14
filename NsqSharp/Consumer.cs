@@ -1012,7 +1012,7 @@ namespace NsqSharp
         private TimeSpan backoffDurationForCount(int count)
         {
             var backoffDuration = new TimeSpan((long)(_config.BackoffMultiplier.Ticks * Math.Pow(2, count)));
-            if (_config.MaxBackoffDuration > backoffDuration)
+            if (backoffDuration > _config.MaxBackoffDuration)
             {
                 backoffDuration = _config.MaxBackoffDuration;
             }

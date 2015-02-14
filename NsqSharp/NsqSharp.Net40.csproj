@@ -89,7 +89,6 @@
     <Compile Include="Go\WaitGroup.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="Channels\Chan.cs" />
-    <Compile Include="Extensions\IntExtensions.cs" />
     <Compile Include="Producer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Protocol.cs" />

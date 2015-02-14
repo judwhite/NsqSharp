@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
-using NsqSharp.Extensions;
 using NsqSharp.Go;
 
 namespace NsqSharp
@@ -232,10 +231,10 @@ namespace NsqSharp
             {
                 using (var binaryWriter = new BinaryWriter(memoryStream))
                 {
-                    binaryWriter.Write(num.ReverseEndian());
+                    Binary.BigEndian.PutUint32(binaryWriter, num);
                     foreach (var b in bodies)
                     {
-                        binaryWriter.Write(b.Length.ReverseEndian());
+                        Binary.BigEndian.PutUint32(binaryWriter, b.Length);
                         binaryWriter.Write(b);
                     }
                 }

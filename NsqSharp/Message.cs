@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using NsqSharp.Extensions;
+using NsqSharp.Go;
 
 namespace NsqSharp
 {
@@ -15,12 +15,14 @@ namespace NsqSharp
         /// <summary>The number of bytes for a Message.ID</summary>
         public const int MsgIdLength = 16;
 
+        private static readonly DateTime EPOCH = new DateTime(1970, 1, 1);
+
         /// <summary>ID</summary>
         public byte[] ID { get; set; }
         /// <summary>Body</summary>
         public byte[] Body { get; set; }
         /// <summary>Timestamp</summary>
-        public UInt64 Timestamp { get; set; }
+        public DateTime Timestamp { get; set; }
         /// <summary>Attempts</summary>
         public UInt16 Attempts { get; set; }
 
@@ -50,7 +52,7 @@ namespace NsqSharp
 
             ID = id;
             Body = body;
-            Timestamp = (ulong)(DateTime.UtcNow.Ticks * 100);
+            Timestamp = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -163,8 +165,9 @@ namespace NsqSharp
 
             using (var writer = new BinaryWriter(w))
             {
-                writer.Write(Timestamp.ReverseEndian());
-                writer.Write(Attempts.ReverseEndian());
+                ulong ns = (ulong)(Timestamp - EPOCH).Ticks * 100;
+                Binary.BigEndian.PutUint64(writer, ns);
+                Binary.BigEndian.PutUint16(writer, Attempts);
                 total = 10;
 
                 writer.Write(ID);
@@ -188,14 +191,16 @@ namespace NsqSharp
             using (var memoryStream = new MemoryStream(b))
             using (var binaryReader = new BinaryReader(memoryStream))
             {
-                ulong timestamp = binaryReader.ReadUInt64().ReverseEndian();
-                ushort attempts = binaryReader.ReadUInt16().ReverseEndian();
+                ulong timestamp = Binary.BigEndian.UInt64(binaryReader);
+                ushort attempts = Binary.BigEndian.UInt16(binaryReader);
+
+                var timeOffset = new TimeSpan((long)(timestamp / 100));
 
                 byte[] id = binaryReader.ReadBytes(MsgIdLength);
 
                 byte[] body = binaryReader.ReadBytes(b.Length - MsgIdLength - 10);
 
-                return new Message(id, body) { Timestamp = timestamp, Attempts = attempts };
+                return new Message(id, body) { Timestamp = EPOCH + timeOffset, Attempts = attempts };
             }
         }
     }
