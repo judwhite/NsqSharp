@@ -40,13 +40,13 @@ namespace NsqSharp.Tests
                             new instruction(0, FrameType.Response, "OK"),
                             // IDENTIFY
                             new instruction(0, FrameType.Response, "OK"),
-                            new instruction(20 * Time.Millisecond, FrameType.Message, msgBytesGood),
-                            new instruction(20 * Time.Millisecond, FrameType.Message, msgBytesGood),
-                            new instruction(20 * Time.Millisecond, FrameType.Message, msgBytesGood),
-                            new instruction(20 * Time.Millisecond, FrameType.Message, msgBytesBad),
-                            new instruction(20 * Time.Millisecond, FrameType.Message, msgBytesBad),
-                            new instruction(20 * Time.Millisecond, FrameType.Message, msgBytesGood),
-                            new instruction(20 * Time.Millisecond, FrameType.Message, msgBytesGood),
+                            new instruction(100 * Time.Millisecond, FrameType.Message, msgBytesGood),
+                            new instruction(100 * Time.Millisecond, FrameType.Message, msgBytesGood),
+                            new instruction(100 * Time.Millisecond, FrameType.Message, msgBytesGood),
+                            new instruction(100 * Time.Millisecond, FrameType.Message, msgBytesBad),
+                            new instruction(100 * Time.Millisecond, FrameType.Message, msgBytesBad),
+                            new instruction(100 * Time.Millisecond, FrameType.Message, msgBytesGood),
+                            new instruction(100 * Time.Millisecond, FrameType.Message, msgBytesGood),
                             // needed to exit test
                             new instruction(1000 * Time.Millisecond, -1, "exit")
                          };
