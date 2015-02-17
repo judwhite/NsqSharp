@@ -1,15 +1,16 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("NsqSharp")]
-[assembly: AssemblyDescription("A .NET client library for NSQ, a realtime distributed messaging platform.")]
+[assembly: AssemblyTitle("NsqSharp.Bus.Tests")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Judson White")]
-[assembly: AssemblyProduct("NsqSharp")]
-[assembly: AssemblyCopyright("Copyright © Judson White 2015")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("NsqSharp.Bus.Tests")]
+[assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -19,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("db037231-b5c0-4084-b560-d4ff471b2aff")]
+[assembly: Guid("bd6ba9fe-8bdd-4084-972b-4cf1cf6def46")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -31,4 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.0.3.0")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

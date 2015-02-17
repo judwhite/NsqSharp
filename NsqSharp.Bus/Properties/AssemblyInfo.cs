@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("NsqSharp")]
-[assembly: AssemblyDescription("A .NET client library for NSQ, a realtime distributed messaging platform.")]
+[assembly: AssemblyTitle("NsqSharp.Bus")]
+[assembly: AssemblyDescription("Enterprise Service Bus level abstractions built on top of NsqSharp.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Judson White")]
-[assembly: AssemblyProduct("NsqSharp")]
+[assembly: AssemblyProduct("NsqSharp.Bus")]
 [assembly: AssemblyCopyright("Copyright © Judson White 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("db037231-b5c0-4084-b560-d4ff471b2aff")]
+[assembly: Guid("00fcbae3-c484-421a-9fad-93ef1af37f9d")]
 
 // Version information for an assembly consists of the following four values:
 //

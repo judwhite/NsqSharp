@@ -13,24 +13,24 @@ namespace NsqSharp
     public class Message
     {
         /// <summary>The number of bytes for a Message.ID</summary>
-        public const int MsgIdLength = 16;
+        internal const int MsgIdLength = 16;
 
         private static readonly DateTime EPOCH = new DateTime(1970, 1, 1);
 
         /// <summary>ID</summary>
-        public byte[] ID { get; set; }
+        public byte[] ID { get; internal set; }
         /// <summary>Body</summary>
-        public byte[] Body { get; set; }
+        public byte[] Body { get; internal set; }
         /// <summary>Timestamp</summary>
-        public DateTime Timestamp { get; set; }
+        public DateTime Timestamp { get; internal set; }
         /// <summary>Attempts</summary>
-        public UInt16 Attempts { get; set; }
+        public UInt16 Attempts { get; internal set; }
 
         /// <summary>NSQDAddress</summary>
-        public string NSQDAddress { get; set; }
+        public string NSQDAddress { get; internal set; }
 
         /// <summary>Delegate</summary>
-        public IMessageDelegate Delegate { get; set; }
+        internal IMessageDelegate Delegate { get; set; }
 
         private int _autoResponseDisabled;
         private int _responded;
