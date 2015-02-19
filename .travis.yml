@@ -1,7 +1,7 @@
 language: csharp
 solution: NsqSharp.sln
 install:
-  - sudo apt-get install nunit-console
+  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
   - sudo apt-get install gtk-sharp2
   - curl -sS https://api.nuget.org/packages/mono.cecil.0.9.5.4.nupkg > /tmp/mono.cecil.0.9.5.4.nupkg.zip
   - unzip /tmp/mono.cecil.0.9.5.4.nupkg.zip -d /tmp/cecil
@@ -18,9 +18,9 @@ script:
   - xbuild /p:Configuration=Release NsqSharp.sln
 #  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Tests/bin/Release/NsqSharp.Tests.dll
   - xbuild /p:Configuration=Release NsqSharp.Net40.sln
-  - mono nunit-console.exe ./NsqSharp.Tests/bin/Release-net40/NsqSharp.Tests.dll
+  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Tests/bin/Release-net40/NsqSharp.Tests.dll
   - export LD_LIBRARY_PATH=/usr/local/lib
-  - mono --debug --profile=monocov:outfile=monocovCoverage.cov,+[NsqSharp],+[NsqSharp.Tests] nunit-console.exe ./NsqSharp.Tests/bin/Release/NsqSharp.Tests.dll
+  - mono --debug --profile=monocov:outfile=monocovCoverage.cov,+[NsqSharp],+[NsqSharp.Tests] ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Tests/bin/Release/NsqSharp.Tests.dll
   - monocov --export-xml=monocovCoverage monocovCoverage.cov
   - REPO_COMMIT_AUTHOR=$(git show -s --pretty=format:"%cn")
   - REPO_COMMIT_AUTHOR_EMAIL=$(git show -s --pretty=format:"%ce")
