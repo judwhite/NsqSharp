@@ -20,7 +20,7 @@ script:
   - xbuild /p:Configuration=Release NsqSharp.Net40.sln
 #  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Tests/bin/Release-net40/NsqSharp.Tests.dll
   - export LD_LIBRARY_PATH=/usr/local/lib
-  - mono --debug --profile=monocov:outfile=monocovCoverage.cov,+[NsqSharp],+[NsqSharp.Tests] ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Tests/bin/Release-net40/NsqSharp.Tests.dll  /noshadow
+  - mono --debug --profile=monocov:outfile=monocovCoverage.cov,+[NsqSharp],+[NsqSharp.Tests] ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe /noshadow ./NsqSharp.Tests/bin/Release-net40/NsqSharp.Tests.dll
   - monocov --export-xml=monocovCoverage monocovCoverage.cov
   - REPO_COMMIT_AUTHOR=$(git show -s --pretty=format:"%cn")
   - REPO_COMMIT_AUTHOR_EMAIL=$(git show -s --pretty=format:"%ce")
@@ -31,4 +31,5 @@ script:
   - echo $REPO_COMMIT_AUTHOR_EMAIL
   - echo $REPO_COMMIT_MESSAGE
   - echo $TRAVIS_JOB_ID
+  - cat ./monocovCoverage
   - mono ./packages/coveralls.net.0.5.0/csmacnz.Coveralls.exe --monocov -i ./monocovCoverage --repoToken $COVERALLS_REPO_TOKEN --commitId $TRAVIS_COMMIT --commitBranch $TRAVIS_BRANCH --commitAuthor "$REPO_COMMIT_AUTHOR" --commitEmail "$REPO_COMMIT_AUTHOR_EMAIL" --commitMessage "$REPO_COMMIT_MESSAGE" --jobId $TRAVIS_JOB_ID  --serviceName "travis-ci"  --useRelativePaths
