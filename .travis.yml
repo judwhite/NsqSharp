@@ -1,7 +1,6 @@
 language: csharp
 solution: NsqSharp.sln
 install:
-  - echo $NOT_A_REAL_TOKEN
   - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
   - sudo apt-get install gtk-sharp2
   - curl -sS https://api.nuget.org/packages/mono.cecil.0.9.5.4.nupkg > /tmp/mono.cecil.0.9.5.4.nupkg.zip
