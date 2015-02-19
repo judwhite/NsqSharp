@@ -36,4 +36,5 @@ script:
   - ls -la
   - ls -la /
   - ls -la /usr/local/lib
+  - find . -name nunit-console*
   - mono ./packages/coveralls.net.0.5.0/csmacnz.Coveralls.exe --monocov -i ./monocovCoverage --repoToken $COVERALLS_REPO_TOKEN --commitId $TRAVIS_COMMIT --commitBranch $TRAVIS_BRANCH --commitAuthor "$REPO_COMMIT_AUTHOR" --commitEmail "$REPO_COMMIT_AUTHOR_EMAIL" --commitMessage "$REPO_COMMIT_MESSAGE" --jobId $TRAVIS_JOB_ID  --serviceName "travis-ci"  --useRelativePaths
