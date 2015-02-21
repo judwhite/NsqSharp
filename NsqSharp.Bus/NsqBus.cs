@@ -64,5 +64,70 @@ namespace NsqSharp.Bus
         {
             get { throw new NotImplementedException(); }
         }
+
+        public void SendLocal<T>(T message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SendLocal<T>()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SendLocal<T>(Action<T> messageConstructor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T CreateInstance<T>()
+        {
+            return Configure.Instance.Builder.Build<T>();
+        }
+
+        public void Publish<T>(T message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Publish<T>()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Publish<T>(Action<T> messageConstructor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Publish<T>(T message, params string[] nsqdTcpAddresses)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Publish<T>(params string[] nsqdTcpAddresses)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Publish<T>(Action<T> messageConstructor, params string[] nsqdTcpAddresses)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Publish<T>(T message, string topic, params string[] nsqdTcpAddresses)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Publish<T>(string topic, params string[] nsqdTcpAddresses)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Publish<T>(Action<T> messageConstructor, string topic, params string[] nsqdTcpAddresses)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

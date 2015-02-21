@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="BusType.cs" />
     <Compile Include="Configuration.cs" />
+    <Compile Include="IBus.Publish.cs" />
     <Compile Include="NsqBus.cs" />
     <Compile Include="Configure.cs" />
     <Compile Include="IBus.cs" />

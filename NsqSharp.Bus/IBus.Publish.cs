@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.Remoting.Messaging;
 
 namespace NsqSharp.Bus
 {
@@ -13,13 +12,13 @@ namespace NsqSharp.Bus
         /// </summary>
         /// <typeparam name="T">The message type.</typeparam>
         /// <param name="message">The message.</param>
-        void Send<T>(T message);
+        void Publish<T>(T message);
 
         /// <summary>
         /// Sends an empty message of type <typeparamref name="T"/> on the configured topic.
         /// </summary>
         /// <typeparam name="T">The message type.</typeparam>
-        void Send<T>();
+        void Publish<T>();
 
         /// <summary>
         /// Sends a message of type <typeparamref name="T"/> on the configured topic, using
@@ -27,7 +26,7 @@ namespace NsqSharp.Bus
         /// </summary>
         /// <typeparam name="T">The message type.</typeparam>
         /// <param name="messageConstructor">The method used to populate the object.</param>
-        void Send<T>(Action<T> messageConstructor);
+        void Publish<T>(Action<T> messageConstructor);
 
         /// <summary>
         /// Sends a message of type <typeparamref name="T"/> on the configured topic
@@ -36,7 +35,7 @@ namespace NsqSharp.Bus
         /// <typeparam name="T">The message type.</typeparam>
         /// <param name="message">The message.</param>
         /// <param name="nsqdTcpAddresses">The nsqd address(es) to receive the message.</param>
-        void Send<T>(T message, params string[] nsqdTcpAddresses);
+        void Publish<T>(T message, params string[] nsqdTcpAddresses);
 
         /// <summary>
         /// Sends an empty message of type <typeparamref name="T"/> on the configured topic
@@ -44,7 +43,7 @@ namespace NsqSharp.Bus
         /// </summary>
         /// <typeparam name="T">The message type.</typeparam>
         /// <param name="nsqdTcpAddresses">The nsqd address(es) to receive the message.</param>
-        void Send<T>(params string[] nsqdTcpAddresses);
+        void Publish<T>(params string[] nsqdTcpAddresses);
 
         /// <summary>
         /// Sends a message of type <typeparamref name="T"/> on the configured topic, using 
@@ -53,7 +52,7 @@ namespace NsqSharp.Bus
         /// <typeparam name="T">The message type.</typeparam>
         /// <param name="messageConstructor">The message constructor.</param>
         /// <param name="nsqdTcpAddresses">The nsqd address(es) to receive the message.</param>
-        void Send<T>(Action<T> messageConstructor, params string[] nsqdTcpAddresses);
+        void Publish<T>(Action<T> messageConstructor, params string[] nsqdTcpAddresses);
 
         /// <summary>
         /// Sends a message of type <typeparamref name="T"/> on the specified <paramref name="topic"/>
@@ -63,7 +62,7 @@ namespace NsqSharp.Bus
         /// <param name="message">The message.</param>
         /// <param name="topic">The topic to receive this message.</param>
         /// <param name="nsqdTcpAddresses">The nsqd address(es) to receive the message.</param>
-        void Send<T>(T message, string topic, params string[] nsqdTcpAddresses);
+        void Publish<T>(T message, string topic, params string[] nsqdTcpAddresses);
 
         /// <summary>
         /// Sends an empty message of type <typeparamref name="T"/> on the specified <paramref name="topic"/>
@@ -72,7 +71,7 @@ namespace NsqSharp.Bus
         /// <typeparam name="T">The message type.</typeparam>
         /// <param name="topic">The topic to receive this message.</param>
         /// <param name="nsqdTcpAddresses">The nsqd address(es) to receive the message.</param>
-        void Send<T>(string topic, params string[] nsqdTcpAddresses);
+        void Publish<T>(string topic, params string[] nsqdTcpAddresses);
 
         /// <summary>
         /// Sends a message of type <typeparamref name="T"/> on the specified <paramref name="topic"/>, using
@@ -82,47 +81,6 @@ namespace NsqSharp.Bus
         /// <param name="messageConstructor">The message constructor.</param>
         /// <param name="topic">The topic to receive this message.</param>
         /// <param name="nsqdTcpAddresses">The nsqd address(es) to receive the message.</param>
-        void Send<T>(Action<T> messageConstructor, string topic, params string[] nsqdTcpAddresses);
-
-        /// <summary>
-        /// Sends a message of type <typeparamref name="T"/> on the configured topic
-        /// to the local process.
-        /// </summary>
-        /// <typeparam name="T">The message type.</typeparam>
-        /// <param name="message">The message.</param>
-        void SendLocal<T>(T message);
-
-        /// <summary>
-        /// Sends an empty message of type <typeparamref name="T"/> on the configured topic
-        /// to the local process.
-        /// </summary>
-        /// <typeparam name="T">The message type.</typeparam>
-        void SendLocal<T>();
-
-        /// <summary>
-        /// Sends a message of type <typeparamref name="T"/> on the configured topic, using
-        /// <paramref name="messageConstructor"/> to populate the message, to the local process.
-        /// </summary>
-        /// <typeparam name="T">The message type.</typeparam>
-        /// <param name="messageConstructor">The method used to populate the object.</param>
-        void SendLocal<T>(Action<T> messageConstructor);
-
-        /// <summary>
-        /// Defer the current message for <paramref name="duration"/>.
-        /// </summary>
-        void Defer(TimeSpan duration);
-
-        /// <summary>Defer the current message until <paramref name="processAt"/>.</summary>
-        void Defer(DateTime processAt);
-
-        /// <summary>Gets the current NSQ message being processed.</summary>
-        IMessage CurrentMessage { get; }
-
-        /// <summary>
-        /// Builds an object.
-        /// </summary>
-        /// <typeparam name="T">The type of the object.</typeparam>
-        /// <returns>The constructred object with dependencies resolved.</returns>
-        T CreateInstance<T>();
+        void Publish<T>(Action<T> messageConstructor, string topic, params string[] nsqdTcpAddresses);
     }
 }
