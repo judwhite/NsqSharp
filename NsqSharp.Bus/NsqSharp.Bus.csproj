@@ -48,13 +48,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BusType.cs" />
-    <Compile Include="Configuration.cs" />
+    <Compile Include="Configuration\BusType.cs" />
+    <Compile Include="Configuration\DependencyLifeCycle.cs" />
+    <Compile Include="Configuration\IBuilder.cs" />
+    <Compile Include="Configuration\IConfigureComponents.cs" />
+    <Compile Include="Configuration\IObjectBuilder.cs" />
+    <Compile Include="Configuration\IWantToRunWhenTheBusStartsAndStops.cs" />
+    <Compile Include="Configuration\NsqConfiguration.cs" />
+    <Compile Include="Configuration\StructureMapObjectBuilder.cs" />
     <Compile Include="IBus.Publish.cs" />
+    <Compile Include="Configuration\InterfaceBuilder.cs" />
+    <Compile Include="MigrationHelpers\ICommand.cs" />
+    <Compile Include="Configuration\IConfigureThisEndpoint.cs" />
+    <Compile Include="MigrationHelpers\IEvent.cs" />
+    <Compile Include="MigrationHelpers\IMessage.cs" />
+    <Compile Include="MigrationHelpers\INeedInitialization.cs" />
     <Compile Include="NsqBus.cs" />
-    <Compile Include="Configure.cs" />
+    <Compile Include="Configuration\Configure.cs" />
     <Compile Include="IBus.cs" />
-    <Compile Include="IConfiguration.cs" />
+    <Compile Include="Configuration\IConfiguration.cs" />
     <Compile Include="IHandleMessages.cs" />
     <Compile Include="IMessageContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

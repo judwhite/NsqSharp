@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Remoting.Messaging;
+using NsqSharp.Bus.Configuration;
 
 namespace NsqSharp.Bus
 {
@@ -87,47 +88,47 @@ namespace NsqSharp.Bus
 
         public void Publish<T>(T message)
         {
-            throw new NotImplementedException();
+            Send(message);
         }
 
         public void Publish<T>()
         {
-            throw new NotImplementedException();
+            Send<T>();
         }
 
         public void Publish<T>(Action<T> messageConstructor)
         {
-            throw new NotImplementedException();
+            Send(messageConstructor);
         }
 
         public void Publish<T>(T message, params string[] nsqdTcpAddresses)
         {
-            throw new NotImplementedException();
+            Send(message, nsqdTcpAddresses);
         }
 
         public void Publish<T>(params string[] nsqdTcpAddresses)
         {
-            throw new NotImplementedException();
+            Send<T>(nsqdTcpAddresses);
         }
 
         public void Publish<T>(Action<T> messageConstructor, params string[] nsqdTcpAddresses)
         {
-            throw new NotImplementedException();
+            Send(messageConstructor, nsqdTcpAddresses);
         }
 
         public void Publish<T>(T message, string topic, params string[] nsqdTcpAddresses)
         {
-            throw new NotImplementedException();
+            Send(message, topic, nsqdTcpAddresses);
         }
 
         public void Publish<T>(string topic, params string[] nsqdTcpAddresses)
         {
-            throw new NotImplementedException();
+            Send<T>(topic, nsqdTcpAddresses);
         }
 
         public void Publish<T>(Action<T> messageConstructor, string topic, params string[] nsqdTcpAddresses)
         {
-            throw new NotImplementedException();
+            Send(messageConstructor, topic, nsqdTcpAddresses);
         }
     }
 }

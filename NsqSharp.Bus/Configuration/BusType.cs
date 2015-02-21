@@ -1,4 +1,4 @@
-﻿namespace NsqSharp.Bus
+﻿namespace NsqSharp.Bus.Configuration
 {
     /// <summary>
     /// Bus type
