@@ -32,7 +32,13 @@ namespace NsqSharp.Bus
 
         public void Send<T>(Action<T> messageConstructor, params string[] nsqdTcpAddresses)
         {
-            throw new NotImplementedException();
+            if (messageConstructor == null)
+                throw new ArgumentNullException("messageConstructor");
+
+            T message = (typeof(T).IsInterface ? InterfaceBuilder.Create<T>() : CreateInstance<T>());
+            messageConstructor(message);
+
+            Send(message, nsqdTcpAddresses);
         }
 
         public void Send<T>(T message, string topic, params string[] nsqdTcpAddresses)
@@ -47,7 +53,13 @@ namespace NsqSharp.Bus
 
         public void Send<T>(Action<T> messageConstructor, string topic, params string[] nsqdTcpAddresses)
         {
-            throw new NotImplementedException();
+            if (messageConstructor == null)
+                throw new ArgumentNullException("messageConstructor");
+
+            T message = (typeof(T).IsInterface ? InterfaceBuilder.Create<T>() : CreateInstance<T>());
+            messageConstructor(message);
+
+            Send(message, topic, nsqdTcpAddresses);
         }
 
         public void Defer<T>(TimeSpan delay, T message)
@@ -77,7 +89,13 @@ namespace NsqSharp.Bus
 
         public void SendLocal<T>(Action<T> messageConstructor)
         {
-            throw new NotImplementedException();
+            if (messageConstructor == null)
+                throw new ArgumentNullException("messageConstructor");
+
+            T message = (typeof(T).IsInterface ? InterfaceBuilder.Create<T>() : CreateInstance<T>());
+            messageConstructor(message);
+
+            SendLocal(message);
         }
 
         public T CreateInstance<T>()

@@ -61,8 +61,8 @@
     <Compile Include="Configuration\IWantToRunWhenTheBusStartsAndStops.cs" />
     <Compile Include="Configuration\NsqConfiguration.cs" />
     <Compile Include="Configuration\StructureMapObjectBuilder.cs" />
-    <Compile Include="IBus.Publish.cs" />
     <Compile Include="Configuration\InterfaceBuilder.cs" />
+    <Compile Include="MigrationHelpers\IBusExtensions.cs" />
     <Compile Include="MigrationHelpers\ICommand.cs" />
     <Compile Include="Configuration\IConfigureThisEndpoint.cs" />
     <Compile Include="MigrationHelpers\IEvent.cs" />

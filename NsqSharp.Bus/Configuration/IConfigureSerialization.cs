@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace NsqSharp.Bus.Configuration
 {
@@ -11,6 +12,11 @@ namespace NsqSharp.Bus.Configuration
         /// Attempts to find a compatible version of Newtonsoft.Json.
         /// </summary>
         void Json();
+
+        /// <summary>
+        /// Attempts to find a compatible version of Newtonsoft.Json.
+        /// </summary>
+        void Json(Assembly jsonAssembly);
 
         /// <summary>
         /// Sets the default serialization/deserialization methods.

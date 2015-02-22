@@ -25,7 +25,6 @@ namespace NsqSharp.Bus.Configuration
         /// Create a concrete type based on an interface.
         /// </summary>
         public static T Create<T>()
-            where T : class
         {
             if (!typeof(T).IsInterface)
                 throw new ArgumentException(string.Format("Type '{0}' is not an interface.", typeof(T)));
@@ -95,7 +94,15 @@ namespace NsqSharp.Bus.Configuration
 
         private static IEnumerable<PropertyInfo> GetProperties(Type type)
         {
-            return type.GetProperties();
+            var properties = new List<PropertyInfo>();
+            properties.AddRange(type.GetProperties());
+
+            foreach (Type baseInterface in type.GetInterfaces())
+            {
+                properties.AddRange(baseInterface.GetProperties());
+            }
+
+            return properties;
         }
     }
 }
