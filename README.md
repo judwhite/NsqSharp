@@ -7,9 +7,9 @@ A .NET client library for [NSQ](https://github.com/bitly/nsq), a realtime distri
 
 ## Work in Progress
 
-This project is currently under development.
+This project is currently suitable for building proof-of-concept code, receiving pull requests and reporting issues. Thorough testing would be encouraged before using in production as I've not yet completed my own large scale testing.
 
-If you want to use NSQ within .NET today, check out [NSQnet](https://github.com/ClothesHorse/NSQnet).
+The public API has not reached stability. Future commits may change the API slightly.
 
 ## Examples
 
@@ -48,10 +48,20 @@ r.ConnectToNSQD("127.0.0.1:4150");
 r.Stop();
 ```
 
-## Project Goals
+## NsqSharp Project Goals
 - Structurally similar to the official [go-nsq](https://github.com/bitly/go-nsq) client.
 - Up to date with the latest stable release of go-nsq.
 - Provide similar behavior and semantics as the official package.
+
+## Pull Requests
+
+When submitting a pull request please keep in mind we're trying to stay as close to [go-nsq](https://github.com/bitly/go-nsq) as possible. This sometimes means writing C# which looks more like Go and follows their file layout.
+
+#### NsqSharp.Bus
+
+NsqSharp.Bus is an optional IoC-friendly abstraction layer built on top of NsqSharp. The original motivation for this addon was to ease migration from another .NET service bus. This addon is in the early phases of development. It is not required to use NsqSharp.
+
+More information to come on this project soon, possibly in another repository.
 
 ## License
 
