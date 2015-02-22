@@ -9,9 +9,20 @@ namespace NsqSharp.Bus.Configuration
     public class Configure
     {
         private static readonly Configure _configure = new Configure();
+        private static readonly IConfigureSerialization _configureSerialization = new ConfigureSerialization();
 
         private Configure()
         {
+            Configurer = new ConfigureComponents();
+            Builder = new Builder();
+        }
+
+        /// <summary>
+        /// Gets the <see cref="Configure"/> instance.
+        /// </summary>
+        public static Configure Instance
+        {
+            get { return _configure; }
         }
 
         /// <summary>
@@ -26,21 +37,21 @@ namespace NsqSharp.Bus.Configuration
         }
 
         /// <summary>
-        /// Gets the <see cref="Configure"/> instance.
+        /// Set the default serialization method.
         /// </summary>
-        public static Configure Instance
+        public static IConfigureSerialization Serialization
         {
-            get { return _configure; }
+            get { return _configureSerialization; }
         }
 
         /// <summary>
         /// Gets the component configurer.
         /// </summary>
-        public IConfigureComponents Configurer { get; set; }
+        public IConfigureComponents Configurer { get; private set; }
 
         /// <summary>
         /// Gets the component builder.
         /// </summary>
-        public IBuilder Builder { get; set; }
+        public IBuilder Builder { get; private set; }
     }
 }

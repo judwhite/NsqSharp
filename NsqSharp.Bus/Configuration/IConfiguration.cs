@@ -10,7 +10,7 @@
         /// </summary>
         /// <param name="objectBuilder">The <see cref="IObjectBuilder"/>. See <see cref="StructureMapObjectBuilder"/>
         /// for a built in implementation.</param>
-        IConfiguration UsingContainer(IObjectBuilder objectBuilder);
+        IBus UsingContainer(IObjectBuilder objectBuilder);
 
         /// <summary>
         /// TODO

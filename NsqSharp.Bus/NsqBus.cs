@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.Remoting.Messaging;
 using NsqSharp.Bus.Configuration;
 
 namespace NsqSharp.Bus
@@ -51,12 +50,12 @@ namespace NsqSharp.Bus
             throw new NotImplementedException();
         }
 
-        public void Defer(TimeSpan delay)
+        public void Defer<T>(TimeSpan delay, T message)
         {
             throw new NotImplementedException();
         }
 
-        public void Defer(DateTime processAt)
+        public void Defer<T>(DateTime processAt, T message)
         {
             throw new NotImplementedException();
         }
@@ -84,51 +83,6 @@ namespace NsqSharp.Bus
         public T CreateInstance<T>()
         {
             return Configure.Instance.Builder.Build<T>();
-        }
-
-        public void Publish<T>(T message)
-        {
-            Send(message);
-        }
-
-        public void Publish<T>()
-        {
-            Send<T>();
-        }
-
-        public void Publish<T>(Action<T> messageConstructor)
-        {
-            Send(messageConstructor);
-        }
-
-        public void Publish<T>(T message, params string[] nsqdTcpAddresses)
-        {
-            Send(message, nsqdTcpAddresses);
-        }
-
-        public void Publish<T>(params string[] nsqdTcpAddresses)
-        {
-            Send<T>(nsqdTcpAddresses);
-        }
-
-        public void Publish<T>(Action<T> messageConstructor, params string[] nsqdTcpAddresses)
-        {
-            Send(messageConstructor, nsqdTcpAddresses);
-        }
-
-        public void Publish<T>(T message, string topic, params string[] nsqdTcpAddresses)
-        {
-            Send(message, topic, nsqdTcpAddresses);
-        }
-
-        public void Publish<T>(string topic, params string[] nsqdTcpAddresses)
-        {
-            Send<T>(topic, nsqdTcpAddresses);
-        }
-
-        public void Publish<T>(Action<T> messageConstructor, string topic, params string[] nsqdTcpAddresses)
-        {
-            Send(messageConstructor, topic, nsqdTcpAddresses);
         }
     }
 }

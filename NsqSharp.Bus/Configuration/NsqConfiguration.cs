@@ -22,7 +22,7 @@ namespace NsqSharp.Bus.Configuration
             throw new System.NotImplementedException();
         }
 
-        public IConfiguration UsingContainer(IObjectBuilder objectBuilder)
+        public IBus UsingContainer(IObjectBuilder objectBuilder)
         {
             throw new NotImplementedException();
         }
