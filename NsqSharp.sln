@@ -7,6 +7,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp", "NsqSharp\NsqSha
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp.Tests", "NsqSharp.Tests\NsqSharp.Tests.csproj", "{6962DA1C-5532-4C12-B2A3-36B53877A1FB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp.Bus", "NsqSharp.Bus\NsqSharp.Bus.csproj", "{9635F78D-E740-48C7-B883-0D806C000158}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp.Bus.Tests", "NsqSharp.Bus.Tests\NsqSharp.Bus.Tests.csproj", "{B3EC80D4-4869-4C8D-AEB4-A212C197F9F1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{AEA8D8ED-997C-429D-8555-50020C9CC570}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,8 +27,20 @@ Global
 		{6962DA1C-5532-4C12-B2A3-36B53877A1FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6962DA1C-5532-4C12-B2A3-36B53877A1FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6962DA1C-5532-4C12-B2A3-36B53877A1FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9635F78D-E740-48C7-B883-0D806C000158}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9635F78D-E740-48C7-B883-0D806C000158}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9635F78D-E740-48C7-B883-0D806C000158}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9635F78D-E740-48C7-B883-0D806C000158}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3EC80D4-4869-4C8D-AEB4-A212C197F9F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3EC80D4-4869-4C8D-AEB4-A212C197F9F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3EC80D4-4869-4C8D-AEB4-A212C197F9F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3EC80D4-4869-4C8D-AEB4-A212C197F9F1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6962DA1C-5532-4C12-B2A3-36B53877A1FB} = {AEA8D8ED-997C-429D-8555-50020C9CC570}
+		{B3EC80D4-4869-4C8D-AEB4-A212C197F9F1} = {AEA8D8ED-997C-429D-8555-50020C9CC570}
 	EndGlobalSection
 EndGlobal

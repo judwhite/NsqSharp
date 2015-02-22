@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9635F78D-E740-48C7-B883-0D806C000158}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NsqSharp.Bus</RootNamespace>
+    <AssemblyName>NsqSharp.Bus</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug-net40\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NET40</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>bin\Debug-net40\NsqSharp.Bus.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release-net40\</OutputPath>
+    <DefineConstants>TRACE;NET40</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>bin\Release-net40\NsqSharp.Bus.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Configuration\Builder.cs" />
+    <Compile Include="Configuration\BusType.cs" />
+    <Compile Include="Configuration\ConfigureComponents.cs" />
+    <Compile Include="Configuration\ConfigureSerialization.cs" />
+    <Compile Include="Configuration\DependencyLifeCycle.cs" />
+    <Compile Include="Configuration\IBuilder.cs" />
+    <Compile Include="Configuration\IConfigureComponents.cs" />
+    <Compile Include="Configuration\IConfigureSerialization.cs" />
+    <Compile Include="Configuration\IObjectBuilder.cs" />
+    <Compile Include="Configuration\IWantToRunWhenTheBusStartsAndStops.cs" />
+    <Compile Include="Configuration\NsqConfiguration.cs" />
+    <Compile Include="Configuration\StructureMapObjectBuilder.cs" />
+    <Compile Include="IBus.Publish.cs" />
+    <Compile Include="Configuration\InterfaceBuilder.cs" />
+    <Compile Include="MigrationHelpers\ICommand.cs" />
+    <Compile Include="Configuration\IConfigureThisEndpoint.cs" />
+    <Compile Include="MigrationHelpers\IEvent.cs" />
+    <Compile Include="MigrationHelpers\IMessage.cs" />
+    <Compile Include="MigrationHelpers\INeedInitialization.cs" />
+    <Compile Include="NsqBus.cs" />
+    <Compile Include="Configuration\Configure.cs" />
+    <Compile Include="IBus.cs" />
+    <Compile Include="Configuration\IConfiguration.cs" />
+    <Compile Include="IHandleMessages.cs" />
+    <Compile Include="IMessageContext.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NsqSharp\NsqSharp.Net40.csproj">
+      <Project>{7327244d-e163-4c35-9c1a-8dbdf06b9408}</Project>
+      <Name>NsqSharp.Net40</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
