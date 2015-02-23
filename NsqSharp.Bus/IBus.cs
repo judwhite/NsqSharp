@@ -5,7 +5,7 @@ namespace NsqSharp.Bus
     /// <summary>
     /// IBus interface.
     /// </summary>
-    public partial interface IBus
+    public interface IBus
     {
         /// <summary>
         /// Sends a message of type <typeparamref name="T"/> on the configured topic.

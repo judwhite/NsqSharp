@@ -53,13 +53,9 @@
     <Compile Include="Configuration\ConfigureComponents.cs" />
     <Compile Include="Configuration\ConfigureSerialization.cs" />
     <Compile Include="Configuration\DependencyLifeCycle.cs" />
-    <Compile Include="Configuration\IBuilder.cs" />
-    <Compile Include="Configuration\IConfigureComponents.cs" />
-    <Compile Include="Configuration\IConfigureSerialization.cs" />
-    <Compile Include="Configuration\IObjectBuilder.cs" />
-    <Compile Include="Configuration\IWantToRunWhenTheBusStartsAndStops.cs" />
+    <Compile Include="MigrationHelpers\IWantToRunWhenTheBusStartsAndStops.cs" />
     <Compile Include="Configuration\NsqConfiguration.cs" />
-    <Compile Include="Configuration\StructureMapObjectBuilder.cs" />
+    <Compile Include="Configuration\ObjectBuilder.cs" />
     <Compile Include="MigrationHelpers\IBusExtensions.cs" />
     <Compile Include="Configuration\InterfaceBuilder.cs" />
     <Compile Include="MigrationHelpers\ICommand.cs" />
@@ -70,7 +66,6 @@
     <Compile Include="NsqBus.cs" />
     <Compile Include="Configuration\Configure.cs" />
     <Compile Include="IBus.cs" />
-    <Compile Include="Configuration\IConfiguration.cs" />
     <Compile Include="IHandleMessages.cs" />
     <Compile Include="IMessageContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
