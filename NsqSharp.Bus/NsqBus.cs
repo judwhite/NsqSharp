@@ -7,7 +7,7 @@ namespace NsqSharp.Bus
     {
         public void Send<T>(T message)
         {
-            throw new NotImplementedException();
+            Send(message, GetTopic<T>());
         }
 
         public void Send<T>()
@@ -17,12 +17,18 @@ namespace NsqSharp.Bus
 
         public void Send<T>(Action<T> messageConstructor)
         {
-            throw new NotImplementedException();
+            if (messageConstructor == null)
+                throw new ArgumentNullException("messageConstructor");
+
+            T message = (typeof(T).IsInterface ? InterfaceBuilder.Create<T>() : CreateInstance<T>());
+            messageConstructor(message);
+
+            Send(message);
         }
 
         public void Send<T>(T message, params string[] nsqdTcpAddresses)
         {
-            throw new NotImplementedException();
+            Send(message, GetTopic<T>(), nsqdTcpAddresses);
         }
 
         public void Send<T>(params string[] nsqdTcpAddresses)
@@ -101,6 +107,11 @@ namespace NsqSharp.Bus
         public T CreateInstance<T>()
         {
             return Configure.Instance.Builder.Build<T>();
+        }
+
+        private static string GetTopic<T>()
+        {
+            throw new NotImplementedException();
         }
     }
 }
