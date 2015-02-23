@@ -148,10 +148,11 @@ namespace NsqSharp.Tests
 
         public class mockNSQD
         {
-            public instruction[] script { get; set; }
+            private instruction[] script { get; set; }
+            private TcpListener tcpListener { get; set; }
+
             public List<byte[]> got { get; set; }
             public string tcpAddr { get; set; }
-            public TcpListener tcpListener { get; set; }
             public Chan<int> exitChan { get; set; }
 
             public mockNSQD(instruction[] script)
@@ -159,14 +160,15 @@ namespace NsqSharp.Tests
                 this.script = script;
                 exitChan = new Chan<int>();
                 got = new List<byte[]>();
-                tcpListener = new TcpListener(IPAddress.Loopback, 4152);
-                tcpListener.Start();
-                tcpAddr = tcpListener.LocalEndpoint.ToString();
                 GoFunc.Run(listen);
             }
 
             private void listen()
             {
+                tcpListener = new TcpListener(IPAddress.Loopback, 4152);
+                tcpListener.Start();
+                tcpAddr = tcpListener.LocalEndpoint.ToString();
+
                 log.Printf("TCP: listening on {0}", tcpListener.LocalEndpoint);
 
                 while (true)
@@ -193,107 +195,109 @@ namespace NsqSharp.Tests
 
                 log.Printf("TCP: new client({0})", conn.Client.RemoteEndPoint);
 
-                var rdr = new BinaryReader(conn.GetStream());
-                var connw = new BinaryWriter(conn.GetStream());
-                rdr.ReadBytes(4);
-
-                var readChan = new Chan<byte[]>();
-                var readDoneChan = new Chan<int>();
-                var scriptTime = Time.After(script[0].delay);
-
-                GoFunc.Run(() =>
-                           {
-                               while (true)
-                               {
-                                   try
-                                   {
-                                       var line = ReadBytes(rdr, (byte)'\n');
-                                       // trim the '\n'
-                                       line = line.Take(line.Length - 1).ToArray();
-                                       readChan.Send(line);
-                                       readDoneChan.Receive();
-                                   }
-                                   catch
-                                   {
-                                       return;
-                                   }
-                               }
-                           });
-
-                int rdyCount = 0;
-                bool doLoop = true;
-                while (doLoop && idx < script.Length)
+                using (var rdr = new BinaryReader(conn.GetStream()))
+                using (var connw = new BinaryWriter(conn.GetStream()))
                 {
-                    Select
-                        .CaseReceive(readChan, line =>
-                        {
-                            string strLine = Encoding.UTF8.GetString(line);
-                            log.Printf("mock: '{0}'", strLine);
-                            got.Add(line);
-                            var args = strLine.Split(new[] { ' ' });
-                            switch (args[0])
+                    rdr.ReadBytes(4);
+
+                    var readChan = new Chan<byte[]>();
+                    var readDoneChan = new Chan<int>();
+                    var scriptTime = Time.After(script[0].delay);
+
+                    GoFunc.Run(() =>
+                               {
+                                   while (true)
+                                   {
+                                       try
+                                       {
+                                           var line = ReadBytes(rdr, (byte)'\n');
+                                           // trim the '\n'
+                                           line = line.Take(line.Length - 1).ToArray();
+                                           readChan.Send(line);
+                                           readDoneChan.Receive();
+                                       }
+                                       catch
+                                       {
+                                           return;
+                                       }
+                                   }
+                               });
+
+                    int rdyCount = 0;
+                    bool doLoop = true;
+                    while (doLoop && idx < script.Length)
+                    {
+                        Select
+                            .CaseReceive(readChan, line =>
                             {
-                                case "IDENTIFY":
+                                string strLine = Encoding.UTF8.GetString(line);
+                                log.Printf("mock: '{0}'", strLine);
+                                got.Add(line);
+                                var args = strLine.Split(new[] { ' ' });
+                                switch (args[0])
+                                {
+                                    case "IDENTIFY":
+                                        try
+                                        {
+                                            byte[] l = rdr.ReadBytes(4);
+                                            int size = Binary.BigEndian.Int32(l);
+                                            byte[] b = rdr.ReadBytes(size);
+                                            log.Printf(Encoding.UTF8.GetString(b));
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            log.Printf(ex.ToString());
+                                            doLoop = false;
+                                            throw;
+                                        }
+                                        break;
+                                    case "RDY":
+                                        int rdy = int.Parse(args[1]);
+                                        rdyCount = rdy;
+                                        break;
+                                }
+                                readDoneChan.Send(1);
+                            })
+                            .CaseReceive(scriptTime, o =>
+                            {
+                                bool doWrite = true;
+                                var inst = script[idx];
+                                if (inst.body.SequenceEqual(Encoding.UTF8.GetBytes("exit")))
+                                {
+                                    doLoop = false;
+                                    doWrite = false;
+                                }
+                                if (inst.frameType == (int)FrameType.Message)
+                                {
+                                    if (rdyCount == 0)
+                                    {
+                                        //log.Printf("!!! RDY == 0");
+                                        scriptTime = Time.After(script[idx + 1].delay);
+                                        doWrite = false;
+                                    }
+                                    else
+                                    {
+                                        rdyCount--;
+                                    }
+                                }
+
+                                if (doWrite)
+                                {
                                     try
                                     {
-                                        byte[] l = rdr.ReadBytes(4);
-                                        int size = Binary.BigEndian.Int32(l);
-                                        byte[] b = rdr.ReadBytes(size);
-                                        log.Printf(Encoding.UTF8.GetString(b));
+                                        connw.Write(framedResponse(inst.frameType, inst.body));
+                                        scriptTime = Time.After(script[idx + 1].delay);
+                                        idx++;
                                     }
                                     catch (Exception ex)
                                     {
                                         log.Printf(ex.ToString());
                                         doLoop = false;
-                                        throw;
                                     }
-                                    break;
-                                case "RDY":
-                                    int rdy = int.Parse(args[1]);
-                                    rdyCount = rdy;
-                                    break;
-                            }
-                            readDoneChan.Send(1);
-                        })
-                        .CaseReceive(scriptTime, o =>
-                        {
-                            bool doWrite = true;
-                            var inst = script[idx];
-                            if (inst.body.SequenceEqual(Encoding.UTF8.GetBytes("exit")))
-                            {
-                                doLoop = false;
-                                doWrite = false;
-                            }
-                            if (inst.frameType == (int)FrameType.Message)
-                            {
-                                if (rdyCount == 0)
-                                {
-                                    //log.Printf("!!! RDY == 0");
-                                    scriptTime = Time.After(script[idx + 1].delay);
-                                    doWrite = false;
                                 }
-                                else
-                                {
-                                    rdyCount--;
-                                }
-                            }
-
-                            if (doWrite)
-                            {
-                                try
-                                {
-                                    connw.Write(framedResponse(inst.frameType, inst.body));
-                                    scriptTime = Time.After(script[idx + 1].delay);
-                                    idx++;
-                                }
-                                catch (Exception ex)
-                                {
-                                    log.Printf(ex.ToString());
-                                    doLoop = false;
-                                }
-                            }
-                        })
-                        .NoDefault();
+                            })
+                            .NoDefault();
+                    }
                 }
 
                 tcpListener.Stop();
