@@ -55,7 +55,6 @@
     <Compile Include="Configuration\ConfigureSerialization.cs" />
     <Compile Include="Configuration\DependencyLifeCycle.cs" />
     <Compile Include="Configuration\NsqConfiguration.cs" />
-    <Compile Include="Configuration\InterfaceBuilder.cs" />
     <Compile Include="Configuration\ObjectBuilder.cs" />
     <Compile Include="MigrationHelpers\IBusExtensions.cs" />
     <Compile Include="MigrationHelpers\ICommand.cs" />
@@ -70,6 +69,7 @@
     <Compile Include="IHandleMessages.cs" />
     <Compile Include="IMessageContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\InterfaceBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NsqSharp\NsqSharp.Net40.csproj">

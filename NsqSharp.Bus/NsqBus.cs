@@ -1,5 +1,6 @@
 ﻿using System;
 using NsqSharp.Bus.Configuration;
+using NsqSharp.Bus.Utils;
 
 namespace NsqSharp.Bus
 {

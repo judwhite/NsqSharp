@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace NsqSharp.Bus.Configuration
+namespace NsqSharp.Bus.Utils
 {
     /// <summary>
     /// Create a concrete type based on an interface.

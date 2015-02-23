@@ -1,8 +1,9 @@
 ﻿using System;
 using NsqSharp.Bus.Configuration;
+using NsqSharp.Bus.Utils;
 using NUnit.Framework;
 
-namespace NsqSharp.Bus.Tests.Configuration
+namespace NsqSharp.Bus.Tests.Utils
 {
     [TestFixture]
     public class InterfaceBuilderTest

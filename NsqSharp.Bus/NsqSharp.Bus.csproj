@@ -57,7 +57,7 @@
     <Compile Include="Configuration\NsqConfiguration.cs" />
     <Compile Include="Configuration\ObjectBuilder.cs" />
     <Compile Include="MigrationHelpers\IBusExtensions.cs" />
-    <Compile Include="Configuration\InterfaceBuilder.cs" />
+    <Compile Include="Utils\InterfaceBuilder.cs" />
     <Compile Include="MigrationHelpers\ICommand.cs" />
     <Compile Include="Configuration\IConfigureThisEndpoint.cs" />
     <Compile Include="MigrationHelpers\IEvent.cs" />
