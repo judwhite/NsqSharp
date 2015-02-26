@@ -43,11 +43,11 @@ namespace NsqSharp.ConsumerExample
             consumer.AddHandler(new MessageHandler(streamWriter, cfg.MaxCount, _wait));
 
             // connect to nsqd or nsqlookupd. in practice you'd pick either nsqd or nsqlookupd depending on your configuration.
-            
+
             // to test with nsqlookupd:
             // .\nsqlookupd
             // .\nsqd -lookupd-tcp-address=127.0.0.1:4160
-            
+
             if (!string.IsNullOrEmpty(cfg.NsqdTcpAddress))
                 consumer.ConnectToNSQD(cfg.NsqdTcpAddress);
             else
