@@ -7,7 +7,7 @@ A .NET client library for [NSQ](https://github.com/bitly/nsq), a realtime distri
 
 ## Work in Progress
 
-This project is currently suitable for building proof-of-concept code, receiving pull requests and reporting issues. Thorough testing would be encouraged before using in production as I've not yet completed my own large scale testing.
+This project is currently suitable for building proof-of-concept code, receiving pull requests and reporting issues. Thorough testing is encouraged before using in production as large scale testing has not yet been completed.
 
 The public API has not reached stability. Future commits may change the API slightly.
 
@@ -44,7 +44,7 @@ r.ConnectToNSQD("127.0.0.1:4150");
 r.Stop();
 ```
 
-See the Examples folder for more examples.
+More examples in the Examples folder.
 
 ## NsqSharp Project Goals
 - Structurally similar to the official [go-nsq](https://github.com/bitly/go-nsq) client.
