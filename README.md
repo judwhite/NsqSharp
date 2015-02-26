@@ -16,8 +16,6 @@ The public API has not reached stability. Future commits may change the API slig
 #### Publisher
 
 ```C#
-// NOTE: Work in progress
-
 var w = new Producer("127.0.0.1:4150");
 w.SetLogger(new ConsoleLogger(), LogLevel.Debug);
 
@@ -32,8 +30,6 @@ w.Stop();
 #### Consumer
 
 ```C#
-// NOTE: Work in progress
-
 // Create a new Consumer for each topic or channel
 var r = new Consumer("string-topic-name", "channel-name");
 r.SetLogger(new ConsoleLogger(), LogLevel.Debug);
@@ -48,6 +44,8 @@ r.ConnectToNSQD("127.0.0.1:4150");
 r.Stop();
 ```
 
+See the Examples folder for more examples.
+
 ## NsqSharp Project Goals
 - Structurally similar to the official [go-nsq](https://github.com/bitly/go-nsq) client.
 - Up to date with the latest stable release of go-nsq.
@@ -57,11 +55,9 @@ r.Stop();
 
 When submitting a pull request please keep in mind we're trying to stay as close to [go-nsq](https://github.com/bitly/go-nsq) as possible. This sometimes means writing C# which looks more like Go and follows their file layout.
 
-#### NsqSharp.Bus
+## NsqSharp.Bus
 
-NsqSharp.Bus is an optional IoC-friendly abstraction layer built on top of NsqSharp. The original motivation for this addon was to ease migration from another .NET service bus. This addon is in the early phases of development. It is not required to use NsqSharp.
-
-More information to come on this project soon, possibly in another repository.
+NsqSharp.Bus is an optional IoC-friendly abstraction layer built on top of NsqSharp. The motivation for this library is to provide conveniences for large scale applications and ease migration from other .NET message buses. This library is in the early phases of development. It is not required to use NsqSharp.
 
 ## License
 
