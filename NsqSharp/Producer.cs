@@ -254,7 +254,7 @@ namespace NsqSharp
             {
                 if (_state != (int)State.Connected)
                 {
-                    connect();
+                    Connect();
                 }
 
                 var t = new ProducerTransaction
@@ -275,7 +275,10 @@ namespace NsqSharp
             }
         }
 
-        private void connect()
+        /// <summary>
+        /// Connect to NSQD
+        /// </summary>
+        public void Connect()
         {
             lock (_guard)
             {

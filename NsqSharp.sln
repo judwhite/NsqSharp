@@ -13,6 +13,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp.Bus.Tests", "NsqSh
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{AEA8D8ED-997C-429D-8555-50020C9CC570}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp.Producer", "NsqSharp.Examples\NsqSharp.Producer\NsqSharp.Producer.csproj", "{78EE928A-C605-4B2B-AEBF-9A2262B8EA5F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp.Producer.Http", "NsqSharp.Examples\NsqSharp.Producer.Http\NsqSharp.Producer.Http.csproj", "{02EC6A3E-1158-48F8-8E2E-24D9F91F6F2D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{0FB50390-80AC-4487-BC62-C9311FD60D4D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +41,14 @@ Global
 		{B3EC80D4-4869-4C8D-AEB4-A212C197F9F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3EC80D4-4869-4C8D-AEB4-A212C197F9F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3EC80D4-4869-4C8D-AEB4-A212C197F9F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78EE928A-C605-4B2B-AEBF-9A2262B8EA5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78EE928A-C605-4B2B-AEBF-9A2262B8EA5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78EE928A-C605-4B2B-AEBF-9A2262B8EA5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78EE928A-C605-4B2B-AEBF-9A2262B8EA5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02EC6A3E-1158-48F8-8E2E-24D9F91F6F2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02EC6A3E-1158-48F8-8E2E-24D9F91F6F2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02EC6A3E-1158-48F8-8E2E-24D9F91F6F2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02EC6A3E-1158-48F8-8E2E-24D9F91F6F2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -42,5 +56,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{6962DA1C-5532-4C12-B2A3-36B53877A1FB} = {AEA8D8ED-997C-429D-8555-50020C9CC570}
 		{B3EC80D4-4869-4C8D-AEB4-A212C197F9F1} = {AEA8D8ED-997C-429D-8555-50020C9CC570}
+		{78EE928A-C605-4B2B-AEBF-9A2262B8EA5F} = {0FB50390-80AC-4487-BC62-C9311FD60D4D}
+		{02EC6A3E-1158-48F8-8E2E-24D9F91F6F2D} = {0FB50390-80AC-4487-BC62-C9311FD60D4D}
 	EndGlobalSection
 EndGlobal

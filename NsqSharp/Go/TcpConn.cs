@@ -48,7 +48,6 @@ namespace NsqSharp.Go
             lock (_writeLocker)
             {
                 _networkStream.Write(b, offset, length);
-                Debug.WriteLine("[NET] wrote {0:#,0} bytes", length);
                 return length;
             }
         }

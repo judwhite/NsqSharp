@@ -381,7 +381,6 @@ namespace NsqSharp.Channels
                     {
                         if (c.IsReadyToSend)
                         {
-                            Debug.WriteLine("[{0}] Trying {1}...", GetThreadName(), kvp.Key.DebugName);
                             o = c.ReceiveOk(out ok);
                             gotValue = true;
                         }
@@ -389,7 +388,6 @@ namespace NsqSharp.Channels
                         {
                             if (c.IsClosed)
                             {
-                                Debug.WriteLine("[{0}] Closed channel {1}...", GetThreadName(), kvp.Key.DebugName);
                                 gotValue = true;
                             }
                         }
@@ -402,7 +400,6 @@ namespace NsqSharp.Channels
 
                 if (gotValue)
                 {
-                    Debug.WriteLine("[{0}] {1} success.", GetThreadName(), kvp.Key.DebugName);
                     if (f != null)
                     {
                         try
@@ -429,7 +426,6 @@ namespace NsqSharp.Channels
                 {
                     try
                     {
-                        Debug.WriteLine("[{0}] Trying {1}...", GetThreadName(), kvp.Key.DebugName);
                         sentValue = c.TrySend(d, _trySendTimeout);
                     }
                     finally
@@ -440,7 +436,6 @@ namespace NsqSharp.Channels
 
                 if (sentValue)
                 {
-                    Debug.WriteLine("[{0}] {1} success.", GetThreadName(), kvp.Key.DebugName);
                     if (f != null)
                     {
                         try
@@ -469,24 +464,6 @@ namespace NsqSharp.Channels
 
             try
             {
-
-#if DEBUG
-                AddThreadToDebugLog();
-
-                Debug.WriteLine(string.Format("[{0}] +++ Entering Select +++", GetThreadName()));
-                foreach (var c in _sendFuncs.Keys)
-                {
-                    Debug.WriteLine("[{0}] Case: {1}", GetThreadName(), c.DebugName);
-                }
-
-                foreach (var c in _receiveFuncs.Keys)
-                {
-                    Debug.WriteLine("[{0}] Case: {1}", GetThreadName(), c.DebugName);
-                }
-
-                Debug.WriteLine("[{0}] Has Default: {1}", GetThreadName(), _hasDefault);
-#endif
-
                 if (_hasDefault)
                 {
                     bool isDone = CheckCases(out caseHandlerException);
@@ -495,7 +472,6 @@ namespace NsqSharp.Channels
                     {
                         if (_default != null)
                         {
-                            Debug.WriteLine(string.Format("[{0}] executing DEFAULT", GetThreadName()));
                             try
                             {
                                 _default();
@@ -537,22 +513,8 @@ namespace NsqSharp.Channels
                         bool done;
                         do
                         {
-
-#if DEBUG
-                            bool signaled = _ready.WaitOne(_pumpTimeout);
-                            if (!signaled && !string.IsNullOrEmpty(DebugName))
-                            {
-                                Debug.WriteLine(string.Format("[{0}] Waiting...", GetThreadName()));
-                                Debug.WriteLine(string.Format("[{0}] Active threads:", GetThreadName()));
-                                var activeThreads = GetActiveThreads();
-                                foreach (var threadId in activeThreads)
-                                {
-                                    Debug.WriteLine("[{0}] Thread: {1}", GetThreadName(), threadId.DebugName);
-                                }
-                            }
-#else
                             _ready.WaitOne(_pumpTimeout);
-#endif
+
                             done = CheckCases(out caseHandlerException);
                         } while (!done);
                     }
@@ -561,53 +523,16 @@ namespace NsqSharp.Channels
                 if (!_defer)
                     Dispose();
 
-#if DEBUG
-                RemoveThreadFromDebugLog();
-
-                Debug.WriteLine(string.Format("[{0}] --- Exited select ---", GetThreadName()));
-#endif
             }
             catch (Exception)
             {
                 Dispose();
-#if DEBUG
-                RemoveThreadFromDebugLog();
-#endif
                 throw;
             }
 
             if (caseHandlerException != null)
                 throw caseHandlerException;
         }
-
-#if DEBUG
-        private static readonly List<SelectCase> _activeThreads = new List<SelectCase>();
-
-        private void RemoveThreadFromDebugLog()
-        {
-            lock (_activeThreads)
-            {
-                _activeThreads.Remove(this);
-            }
-        }
-
-        private void AddThreadToDebugLog()
-        {
-            lock (_activeThreads)
-            {
-                _activeThreads.Add(this);
-            }
-        }
-
-        private SelectCase[] GetActiveThreads()
-        {
-            lock (_activeThreads)
-            {
-                return _activeThreads.ToArray();
-            }
-        }
-
-#endif
 
         private string GetThreadName()
         {

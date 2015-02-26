@@ -62,7 +62,6 @@ namespace NsqSharp.Go
                 {
                     if (_wait.WaitOne(TimeSpan.FromMilliseconds(100)) || _count <= 0)
                         break;
-                    Debug.WriteLine("WaitGroup.Wait...");
                 }
 
                 if (_count < 0)
