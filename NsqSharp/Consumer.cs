@@ -203,7 +203,7 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// Receive on StopChan to block until <see cref="Stop"/> completes.
+        /// Receive on StopChan to block until <see cref="Stop()"/> completes.
         /// </summary>
         public IReceiveOnlyChan<int> StopChan
         {
@@ -1223,7 +1223,20 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// <see cref="Stop"/> will initiate a graceful stop of the <see cref="Consumer" /> (permanent)
+        /// <see cref="Stop(bool)"/> will initiate a graceful stop of the <see cref="Consumer" /> (permanent)
+        /// </summary>
+        /// <param name="blockUntilStopCompletes"><c>true</c> to block until the graceful shutdown completes
+        /// (default = <c>false</c>)</param>
+        public void Stop(bool blockUntilStopCompletes)
+        {
+            Stop();
+
+            if (blockUntilStopCompletes)
+                StopChan.Receive();
+        }
+
+        /// <summary>
+        /// <see cref="Stop()"/> will initiate a graceful stop of the <see cref="Consumer" /> (permanent)
         ///
         /// NOTE: receive on <see cref="StopChan"/> to block until this process completes
         /// </summary>

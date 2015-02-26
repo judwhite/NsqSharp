@@ -47,9 +47,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\NsqSharp\NsqSharp.csproj">
       <Project>{7327244d-e163-4c35-9c1a-8dbdf06b9408}</Project>
       <Name>NsqSharp</Name>
