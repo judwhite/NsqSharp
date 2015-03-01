@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using NsqSharp.Channels;
 using NsqSharp.Extensions;
+using NsqSharp.Go;
 using NsqSharp.Utils;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests
 {
     [TestFixture(IgnoreReason = "NSQD Integration Test")]
-    public class ProducerTest
+    public partial class ProducerTest
     {
         [Test]
         public void TestProducerConnection()
@@ -222,6 +225,107 @@ namespace NsqSharp.Tests
 
             Assert.AreEqual(msgCount, h.messagesGood, "should have handled a diff number of messages");
             Assert.AreEqual(1, h.messagesFailed, "failed message not done");
+        }
+    }
+
+    public class MockProducerConn : IConn
+    {
+        private static readonly byte[] PUB_BYTES = Encoding.UTF8.GetBytes("PUB");
+        private static readonly byte[] OK_RESP = mockNSQD.framedResponse((int)FrameType.Response, Encoding.UTF8.GetBytes("OK"));
+
+        private readonly IConnDelegate _connDelegate;
+        private readonly Chan<bool> _closeCh;
+        private readonly Chan<bool> _pubCh;
+
+        public MockProducerConn(IConnDelegate connDelegate)
+        {
+            _connDelegate = connDelegate;
+            _closeCh = new Chan<bool>();
+            _pubCh = new Chan<bool>();
+            GoFunc.Run(router);
+        }
+
+        public override string ToString()
+        {
+            return "127.0.0.1:0";
+        }
+
+        public void SetLogger(ILogger l, LogLevel lvl, string format)
+        {
+        }
+
+        public IdentifyResponse Connect()
+        {
+            return new IdentifyResponse();
+        }
+
+        public void Close()
+        {
+            _closeCh.Close();
+        }
+
+        public void WriteCommand(Command command)
+        {
+            if (command.Name.SequenceEqual(PUB_BYTES))
+            {
+                _pubCh.Send(true);
+            }
+        }
+
+        private void router()
+        {
+            bool doLoop = true;
+            using (var select =
+                Select
+                    .CaseReceive(_closeCh, o => doLoop = false)
+                    .CaseReceive(_pubCh, o => _connDelegate.OnResponse(null, OK_RESP))
+                    .NoDefault(defer: true))
+            {
+                while (doLoop)
+                {
+                    select.Execute();
+                }
+            }
+        }
+    }
+
+    public partial class ProducerTest
+    {
+        [Test]
+        public void Benchmark()
+        {
+            const int benchmarkNum = 100000;
+
+            byte[] body = new byte[512];
+
+            var p = Producer.Create("127.0.0.1:0", new Config(), w => new MockProducerConn(w));
+            p.Connect();
+
+            var startCh = new Chan<bool>();
+            var wg = new WaitGroup();
+            const int parallel = 1; // TODO: Figure out why Producer isn't thread safe
+
+            for (int j = 0; j < parallel; j++)
+            {
+                wg.Add(1);
+                GoFunc.Run(() =>
+                           {
+                               startCh.Receive();
+                               for (int i = 0; i < benchmarkNum/parallel; i++)
+                               {
+                                   p.Publish("test", body);
+                               }
+                               wg.Done();
+                           });
+            }
+
+            var stopwatch = Stopwatch.StartNew();
+            startCh.Close();
+            wg.Wait();
+            stopwatch.Stop();
+
+            Console.WriteLine(string.Format("{0:#,0} sent in {1:mm\\:ss\\.fff}; Avg: {2:#,0} msgs/s",
+                benchmarkNum, stopwatch.Elapsed, benchmarkNum/stopwatch.Elapsed.TotalSeconds));
         }
     }
 

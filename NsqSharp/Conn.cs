@@ -69,7 +69,7 @@ namespace NsqSharp
     /// Conn exposes a set of callbacks for the
     /// various events that occur on a connection
     /// </summary>
-    public partial class Conn : IReader, IWriter
+    public partial class Conn : IReader, IWriter, IConn
     {
         private static readonly byte[] HEARTBEAT_BYTES = Encoding.UTF8.GetBytes("_heartbeat_");
 
@@ -139,12 +139,6 @@ namespace NsqSharp
         /// a single {0} argument.  This is useful if you want to provide additional
         /// context to the log messages that the connection will print, the default
         /// is '({0})'.
-        ///
-        /// The logger parameter is an interface that requires the following
-        /// method to be implemented (such as the the stdlib log.Logger):
-        ///
-        ///    Output(int calldepth, string s)
-        ///
         /// </summary>
         public void SetLogger(ILogger l, LogLevel lvl, string format)
         {
@@ -310,7 +304,7 @@ namespace NsqSharp
         private byte[] _bigBuf = new byte[4096];
 
         /// <summary>
-        /// WriteCommand is a goroutine safe method to write a Command
+        /// WriteCommand is a thread safe method to write a Command
         /// to this connection, and flush.
         /// </summary>
         public void WriteCommand(Command cmd)

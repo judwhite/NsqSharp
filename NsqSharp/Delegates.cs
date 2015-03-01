@@ -175,20 +175,4 @@ namespace NsqSharp
         public void OnHeartbeat(Conn c) { r.onConnHeartbeat(c); }
         public void OnClose(Conn c) { r.onConnClose(c); }
     }
-
-    internal class ProducerConnDelegate : IConnDelegate
-    {
-        public Producer w { get; set; }
-
-        public void OnResponse(Conn c, byte[] data) { w.onConnResponse(c, data); }
-        public void OnError(Conn c, byte[] data) { w.onConnError(c, data); }
-        public void OnMessage(Conn c, Message m) { }
-        public void OnMessageFinished(Conn c, Message m) { }
-        public void OnMessageRequeued(Conn c, Message m) { }
-        public void OnBackoff(Conn c) { }
-        public void OnResume(Conn c) { }
-        public void OnIOError(Conn c, Exception err) { w.onConnIOError(c, err); }
-        public void OnHeartbeat(Conn c) { w.onConnHeartbeat(c); }
-        public void OnClose(Conn c) { w.onConnClose(c); }
-    }
 }

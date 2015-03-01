@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 
 namespace NsqSharp.Channels
@@ -532,11 +531,6 @@ namespace NsqSharp.Channels
 
             if (caseHandlerException != null)
                 throw caseHandlerException;
-        }
-
-        private string GetThreadName()
-        {
-            return string.Format("{0}/{1}", Thread.CurrentThread.ManagedThreadId, DebugName);
         }
 
         /// <summary>

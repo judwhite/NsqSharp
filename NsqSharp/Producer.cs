@@ -11,6 +11,39 @@ namespace NsqSharp
     // https://github.com/bitly/go-nsq/blob/master/producer.go
 
     /// <summary>
+    /// IConn interface
+    /// </summary>
+    public interface IConn
+    {
+        /// <summary>
+        /// SetLogger assigns the logger to use as well as a level.
+        ///
+        /// The format parameter is expected to be a printf compatible string with
+        /// a single {0} argument.  This is useful if you want to provide additional
+        /// context to the log messages that the connection will print, the default
+        /// is '({0})'.
+        /// </summary>
+        void SetLogger(ILogger l, LogLevel lvl, string format);
+
+        /// <summary>
+        /// Connect dials and bootstraps the nsqd connection
+        /// (including IDENTIFY) and returns the IdentifyResponse
+        /// </summary>
+        IdentifyResponse Connect();
+
+        /// <summary>
+        /// Close idempotently initiates connection close
+        /// </summary>
+        void Close();
+
+        /// <summary>
+        /// WriteCommand is a thread safe method to write a Command
+        /// to this connection, and flush.
+        /// </summary>
+        void WriteCommand(Command command);
+    }
+
+    /// <summary>
     /// Producer is a high-level type to publish to NSQ.
     ///
     /// A Producer instance is 1:1 with a destination `nsqd`
@@ -21,7 +54,7 @@ namespace NsqSharp
     {
         internal long _id;
         private readonly string _addr;
-        private Conn _conn;
+        private IConn _conn;
         private readonly Config _config;
 
         private ILogger _logger;
@@ -40,6 +73,8 @@ namespace NsqSharp
         private readonly Chan<int> _exitChan;
         private readonly WaitGroup _wg = new WaitGroup();
         private readonly object _guard = new object();
+
+        private readonly Func<Producer, IConn> _connFactory;
     }
 
     /// <summary>
@@ -69,7 +104,7 @@ namespace NsqSharp
         }
     }
 
-    public partial class Producer
+    public partial class Producer : IConnDelegate
     {
         /// <summary>
         /// Initializes a new instance of the Producer class.
@@ -87,6 +122,11 @@ namespace NsqSharp
         /// <param name="config">The config. After Config is passed into NewProducer the values are
         /// no longer mutable (they are copied).</param>
         public Producer(string addr, Config config)
+            : this(addr, config, null)
+        {
+        }
+
+        private Producer(string addr, Config config, Func<Producer, IConn> connFactory)
         {
             if (string.IsNullOrEmpty(addr))
                 throw new ArgumentNullException("addr");
@@ -107,6 +147,23 @@ namespace NsqSharp
             _exitChan = new Chan<int>();
             _responseChan = new Chan<byte[]>();
             _errorChan = new Chan<byte[]>();
+
+            if (connFactory == null)
+                connFactory = p => new Conn(_addr, _config, p);
+
+            _connFactory = connFactory;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the Producer class.
+        /// </summary>
+        /// <param name="addr">The address.</param>
+        /// <param name="config">The config. After Config is passed into NewProducer the values are
+        /// no longer mutable (they are copied).</param>
+        /// <param name="connFactory">The method to create a new connection (used for mocking)</param>
+        public static Producer Create(string addr, Config config, Func<Producer, IConn> connFactory)
+        {
+            return new Producer(addr, config, connFactory);
         }
 
         /// <summary>
@@ -297,7 +354,7 @@ namespace NsqSharp
 
                 log(LogLevel.Info, "{0} connecting to nsqd", _addr);
 
-                _conn = new Conn(_addr, _config, new ProducerConnDelegate { w = this });
+                _conn = _connFactory(this);
                 _conn.SetLogger(_logger, _logLvl, string.Format("{0} ({{0}})", _id));
                 try
                 {
@@ -444,11 +501,52 @@ namespace NsqSharp
             logger.Output(string.Format("{0} {1} {2}", Log.Prefix(lvl), _id, string.Format(line, args)));
         }
 
-        internal void onConnResponse(Conn c, byte[] data) { _responseChan.Send(data); }
-        internal void onConnError(Conn c, byte[] data) { _errorChan.Send(data); }
-        internal void onConnHeartbeat(Conn c) { }
-        internal void onConnIOError(Conn c, Exception err) { close(); }
-        internal void onConnClose(Conn c)
+        void IConnDelegate.OnResponse(Conn c, byte[] data)
+        {
+            _responseChan.Send(data);
+        }
+
+        void IConnDelegate.OnError(Conn c, byte[] data)
+        {
+            _errorChan.Send(data);
+        }
+
+        void IConnDelegate.OnMessage(Conn c, Message m)
+        {
+            // no-op
+        }
+
+        void IConnDelegate.OnMessageFinished(Conn c, Message m)
+        {
+            // no-op
+        }
+
+        void IConnDelegate.OnMessageRequeued(Conn c, Message m)
+        {
+            // no-op
+        }
+
+        void IConnDelegate.OnBackoff(Conn c)
+        {
+            // no-op
+        }
+
+        void IConnDelegate.OnResume(Conn c)
+        {
+            // no-op
+        }
+
+        void IConnDelegate.OnIOError(Conn c, Exception err)
+        {
+            close();
+        }
+
+        void IConnDelegate.OnHeartbeat(Conn c)
+        {
+            // no-op
+        }
+
+        void IConnDelegate.OnClose(Conn c)
         {
             lock (_guard)
             {
