@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using NsqSharp.Go;
 
 namespace NsqSharp
@@ -93,12 +94,11 @@ namespace NsqSharp
         /// </summary>
         public void Finish()
         {
-            if (HasResponded())
+            if (Interlocked.CompareExchange(ref _responded, value: 1, comparand: 0) == 1)
             {
                 return;
             }
             Delegate.OnFinish(this);
-            _responded = 1;
         }
 
         /// <summary>
@@ -141,12 +141,11 @@ namespace NsqSharp
 
         private void doRequeue(TimeSpan? delay, bool backoff)
         {
-            if (HasResponded())
+            if (Interlocked.CompareExchange(ref _responded, value: 1, comparand: 0) == 1)
             {
                 return;
             }
             Delegate.OnRequeue(this, delay, backoff);
-            _responded = 1;
         }
 
         /// <summary>
