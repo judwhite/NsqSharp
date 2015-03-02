@@ -106,13 +106,13 @@ namespace NsqSharp.Bus
         /// <param name="messageConstructor">The method used to populate the object.</param>
         void SendLocal<T>(Action<T> messageConstructor);
 
-        /// <summary>
+        /*/// <summary>
         /// Defer send a message for <paramref name="duration"/>.
         /// </summary>
         void Defer<T>(TimeSpan duration, T message);
 
         /// <summary>Defer send a message until <paramref name="processAt"/>.</summary>
-        void Defer<T>(DateTime processAt, T message);
+        void Defer<T>(DateTime processAt, T message);*/
 
         /// <summary>Gets the current NSQ message being processed.</summary>
         IMessage CurrentMessage { get; }

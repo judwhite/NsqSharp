@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Text;
 
 namespace NsqSharp.Bus.Configuration
 {
@@ -24,13 +25,27 @@ namespace NsqSharp.Bus.Configuration
         /// </summary>
         /// <param name="serializer">The default serialization method.</param>
         /// <param name="deserializer">The default deserialization method.</param>
-        void SetDefault(Func<object, string> serializer, Func<string, object> deserializer);
+        void SetDefault(Func<object, byte[]> serializer, Func<byte[], object> deserializer);
+
+        /// <summary>
+        /// Serializes the <paramref name="value"/> using the default serialization method.
+        /// </summary>
+        /// <param name="value">The value to serialize.</param>
+        /// <returns>The serialized value.</returns>
+        byte[] DefaultSerialize(object value);
+
+        /// <summary>
+        /// Deserializes the <paramref name="value"/> using the default deserialization method.
+        /// </summary>
+        /// <param name="value">The value to deserialize.</param>
+        /// <returns>The deserialized value.</returns>
+        object DefaultDeserialize(byte[] value);
     }
 
     internal class ConfigureSerialization : IConfigureSerialization
     {
-        internal Func<object, string> _defaultSerializer;
-        internal Func<string, object> _defaultDeserializer;
+        internal Func<object, byte[]> _defaultSerializer;
+        internal Func<byte[], object> _defaultDeserializer;
 
         public void Json()
         {
@@ -56,8 +71,8 @@ namespace NsqSharp.Bus.Configuration
             var jsonConvertType = jsonAssembly.GetType("Newtonsoft.Json.JsonConvert", throwOnError: true);
             var jsonConvertMethods = jsonConvertType.GetMethods(BindingFlags.Public | BindingFlags.Static);
 
-            Func<object, string> serializer = null;
-            Func<string, object> deserializer = null;
+            Func<object, byte[]> serializer = null;
+            Func<byte[], object> deserializer = null;
 
             foreach (var method in jsonConvertMethods)
             {
@@ -74,12 +89,13 @@ namespace NsqSharp.Bus.Configuration
                         if (isSerializeObject)
                         {
                             var serializeMethod = method;
-                            serializer = o => (string)serializeMethod.Invoke(null, new[] { o });
+                            serializer = o => Encoding.UTF8.GetBytes((string)serializeMethod.Invoke(null, new[] { o }));
                         }
                         else
                         {
                             var deserializeMethod = method;
-                            deserializer = s => deserializeMethod.Invoke(null, new object[] { s });
+                            deserializer = byteArray =>
+                                deserializeMethod.Invoke(null, new object[] { Encoding.UTF8.GetString(byteArray) });
                         }
                     }
                 }
@@ -93,7 +109,7 @@ namespace NsqSharp.Bus.Configuration
             SetDefault(serializer, deserializer);
         }
 
-        public void SetDefault(Func<object, string> serializer, Func<string, object> deserializer)
+        public void SetDefault(Func<object, byte[]> serializer, Func<byte[], object> deserializer)
         {
             if (serializer == null)
                 throw new ArgumentNullException("serializer");
@@ -102,6 +118,22 @@ namespace NsqSharp.Bus.Configuration
 
             _defaultSerializer = serializer;
             _defaultDeserializer = deserializer;
+        }
+
+        public byte[] DefaultSerialize(object value)
+        {
+            if (_defaultSerializer == null)
+                throw new Exception("Default serializer not set.");
+
+            return _defaultSerializer(value);
+        }
+
+        public object DefaultDeserialize(byte[] value)
+        {
+            if (_defaultDeserializer == null)
+                throw new Exception("Default deserializer not set.");
+
+            return _defaultDeserializer(value);
         }
     }
 }

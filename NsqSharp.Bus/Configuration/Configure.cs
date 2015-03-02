@@ -24,13 +24,13 @@ namespace NsqSharp.Bus.Configuration
         /// Starts the bus.
         /// </summary>
         /// <typeparam name="TEndpointConfig">The endpoint config.</typeparam>
-        public static void StartBus<TEndpointConfig>()
+        public static IBus StartBus<TEndpointConfig>()
             where TEndpointConfig : IConfigureThisEndpoint, new()
         {
             var endpointConfig = new TEndpointConfig();
             endpointConfig.Init();
 
-            _nsqConfiguration.StartBus();
+            return _nsqConfiguration.StartBus();
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace NsqSharp.Bus.Configuration
             _useInProcessBus = true;
         }
 
-        internal bool IsInProcessBus
+        internal static bool IsInProcessBus
         {
             get { return _useInProcessBus; }
         }

@@ -125,9 +125,9 @@ namespace NsqSharp.Bus.Configuration
             return _bus;
         }
 
-        internal void StartBus()
+        internal IBus StartBus()
         {
-            _bus.Start(_handlers);
+            return _bus.Start(_handlers);
         }
     }
 }
