@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace NsqSharp.Bus.Configuration
@@ -14,7 +15,7 @@ namespace NsqSharp.Bus.Configuration
         /// </summary>
         /// <param name="objectBuilder">The <see cref="IObjectBuilder"/>. See <see cref="StructureMapObjectBuilder"/>
         /// for a built in implementation.</param>
-        IBus UsingContainer(IObjectBuilder objectBuilder);
+        IConfiguration UsingContainer(IObjectBuilder objectBuilder);
 
         /// <summary>
         /// TODO
@@ -38,29 +39,95 @@ namespace NsqSharp.Bus.Configuration
 
     internal class NsqConfiguration : IConfiguration
     {
-        //private readonly IBus _bus;
+        private readonly NsqBus _bus;
+        private readonly Dictionary<Type, Type> _handlers; // handlerType, messageType
 
-        public NsqConfiguration(IEnumerable<Assembly> assembliesToScan)
+        public NsqConfiguration(IEnumerable<Assembly> assemblies)
         {
-            throw new NotImplementedException();
-            //_bus = new NsqBus();
+            _bus = new NsqBus();
+            _handlers = new Dictionary<Type, Type>();
+
+            ScanAssemblies(assemblies);
+        }
+
+        public void ScanAssemblies(IEnumerable<Assembly> assemblies)
+        {
+            var types = assemblies.SelectMany(p => p.GetTypes());
+
+            foreach (var type in types)
+            {
+                Type messageType;
+                if (IsMessageHandler(type, out messageType))
+                {
+                    if (!_handlers.ContainsKey(type))
+                    {
+                        _handlers.Add(type, messageType);
+                    }
+                }
+            }
+        }
+
+        private static bool IsMessageHandler(Type type, out Type messageType)
+        {
+            messageType = null;
+
+            if (!type.IsClass)
+                return false;
+
+            foreach (var interf in type.GetInterfaces())
+            {
+                if (IsMessageHandlerInterface(interf, out messageType))
+                    return true;
+
+                foreach (var subInterf in interf.GetInterfaces())
+                {
+                    if (IsMessageHandlerInterface(subInterf, out messageType))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsMessageHandlerInterface(Type interf, out Type messageType)
+        {
+            if (interf.IsGenericType && interf.GetGenericTypeDefinition() == typeof(IHandleMessages<>))
+            {
+                messageType = interf.GetGenericArguments()[0];
+                return true;
+            }
+            messageType = null;
+            return false;
         }
 
         public IConfiguration Subscribe<THandler, TMessage>(string topic, string channel, params string[] lookupHttpAddresses)
             where THandler : IHandleMessages<TMessage>
         {
             throw new System.NotImplementedException();
+            //return this;
         }
 
         public IConfiguration RegisterDestination<TMessage>(string topic, params string[] nsqdTcpAddresses)
         {
             throw new System.NotImplementedException();
+            //return this;
         }
 
-        public IBus UsingContainer(IObjectBuilder objectBuilder)
+        public IConfiguration UsingContainer(IObjectBuilder objectBuilder)
         {
-            throw new NotImplementedException();
-            //return _bus;
+            objectBuilder.Inject<IBus>(_bus);
+            Configure.Instance.Builder = objectBuilder;
+            return this;
+        }
+
+        public IBus GetBus()
+        {
+            return _bus;
+        }
+
+        internal void StartBus()
+        {
+            _bus.Start(_handlers);
         }
     }
 }

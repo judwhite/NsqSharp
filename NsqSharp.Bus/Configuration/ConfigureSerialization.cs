@@ -43,7 +43,8 @@ namespace NsqSharp.Bus.Configuration
             }
             else
             {
-                throw new Exception(string.Format("Newtonsoft.Json.dll not found in directory {0}", dir));
+                throw new Exception(string.Format("Newtonsoft.Json.dll not found in directory {0}. " +
+                    "Try specifying the assembly directly with 'typeof(JsonConvert).Assembly'", dir));
             }
         }
 
@@ -98,11 +99,6 @@ namespace NsqSharp.Bus.Configuration
                 throw new ArgumentNullException("serializer");
             if (deserializer == null)
                 throw new ArgumentNullException("deserializer");
-
-            if (_defaultSerializer != null)
-                throw new Exception("default serializer already set");
-            if (_defaultDeserializer != null)
-                throw new Exception("default deserializer already set");
 
             _defaultSerializer = serializer;
             _defaultDeserializer = deserializer;

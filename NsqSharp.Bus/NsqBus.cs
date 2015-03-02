@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Utils;
 
@@ -107,12 +108,18 @@ namespace NsqSharp.Bus
 
         public T CreateInstance<T>()
         {
-            return Configure.Instance.Builder.Build<T>();
+            return Configure.Instance.Builder.GetInstance<T>();
         }
 
         private static string GetTopic<T>()
         {
             throw new NotImplementedException();
+        }
+
+        public void Start(Dictionary<Type, Type> messageHandlers)
+        {
+            // TODO
+            //throw new NotImplementedException();
         }
     }
 }

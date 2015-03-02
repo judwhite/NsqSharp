@@ -49,7 +49,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\Builder.cs" />
     <Compile Include="Configuration\BusType.cs" />
     <Compile Include="Configuration\ConfigureComponents.cs" />
     <Compile Include="Configuration\ConfigureSerialization.cs" />

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace NsqSharp.Bus.Configuration
@@ -10,11 +11,42 @@ namespace NsqSharp.Bus.Configuration
     {
         private static readonly Configure _configure = new Configure();
         private static readonly IConfigureSerialization _configureSerialization = new ConfigureSerialization();
+        private static NsqConfiguration _nsqConfiguration;
+        private static bool _useInProcessBus;
+        private static bool _isBusCreated;
 
         private Configure()
         {
             Configurer = new ConfigureComponents();
-            Builder = new Builder();
+        }
+
+        /// <summary>
+        /// Starts the bus.
+        /// </summary>
+        /// <typeparam name="TEndpointConfig">The endpoint config.</typeparam>
+        public static void StartBus<TEndpointConfig>()
+            where TEndpointConfig : IConfigureThisEndpoint, new()
+        {
+            var endpointConfig = new TEndpointConfig();
+            endpointConfig.Init();
+
+            _nsqConfiguration.StartBus();
+        }
+
+        /// <summary>
+        /// Call to use an in-process bus which doesn't call NSQ.
+        /// </summary>
+        public static void UseInProcessBus()
+        {
+            if (_isBusCreated && !_useInProcessBus)
+                throw new Exception("Call UseInProcessBus() before calling Configure.With");
+
+            _useInProcessBus = true;
+        }
+
+        internal bool IsInProcessBus
+        {
+            get { return _useInProcessBus; }
         }
 
         /// <summary>
@@ -33,7 +65,14 @@ namespace NsqSharp.Bus.Configuration
         /// <returns>The <see cref="IConfiguration"/> for this bus.</returns>
         public static IConfiguration With(IEnumerable<Assembly> assembliesToScan)
         {
-            return new NsqConfiguration(assembliesToScan);
+            _isBusCreated = true;
+
+            if (_nsqConfiguration == null)
+                _nsqConfiguration = new NsqConfiguration(assembliesToScan);
+            else
+                _nsqConfiguration.ScanAssemblies(assembliesToScan);
+
+            return _nsqConfiguration;
         }
 
         /// <summary>
@@ -52,6 +91,6 @@ namespace NsqSharp.Bus.Configuration
         /// <summary>
         /// Gets the component builder.
         /// </summary>
-        public IBuilder Builder { get; private set; }
+        public IObjectBuilder Builder { get; internal set; }
     }
 }
