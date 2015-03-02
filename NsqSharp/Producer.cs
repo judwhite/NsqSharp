@@ -167,6 +167,22 @@ namespace NsqSharp
         }
 
         /// <summary>
+        /// Ping causes the Producer to connect to it's configured nsqd (if not already
+        /// connected) and send a `Nop` command, returning any error that might occur.
+        ///
+        /// This method can be used to verify that a newly-created Producer instance is
+        /// configured correctly, rather than relying on the lazy "connect on Publish"
+        /// behavior of a Producer.
+        /// </summary>
+        public void Ping()
+        {
+            Connect();
+
+            // TODO: PR: go-nsq, what does writing NO_OP prove above just Connect? nsqd does not respond to NO_OP
+            _conn.WriteCommand(Command.Nop());
+        }
+
+        /// <summary>
         /// SetLogger assigns the logger to use as well as a level
         ///
         /// The logger parameter is an interface that requires the following
