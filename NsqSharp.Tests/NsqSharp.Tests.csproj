@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Channels\ChanTest.cs" />
+    <Compile Include="CommandTest.cs" />
     <Compile Include="ConfigTest.cs" />
     <Compile Include="ConsumerTest.cs" />
     <Compile Include="Extensions\ObjectExtensionsTest.cs" />

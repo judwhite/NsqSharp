@@ -5,3 +5,4 @@
 *.sln.DotSettings.user
 bin/
 obj/
+nsq-0.3.2-bin/*.dat

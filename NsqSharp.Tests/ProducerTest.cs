@@ -14,7 +14,7 @@ using NUnit.Framework;
 namespace NsqSharp.Tests
 {
     [TestFixture(IgnoreReason = "NSQD Integration Test")]
-    public partial class ProducerTest
+    public class ProducerTest
     {
         [Test]
         public void TestProducerConnection()
@@ -289,7 +289,8 @@ namespace NsqSharp.Tests
         }
     }
 
-    public partial class ProducerTest
+    [TestFixture]
+    public class ProducerBenchmarkTest
     {
         [Test]
         public void Benchmark()

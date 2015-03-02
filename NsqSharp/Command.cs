@@ -113,7 +113,20 @@ namespace NsqSharp
         /// It is suggested that the target Writer is buffered
         /// to avoid performing many system calls.
         /// </summary>
-        public long WriteTo(IWriter w, byte[] buf)
+        public long WriteTo(IWriter w)
+        {
+            var buf = new byte[GetByteCount()];
+            return WriteTo(w, buf);
+        }
+
+        /// <summary>
+        /// WriteTo implements the WriterTo interface and
+        /// serializes the Command to the supplied Writer.
+        ///
+        /// It is suggested that the target Writer is buffered
+        /// to avoid performing many system calls.
+        /// </summary>
+        internal long WriteTo(IWriter w, byte[] buf)
         {
             int j = 0;
 
