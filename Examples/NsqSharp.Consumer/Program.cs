@@ -23,6 +23,7 @@ namespace NsqSharp.ConsumerExample
                 outputStream = File.Open(cfg.FileName, FileMode.Append, FileAccess.Write);
 
             var streamWriter = new StreamWriter(outputStream);
+            streamWriter.AutoFlush = true;
 
             Console.CancelKeyPress += Console_CancelKeyPress;
 
