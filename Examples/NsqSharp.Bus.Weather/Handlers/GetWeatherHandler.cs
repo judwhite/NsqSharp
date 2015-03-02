@@ -16,6 +16,9 @@ namespace NsqSharp.Bus.Weather.Handlers
 
         public void Handle(GetWeather message)
         {
+            var weather = _weatherServiceProxy.GetWeather(message.City);
+            _bus.Send(weather);
+
             throw new System.NotImplementedException();
         }
     }

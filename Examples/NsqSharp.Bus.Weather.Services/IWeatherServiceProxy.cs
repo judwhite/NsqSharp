@@ -2,5 +2,6 @@
 {
     public interface IWeatherServiceProxy
     {
+        object GetWeather(string city);
     }
 }
