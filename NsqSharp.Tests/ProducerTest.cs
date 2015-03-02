@@ -31,6 +31,20 @@ namespace NsqSharp.Tests
         }
 
         [Test]
+        public void TestProducerPing()
+        {
+            var config = new Config();
+            var w = new Producer("127.0.0.1:4150", config);
+            w.SetLogger(new ConsoleLogger(), LogLevel.Debug);
+
+            w.Ping();
+
+            w.Stop();
+
+            Assert.Throws<ErrStopped>(w.Ping, "should not be able to ping after Stop()");
+        }
+
+        [Test]
         public void TestProducerPublish()
         {
             var topicName = "publish" + DateTime.Now.Unix();
