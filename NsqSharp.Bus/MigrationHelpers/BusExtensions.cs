@@ -5,7 +5,7 @@ namespace NsqSharp.Bus
     /// <summary>
     /// IBus extension methods.
     /// </summary>
-    public static class IBusExtensions
+    public static class BusExtensions
     {
         /// <summary>
         /// Sends a message of type <typeparamref name="T"/> on the configured topic.

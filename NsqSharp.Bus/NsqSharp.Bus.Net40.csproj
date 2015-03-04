@@ -49,24 +49,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\BusType.cs" />
-    <Compile Include="Configuration\ConfigureComponents.cs" />
-    <Compile Include="Configuration\ConfigureSerialization.cs" />
-    <Compile Include="Configuration\DependencyLifeCycle.cs" />
-    <Compile Include="Configuration\NsqConfiguration.cs" />
-    <Compile Include="Configuration\ObjectBuilder.cs" />
-    <Compile Include="MigrationHelpers\IBusExtensions.cs" />
+    <Compile Include="Configuration\BuiltIn\NewtonsoftJsonSerializer.cs" />
+    <Compile Include="Configuration\BuiltIn\StructureMapObjectBuilder.cs" />
+    <Compile Include="Configuration\BusConfiguration.cs" />
+    <Compile Include="Configuration\Converters\HandlerTypeToChannelConverter.cs" />
+    <Compile Include="Configuration\Converters\MessageTypeToTopicConverter.cs" />
+    <Compile Include="Configuration\IMessageSerializer.cs" />
+    <Compile Include="Configuration\IObjectBuilder.cs" />
+    <Compile Include="Configuration\MessageHandlerMetadata.cs" />
+    <Compile Include="MigrationHelpers\BusExtensions.cs" />
     <Compile Include="MigrationHelpers\ICommand.cs" />
-    <Compile Include="Configuration\IConfigureThisEndpoint.cs" />
     <Compile Include="MigrationHelpers\IEvent.cs" />
     <Compile Include="MigrationHelpers\IMessage.cs" />
-    <Compile Include="MigrationHelpers\INeedInitialization.cs" />
-    <Compile Include="MigrationHelpers\IWantToRunWhenTheBusStartsAndStops.cs" />
     <Compile Include="NsqBus.cs" />
-    <Compile Include="Configuration\Configure.cs" />
     <Compile Include="IBus.cs" />
     <Compile Include="IHandleMessages.cs" />
-    <Compile Include="IMessageContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\Crc32.cs" />
     <Compile Include="Utils\InterfaceBuilder.cs" />

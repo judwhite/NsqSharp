@@ -54,9 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\ConfigureSerializationTest.cs" />
     <Compile Include="Utils\InterfaceBuilderTest.cs" />
-    <Compile Include="Configuration\StructureMapObjectBuilderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

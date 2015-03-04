@@ -53,9 +53,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Bootstrap\IoC\CoreRegistry.cs" />
-    <Compile Include="Bootstrap\IoC\ObjectFactory.cs" />
-    <Compile Include="Bootstrap\Bus\EndpointConfig.cs" />
+    <Compile Include="IoC\CoreRegistry.cs" />
+    <Compile Include="IoC\ObjectFactory.cs" />
     <Compile Include="Handlers\GetWeatherHandler.cs" />
     <Compile Include="Messages\GetWeather.cs" />
     <Compile Include="Program.cs" />

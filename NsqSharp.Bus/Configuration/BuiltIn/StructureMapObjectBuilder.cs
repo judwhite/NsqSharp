@@ -2,37 +2,10 @@
 using System.Linq;
 using System.Reflection;
 
-namespace NsqSharp.Bus.Configuration
+namespace NsqSharp.Bus.Configuration.BuiltIn
 {
     /// <summary>
-    /// Object builder. See <see cref="IConfiguration.UsingContainer"/>.
-    /// </summary>
-    public interface IObjectBuilder
-    {
-        /// <summary>
-        /// Creates or finds the registered instance of type <typeparamref name="T"/>.
-        /// </summary>
-        /// <typeparam name="T">The type to resolve.</typeparam>
-        /// <returns>The registered instance of type <typeparamref name="T"/>.</returns>
-        T GetInstance<T>();
-
-        /// <summary>
-        /// Creates or finds the registered instance of the specifid <paramref name="type"/>.
-        /// </summary>
-        /// <param name="type">The type to resolve.</param>
-        /// <returns>The registered instance of the specifid <paramref name="type"/>.</returns>
-        object GetInstance(Type type);
-
-        /// <summary>
-        /// Injects an <paramref name="instance"/> of type <typeparamref name="T"/> into the container.
-        /// </summary>
-        /// <typeparam name="T">The instance type.</typeparam>
-        /// <param name="instance">The instance to inject.</param>
-        void Inject<T>(T instance);
-    }
-
-    /// <summary>
-    /// StructureMap object builder. See <see cref="IConfiguration.UsingContainer"/>.
+    /// StructureMap object builder. See <see cref="BusConfiguration"/>.
     /// </summary>
     public class StructureMapObjectBuilder : IObjectBuilder
     {
@@ -42,7 +15,7 @@ namespace NsqSharp.Bus.Configuration
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StructureMapObjectBuilder"/> class.
-        /// See <see cref="IConfiguration.UsingContainer"/>.
+        /// See <see cref="BusConfiguration"/>.
         /// </summary>
         /// <param name="objectFactoryContainer">StructureMap ObjectFactory.Container</param>
         public StructureMapObjectBuilder(object objectFactoryContainer)

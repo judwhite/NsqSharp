@@ -3,6 +3,7 @@
 *.ReSharper.user
 *.sln.DotSettings
 *.sln.DotSettings.user
+*.fpr
 bin/
 obj/
 nsq-0.3.2-bin/*.dat

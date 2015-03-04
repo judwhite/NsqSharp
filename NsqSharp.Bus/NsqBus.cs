@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NsqSharp.Bus.Configuration;
+using NsqSharp.Bus.Configuration.Converters;
 using NsqSharp.Bus.Utils;
 using NsqSharp.Go;
 
@@ -8,6 +9,40 @@ namespace NsqSharp.Bus
 {
     internal class NsqBus : IBus
     {
+        private readonly Dictionary<string, List<MessageHandlerMetadata>> _topicChannelHandlers;
+        private readonly IObjectBuilder _dependencyInjectionContainer;
+        private readonly IMessageTypeToTopicConverter _messageTypeToTopicConverter;
+        private readonly IMessageSerializer _sendMessageSerializer;
+
+        public NsqBus(
+            Dictionary<string, List<MessageHandlerMetadata>> topicChannelHandlers,
+            IObjectBuilder dependencyInjectionContainer,
+            IMessageTypeToTopicConverter messageTypeToTopicConverter,
+            IMessageSerializer sendMessageSerializer
+        )
+        {
+            if (topicChannelHandlers == null)
+                throw new ArgumentNullException("topicChannelHandlers");
+            if (dependencyInjectionContainer == null)
+                throw new ArgumentNullException("dependencyInjectionContainer");
+            if (messageTypeToTopicConverter == null)
+                throw new ArgumentNullException("messageTypeToTopicConverter");
+            if (sendMessageSerializer == null)
+                throw new ArgumentNullException("sendMessageSerializer");
+
+            _topicChannelHandlers = topicChannelHandlers;
+            _dependencyInjectionContainer = dependencyInjectionContainer;
+            _messageTypeToTopicConverter = messageTypeToTopicConverter;
+            _sendMessageSerializer = sendMessageSerializer;
+
+            _dependencyInjectionContainer.Inject((IBus)this);
+        }
+
+        private string GetTopic<T>()
+        {
+            return _messageTypeToTopicConverter.GetTopic(typeof(T));
+        }
+
         public void Send<T>(T message)
         {
             Send(message, GetTopic<T>());
@@ -58,7 +93,7 @@ namespace NsqSharp.Bus
             if (string.IsNullOrEmpty(topic))
                 throw new ArgumentNullException("topic");
 
-            byte[] serializedMessage = Configure.Serialization.DefaultSerialize(message);
+            byte[] serializedMessage = _sendMessageSerializer.Serialize(message);
 
             if (nsqdTcpAddresses == null)
             {
@@ -134,23 +169,7 @@ namespace NsqSharp.Bus
 
         public T CreateInstance<T>()
         {
-            return Configure.Instance.Builder.GetInstance<T>();
-        }
-
-        private static string GetTopic<T>()
-        {
-            string topicName = string.Format("{0}.{1}", typeof(T).Namespace, typeof(T).Name);
-            if (topicName.Length > 64)
-            {
-                string crc32 = Crc32.Calculate(topicName);
-                string shortName = topicName.Substring(topicName.Length - 64 + 9);
-                int dotIdx = shortName.IndexOf('.');
-                if (dotIdx != -1)
-                    shortName = shortName.Substring(dotIdx + 1);
-                topicName = string.Format("{0}-{1}", shortName, crc32);
-            }
-
-            return topicName;
+            return _dependencyInjectionContainer.GetInstance<T>();
         }
 
         private WaitGroup _wg;
