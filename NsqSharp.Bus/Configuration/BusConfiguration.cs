@@ -250,7 +250,9 @@ namespace NsqSharp.Bus.Configuration
                 _defaultMessageSerializer
             );
 
-            throw new NotImplementedException();
+            bus.Start();
+
+            return bus;
         }
 
         /// <summary>

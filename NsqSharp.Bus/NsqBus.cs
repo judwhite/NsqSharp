@@ -173,7 +173,7 @@ namespace NsqSharp.Bus
         }
 
         private WaitGroup _wg;
-        public IBus Start(Dictionary<Type, Type> messageHandlers)
+        public IBus Start()
         {
             // TODO: Only allow to be called once
             _wg = new WaitGroup();
