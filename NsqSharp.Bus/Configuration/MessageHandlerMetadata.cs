@@ -13,5 +13,7 @@ namespace NsqSharp.Bus.Configuration
         public IMessageSerializer Serializer { get; set; }
         public Config Config { get; set; }
         public int InstanceCount { get; set; }
+
+        public Consumer Consumer { get; set; }
     }
 }

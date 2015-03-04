@@ -57,6 +57,7 @@
     <Compile Include="Configuration\IMessageSerializer.cs" />
     <Compile Include="Configuration\IObjectBuilder.cs" />
     <Compile Include="Configuration\MessageHandlerMetadata.cs" />
+    <Compile Include="GenericConsumerHandler.cs" />
     <Compile Include="MigrationHelpers\BusExtensions.cs" />
     <Compile Include="MigrationHelpers\ICommand.cs" />
     <Compile Include="MigrationHelpers\IEvent.cs" />

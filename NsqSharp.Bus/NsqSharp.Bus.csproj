@@ -56,6 +56,7 @@
     <Compile Include="Configuration\IObjectBuilder.cs" />
     <Compile Include="Configuration\BuiltIn\StructureMapObjectBuilder.cs" />
     <Compile Include="Configuration\Converters\MessageTypeToTopicConverter.cs" />
+    <Compile Include="GenericConsumerHandler.cs" />
     <Compile Include="MigrationHelpers\BusExtensions.cs" />
     <Compile Include="Utils\Crc32.cs" />
     <Compile Include="Utils\InterfaceBuilder.cs" />

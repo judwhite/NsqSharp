@@ -21,6 +21,7 @@ namespace NsqSharp.Bus.Configuration
         private readonly int _defaultThreadsPerHandler;
         private readonly IMessageTypeToTopicConverter _messageTypeToTopicCoverter;
         private readonly IHandlerTypeToChannelConverter _handlerTypeToChannelConverter;
+        private readonly string[] _defaultNsqdHttpEndpoints;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BusConfiguration"/> class.
@@ -62,6 +63,7 @@ namespace NsqSharp.Bus.Configuration
             _defaultNsqlookupdHttpEndpoints = defaultNsqlookupdHttpEndpoints;
             _defaultConsumerNsqConfig = defaultConsumerNsqConfig ?? new Config();
             _defaultThreadsPerHandler = defaultThreadsPerHandler;
+            _defaultNsqdHttpEndpoints = new[] { "127.0.0.1:4151" };
         }
 
         /// <summary>
@@ -247,7 +249,8 @@ namespace NsqSharp.Bus.Configuration
                 _topicChannelHandlers,
                 _dependencyInjectionContainer,
                 _messageTypeToTopicCoverter,
-                _defaultMessageSerializer
+                _defaultMessageSerializer,
+                _defaultNsqdHttpEndpoints
             );
 
             bus.Start();

@@ -10,15 +10,15 @@ namespace NsqSharp.Bus.Weather
     {
         static void Main()
         {
-            var busConfiguration = new BusConfiguration(
+            var config = new BusConfiguration(
                 new StructureMapObjectBuilder(ObjectFactory.Container),
                 new NewtonsoftJsonSerializer(typeof(JsonConvert).Assembly),
                 new[] { "127.0.0.1:4161" }
             );
 
-            busConfiguration.AddMessageHandlers(new[] { typeof(Program).Assembly });
+            config.AddMessageHandlers(new[] { typeof(Program).Assembly });
 
-            var bus = busConfiguration.StartBus();
+            var bus = config.StartBus();
 
             bus.Send(new GetWeather { City = "Austin" });
         }

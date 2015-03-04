@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.Converters;
 using NsqSharp.Bus.Utils;
@@ -13,12 +14,14 @@ namespace NsqSharp.Bus
         private readonly IObjectBuilder _dependencyInjectionContainer;
         private readonly IMessageTypeToTopicConverter _messageTypeToTopicConverter;
         private readonly IMessageSerializer _sendMessageSerializer;
+        private readonly string[] _defaultProducerNsqdHttpEndpoints;
 
         public NsqBus(
             Dictionary<string, List<MessageHandlerMetadata>> topicChannelHandlers,
             IObjectBuilder dependencyInjectionContainer,
             IMessageTypeToTopicConverter messageTypeToTopicConverter,
-            IMessageSerializer sendMessageSerializer
+            IMessageSerializer sendMessageSerializer,
+            string[] defaultProducerNsqdHttpEndpoints
         )
         {
             if (topicChannelHandlers == null)
@@ -29,11 +32,42 @@ namespace NsqSharp.Bus
                 throw new ArgumentNullException("messageTypeToTopicConverter");
             if (sendMessageSerializer == null)
                 throw new ArgumentNullException("sendMessageSerializer");
+            if (defaultProducerNsqdHttpEndpoints == null)
+                throw new ArgumentNullException("defaultProducerNsqdHttpEndpoints");
+            if (defaultProducerNsqdHttpEndpoints.Length == 0)
+                throw new ArgumentException("must contain elements", "defaultProducerNsqdHttpEndpoints");
 
             _topicChannelHandlers = topicChannelHandlers;
             _dependencyInjectionContainer = dependencyInjectionContainer;
             _messageTypeToTopicConverter = messageTypeToTopicConverter;
             _sendMessageSerializer = sendMessageSerializer;
+
+
+            _defaultProducerNsqdHttpEndpoints = new string[defaultProducerNsqdHttpEndpoints.Length];
+            for (int i = 0; i < defaultProducerNsqdHttpEndpoints.Length; i++)
+            {
+                string endpoint = defaultProducerNsqdHttpEndpoints[i];
+                if (!endpoint.StartsWith("http://"))
+                    endpoint = string.Format("http://{0}", endpoint);
+
+                string pingEndpoint = string.Format("{0}/ping", endpoint);
+                try
+                {
+                    var webClient = new WebClient();
+                    string result = webClient.DownloadString(pingEndpoint);
+
+                    if (result != "OK")
+                    {
+                        throw new Exception(string.Format("{0} returned {1}", pingEndpoint, result));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(string.Format("Error connecting to {0}", pingEndpoint), ex);
+                }
+
+                _defaultProducerNsqdHttpEndpoints[i] = endpoint;
+            }
 
             _dependencyInjectionContainer.Inject((IBus)this);
         }
@@ -64,18 +98,18 @@ namespace NsqSharp.Bus
             Send(message);
         }
 
-        public void Send<T>(T message, params string[] nsqdTcpAddresses)
+        public void Send<T>(T message, params string[] nsqdHttpAddresses)
         {
-            Send(message, GetTopic<T>(), nsqdTcpAddresses);
+            Send(message, GetTopic<T>(), nsqdHttpAddresses);
         }
 
-        public void Send<T>(params string[] nsqdTcpAddresses)
+        public void Send<T>(params string[] nsqdHttpAddresses)
         {
             T message = (typeof(T).IsInterface ? InterfaceBuilder.Create<T>() : CreateInstance<T>());
-            Send(message, nsqdTcpAddresses);
+            Send(message, nsqdHttpAddresses);
         }
 
-        public void Send<T>(Action<T> messageConstructor, params string[] nsqdTcpAddresses)
+        public void Send<T>(Action<T> messageConstructor, params string[] nsqdHttpAddresses)
         {
             if (messageConstructor == null)
                 throw new ArgumentNullException("messageConstructor");
@@ -83,10 +117,10 @@ namespace NsqSharp.Bus
             T message = (typeof(T).IsInterface ? InterfaceBuilder.Create<T>() : CreateInstance<T>());
             messageConstructor(message);
 
-            Send(message, nsqdTcpAddresses);
+            Send(message, nsqdHttpAddresses);
         }
 
-        public void Send<T>(T message, string topic, params string[] nsqdTcpAddresses)
+        public void Send<T>(T message, string topic, params string[] nsqdHttpAddresses)
         {
             if (message == null)
                 throw new ArgumentNullException("message");
@@ -95,32 +129,31 @@ namespace NsqSharp.Bus
 
             byte[] serializedMessage = _sendMessageSerializer.Serialize(message);
 
-            if (nsqdTcpAddresses == null)
+            if (nsqdHttpAddresses == null)
             {
-                // TODO: Get default from configuration
-                nsqdTcpAddresses = new[] { "127.0.0.1:4150" };
+                nsqdHttpAddresses = _defaultProducerNsqdHttpEndpoints;
             }
 
             // TODO: Re-use Producers per nsqd/topic/thread
-            foreach (var nsqdAddress in nsqdTcpAddresses)
+            foreach (var nsqdAddress in nsqdHttpAddresses)
             {
-                // TODO: specify Producer config?
-                var p = new Producer(nsqdAddress);
-                p.Publish(topic, serializedMessage);
-                p.Stop(); // TODO: don't do this until the Bus stop, or the Producer disconnects
+                // NOTE: WebClient instance methods are not thread safe
+                WebClient webClient = new WebClient();
+                webClient.UploadData(nsqdAddress, serializedMessage);
+                // TODO: And if you fail?
             }
         }
 
-        public void Send<T>(string topic, params string[] nsqdTcpAddresses)
+        public void Send<T>(string topic, params string[] nsqdHttpAddresses)
         {
             if (string.IsNullOrEmpty(topic))
                 throw new ArgumentNullException("topic");
 
             T message = (typeof(T).IsInterface ? InterfaceBuilder.Create<T>() : CreateInstance<T>());
-            Send(message, topic, nsqdTcpAddresses);
+            Send(message, topic, nsqdHttpAddresses);
         }
 
-        public void Send<T>(Action<T> messageConstructor, string topic, params string[] nsqdTcpAddresses)
+        public void Send<T>(Action<T> messageConstructor, string topic, params string[] nsqdHttpAddresses)
         {
             if (messageConstructor == null)
                 throw new ArgumentNullException("messageConstructor");
@@ -128,7 +161,7 @@ namespace NsqSharp.Bus
             T message = (typeof(T).IsInterface ? InterfaceBuilder.Create<T>() : CreateInstance<T>());
             messageConstructor(message);
 
-            Send(message, topic, nsqdTcpAddresses);
+            Send(message, topic, nsqdHttpAddresses);
         }
 
         /*public void Defer<T>(TimeSpan delay, T message)
@@ -172,28 +205,27 @@ namespace NsqSharp.Bus
             return _dependencyInjectionContainer.GetInstance<T>();
         }
 
-        private WaitGroup _wg;
-        public IBus Start()
+        public void Start()
         {
-            // TODO: Only allow to be called once
-            _wg = new WaitGroup();
-            _wg.Add(1);
-            GoFunc.Run(() =>
+            foreach (var topicChannelHandler in _topicChannelHandlers)
             {
-                // TODO: meat goes here
-            });
-            return this;
+                foreach (var item in topicChannelHandler.Value)
+                {
+                    Consumer consumer = new Consumer(item.Topic, item.Channel, item.Config);
+                    //consumer.SetLogger(); // TODO
+                    consumer.AddConcurrentHandlers(new GenericConsumerHandler(item), item.InstanceCount);
+
+                    item.Consumer = consumer;
+
+                    // TODO: Start consumers.
+                }
+            }
         }
 
         public void Stop()
         {
             // TODO: Graceful shutdown
             // TODO: Stop all producers, consumers
-        }
-
-        public void Wait()
-        {
-            _wg.Wait();
         }
     }
 }
