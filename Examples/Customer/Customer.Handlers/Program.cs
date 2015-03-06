@@ -1,34 +1,29 @@
-﻿using System;
+﻿using Customer.Handlers.IoC;
 using Newtonsoft.Json;
+using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.BuiltIn;
-using NsqSharp.Bus.Weather.IoC;
-using NsqSharp.Bus.Weather.Messages;
 
-namespace NsqSharp.Bus.Weather
+namespace Customer.Handlers
 {
-    class Program
+    public static class Program
     {
-        static void Main()
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
+        public static void Main(string[] args)
         {
             var config = new BusConfiguration(
                 new StructureMapObjectBuilder(ObjectFactory.Container),
                 new NewtonsoftJsonSerializer(typeof(JsonConvert).Assembly),
                 defaultThreadsPerHandler: 16,
-                defaultNsqlookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
-                onStart: SendMessage
+                defaultNsqlookupdHttpEndpoints: new[] { "127.0.0.1:4161" }
+                //onStart: SendMessage
             );
-            
+
             config.AddMessageHandlers(new[] { typeof(Program).Assembly });
 
             BusService.Start(config);
-        }
-
-        private static void SendMessage()
-        {
-            var bus = ObjectFactory.Container.GetInstance<IBus>();
-
-            bus.Send(new GetWeather { City = "Austin" });
         }
     }
 }

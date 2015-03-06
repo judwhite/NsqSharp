@@ -3,7 +3,7 @@ using System.Threading;
 using StructureMap;
 using StructureMap.Graph;
 
-namespace NsqSharp.Bus.Weather.IoC
+namespace Customer.Handlers.IoC
 {
     public static class ObjectFactory
     {

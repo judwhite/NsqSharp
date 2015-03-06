@@ -1,4 +1,6 @@
-﻿namespace NsqSharp.Bus.Configuration
+﻿using System;
+
+namespace NsqSharp.Bus.Configuration
 {
     /// <summary>
     /// Message serializer interface.
@@ -13,11 +15,11 @@
         byte[] Serialize(object value);
 
         /// <summary>
-        /// Deserializes the specified <paramref name="value"/> to an object.
+        /// Deserializes the specified <paramref name="value"/> to an object of type <paramref name="type" />.
         /// </summary>
-        /// <typeparam name="T">The type of the deserialized object.</typeparam>
+        /// <param name="type">The type of the deserialized object.</param>
         /// <param name="value">The value to deserialize.</param>
         /// <returns>The deserialized object.</returns>
-        T Deserialize<T>(byte[] value);
+        object Deserialize(Type type, byte[] value);
     }
 }

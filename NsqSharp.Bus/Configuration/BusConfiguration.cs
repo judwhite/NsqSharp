@@ -22,6 +22,10 @@ namespace NsqSharp.Bus.Configuration
         private readonly IMessageTypeToTopicConverter _messageTypeToTopicCoverter;
         private readonly IHandlerTypeToChannelConverter _handlerTypeToChannelConverter;
         private readonly string[] _defaultNsqdHttpEndpoints;
+        private readonly Action _onStart;
+        private readonly Action _onStop;
+
+        private NsqBus _bus;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BusConfiguration"/> class.
@@ -34,12 +38,16 @@ namespace NsqSharp.Bus.Configuration
         /// on port 4161.</param>
         /// <param name="defaultThreadsPerHandler">The default number of threads per message handler.</param>
         /// <param name="defaultConsumerNsqConfig">The default NSQ Consumer <see cref="Config"/> (optional).</param>
+        /// <param name="onStart">Method to call after the bus has started (optional).</param>
+        /// <param name="onStop">Method to call after the bus has stopped (optional).</param>
         public BusConfiguration(
             IObjectBuilder dependencyInjectionContainer,
             IMessageSerializer defaultMessageSerializer,
             string[] defaultNsqlookupdHttpEndpoints,
-            int defaultThreadsPerHandler = 5,
-            Config defaultConsumerNsqConfig = null
+            int defaultThreadsPerHandler,
+            Config defaultConsumerNsqConfig = null,
+            Action onStart = null,
+            Action onStop = null
         )
         {
             if (dependencyInjectionContainer == null)
@@ -64,6 +72,8 @@ namespace NsqSharp.Bus.Configuration
             _defaultConsumerNsqConfig = defaultConsumerNsqConfig ?? new Config();
             _defaultThreadsPerHandler = defaultThreadsPerHandler;
             _defaultNsqdHttpEndpoints = new[] { "127.0.0.1:4151" };
+            _onStart = onStart;
+            _onStop = onStop;
         }
 
         /// <summary>
@@ -239,13 +249,9 @@ namespace NsqSharp.Bus.Configuration
             return false;
         }
 
-        /// <summary>
-        /// Starts the configured bus.
-        /// </summary>
-        /// <returns>The bus.</returns>
-        public IBus StartBus()
+        internal void StartBus()
         {
-            var bus = new NsqBus(
+            _bus = new NsqBus(
                 _topicChannelHandlers,
                 _dependencyInjectionContainer,
                 _messageTypeToTopicCoverter,
@@ -253,17 +259,18 @@ namespace NsqSharp.Bus.Configuration
                 _defaultNsqdHttpEndpoints
             );
 
-            bus.Start();
+            _bus.Start();
 
-            return bus;
+            if (_onStart != null)
+                _onStart();
         }
 
-        /// <summary>
-        /// Shuts down the configured bus.
-        /// </summary>
-        public void ShutdownBus()
+        internal void StopBus()
         {
-            throw new NotImplementedException();
+            _bus.Stop();
+
+            if (_onStop != null)
+                _onStop();
         }
     }
 }

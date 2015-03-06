@@ -1,6 +1,6 @@
 ﻿using StructureMap.Configuration.DSL;
 
-namespace NsqSharp.Bus.Weather.IoC
+namespace Customer.Handlers.IoC
 {
     public class CoreRegistry : Registry
     {
@@ -10,7 +10,6 @@ namespace NsqSharp.Bus.Weather.IoC
             {
                 s.AssemblyContainingType<CoreRegistry>();
                 s.WithDefaultConventions();
-                // a4477c4d240353a9b6eec38e4bb00ca2
             });
         }
     }

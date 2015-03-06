@@ -42,6 +42,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -49,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BusService.cs" />
     <Compile Include="Configuration\BuiltIn\NewtonsoftJsonSerializer.cs" />
     <Compile Include="Configuration\BuiltIn\StructureMapObjectBuilder.cs" />
     <Compile Include="Configuration\BusConfiguration.cs" />
@@ -57,7 +59,7 @@
     <Compile Include="Configuration\IMessageSerializer.cs" />
     <Compile Include="Configuration\IObjectBuilder.cs" />
     <Compile Include="Configuration\MessageHandlerMetadata.cs" />
-    <Compile Include="GenericConsumerHandler.cs" />
+    <Compile Include="MessageDistributor.cs" />
     <Compile Include="MigrationHelpers\BusExtensions.cs" />
     <Compile Include="MigrationHelpers\ICommand.cs" />
     <Compile Include="MigrationHelpers\IEvent.cs" />
@@ -68,6 +70,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\Crc32.cs" />
     <Compile Include="Utils\InterfaceBuilder.cs" />
+    <Compile Include="Utils\WindowsService.cs">
+      <SubType>Component</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NsqSharp\NsqSharp.Net40.csproj">

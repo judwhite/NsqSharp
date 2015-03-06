@@ -10,7 +10,7 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
     public class NewtonsoftJsonSerializer : IMessageSerializer
     {
         private readonly Func<object, byte[]> _serializer;
-        private readonly Func<byte[], object> _deserializer;
+        private readonly Func<Type, byte[], object> _deserializer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NewtonsoftJsonSerializer"/> class. See <see cref="BusConfiguration"/>.
@@ -25,7 +25,7 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
             var jsonConvertMethods = jsonConvertType.GetMethods(BindingFlags.Public | BindingFlags.Static);
 
             Func<object, byte[]> serializer = null;
-            Func<byte[], object> deserializer = null;
+            Func<Type, byte[], object> deserializer = null;
 
             foreach (var method in jsonConvertMethods)
             {
@@ -37,18 +37,25 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
                     var genericArgs = method.GetGenericArguments();
                     var parameters = method.GetParameters();
 
-                    if (genericArgs.Length == 0 && parameters.Length == 1)
+                    if (genericArgs.Length == 0)
                     {
-                        if (isSerializeObject)
+                        if (isSerializeObject && parameters.Length == 1)
                         {
-                            var serializeMethod = method;
-                            serializer = o => Encoding.UTF8.GetBytes((string)serializeMethod.Invoke(null, new[] { o }));
+                            if (parameters[0].ParameterType == typeof(object))
+                            {
+                                var serializeMethod = method;
+                                serializer = obj =>
+                                    Encoding.UTF8.GetBytes((string)serializeMethod.Invoke(null, new[] { obj }));
+                            }
                         }
-                        else
+                        else if (isDeserializeObject && parameters.Length == 2)
                         {
-                            var deserializeMethod = method;
-                            deserializer = byteArray =>
-                                deserializeMethod.Invoke(null, new object[] { Encoding.UTF8.GetString(byteArray) });
+                            if (parameters[0].ParameterType == typeof(string) && parameters[1].ParameterType == typeof(Type))
+                            {
+                                var deserializeMethod = method;
+                                deserializer = (type, byteArray) =>
+                                    deserializeMethod.Invoke(null, new object[] { type, Encoding.UTF8.GetString(byteArray) });
+                            }
                         }
                     }
                 }
@@ -74,14 +81,14 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
         }
 
         /// <summary>
-        /// Deserializes the specified <paramref name="value"/> to an object.
+        /// Deserializes the specified <paramref name="value"/> to an object of type <paramref name="type" />.
         /// </summary>
-        /// <typeparam name="T">The type of the deserialized object.</typeparam>
+        /// <param name="type">The type of the deserialized object.</param>
         /// <param name="value">The value to deserialize.</param>
         /// <returns>The deserialized object.</returns>
-        public T Deserialize<T>(byte[] value)
+        public object Deserialize(Type type, byte[] value)
         {
-            return (T)_deserializer(value);
+            return _deserializer(type, value);
         }
     }
 }

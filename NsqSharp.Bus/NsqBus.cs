@@ -42,7 +42,6 @@ namespace NsqSharp.Bus
             _messageTypeToTopicConverter = messageTypeToTopicConverter;
             _sendMessageSerializer = sendMessageSerializer;
 
-
             _defaultProducerNsqdHttpEndpoints = new string[defaultProducerNsqdHttpEndpoints.Length];
             for (int i = 0; i < defaultProducerNsqdHttpEndpoints.Length; i++)
             {
@@ -138,9 +137,11 @@ namespace NsqSharp.Bus
             foreach (var nsqdAddress in nsqdHttpAddresses)
             {
                 // NOTE: WebClient instance methods are not thread safe
+                string publishAddress = string.Format("{0}/pub?topic={1}", nsqdAddress, topic);
+
+                // TODO: What happens if this call fails? Error code or exception? Logging?
                 WebClient webClient = new WebClient();
-                webClient.UploadData(nsqdAddress, serializedMessage);
-                // TODO: And if you fail?
+                webClient.UploadData(publishAddress, serializedMessage);
             }
         }
 
@@ -213,9 +214,11 @@ namespace NsqSharp.Bus
                 {
                     Consumer consumer = new Consumer(item.Topic, item.Channel, item.Config);
                     //consumer.SetLogger(); // TODO
-                    consumer.AddConcurrentHandlers(new GenericConsumerHandler(item), item.InstanceCount);
-
+                    // TODO: max_in_flight vs item.InstanceCount
+                    consumer.AddConcurrentHandlers(new MessageDistributor(_dependencyInjectionContainer, item), item.InstanceCount);
                     item.Consumer = consumer;
+
+                    consumer.ConnectToNSQLookupds(item.NsqLookupdHttpAddresses);
 
                     // TODO: Start consumers.
                 }
