@@ -67,7 +67,10 @@ namespace NsqSharp.Bus
         private static void ProcessInput(string line)
         {
             // TODO
-            Console.WriteLine(string.Format("ECHO: {0}", line));
+            if (!string.IsNullOrWhiteSpace(line))
+            {
+                Console.WriteLine(string.Format("ECHO: {0}", line));
+            }
         }
     }
 }

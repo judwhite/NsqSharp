@@ -4,7 +4,6 @@ using System.Net;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.Converters;
 using NsqSharp.Bus.Utils;
-using NsqSharp.Go;
 
 namespace NsqSharp.Bus
 {

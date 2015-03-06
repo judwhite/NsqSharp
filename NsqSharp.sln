@@ -35,6 +35,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weather.Handlers", "Example
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weather.Services", "Examples\NsqSharp.Bus\Weather\Weather.Services\Weather.Services.csproj", "{22430DCA-EFA9-4D94-918E-222187CDBAC5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Customer.Messages", "Customer.Messages\Customer.Messages.csproj", "{EFACE6A2-0B05-4E06-9FB6-53A4E2B3BEAF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Customer.Application.Harness", "Customer.Application.Harness\Customer.Application.Harness.csproj", "{7FEAA793-BA87-42CA-AAE3-EF94BBC8811D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +85,14 @@ Global
 		{22430DCA-EFA9-4D94-918E-222187CDBAC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22430DCA-EFA9-4D94-918E-222187CDBAC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22430DCA-EFA9-4D94-918E-222187CDBAC5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFACE6A2-0B05-4E06-9FB6-53A4E2B3BEAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFACE6A2-0B05-4E06-9FB6-53A4E2B3BEAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFACE6A2-0B05-4E06-9FB6-53A4E2B3BEAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFACE6A2-0B05-4E06-9FB6-53A4E2B3BEAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FEAA793-BA87-42CA-AAE3-EF94BBC8811D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FEAA793-BA87-42CA-AAE3-EF94BBC8811D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FEAA793-BA87-42CA-AAE3-EF94BBC8811D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FEAA793-BA87-42CA-AAE3-EF94BBC8811D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -98,5 +110,7 @@ Global
 		{254397C5-8034-4ADE-A30F-EC80FF86FD39} = {8E6E3D9F-3F25-4E95-B228-4F270A1760B1}
 		{147BF696-7496-41B5-AB24-50C745F08966} = {82BAD41B-9BA6-4A4E-90FB-F5124183DD28}
 		{22430DCA-EFA9-4D94-918E-222187CDBAC5} = {82BAD41B-9BA6-4A4E-90FB-F5124183DD28}
+		{EFACE6A2-0B05-4E06-9FB6-53A4E2B3BEAF} = {8E6E3D9F-3F25-4E95-B228-4F270A1760B1}
+		{7FEAA793-BA87-42CA-AAE3-EF94BBC8811D} = {8E6E3D9F-3F25-4E95-B228-4F270A1760B1}
 	EndGlobalSection
 EndGlobal

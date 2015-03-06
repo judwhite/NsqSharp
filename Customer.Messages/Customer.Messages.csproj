@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{254397C5-8034-4ADE-A30F-EC80FF86FD39}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{EFACE6A2-0B05-4E06-9FB6-53A4E2B3BEAF}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Customer.Handlers</RootNamespace>
-    <AssemblyName>Customer.Handlers</AssemblyName>
+    <RootNamespace>Customer.Messages</RootNamespace>
+    <AssemblyName>Customer.Messages</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -37,47 +37,20 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="StructureMap, Version=3.1.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\packages\structuremap.3.1.4.143\lib\net40\StructureMap.dll</HintPath>
-    </Reference>
-    <Reference Include="StructureMap.Net4, Version=3.1.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\packages\structuremap.3.1.4.143\lib\net40\StructureMap.Net4.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Handlers\CustomerHandler.cs" />
-    <Compile Include="IoC\CoreRegistry.cs" />
-    <Compile Include="IoC\ObjectFactory.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="CustomerDetailsMessage.cs" />
+    <Compile Include="InvoiceDetailsMessage.cs" />
+    <Compile Include="InvoiceSummaryMessage.cs" />
+    <Compile Include="ProductDetailsMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Customer.Messages\Customer.Messages.csproj">
-      <Project>{eface6a2-0b05-4e06-9fb6-53a4e2b3beaf}</Project>
-      <Name>Customer.Messages</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\NsqSharp.Bus\NsqSharp.Bus.csproj">
-      <Project>{9635f78d-e740-48c7-b883-0d806c000158}</Project>
-      <Name>NsqSharp.Bus</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\NsqSharp\NsqSharp.csproj">
-      <Project>{7327244d-e163-4c35-9c1a-8dbdf06b9408}</Project>
-      <Name>NsqSharp</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

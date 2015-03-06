@@ -8,11 +8,10 @@ namespace Customer.Handlers
 {
     public static class Program
     {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
         public static void Main(string[] args)
         {
+            // http://www.thomas-bayer.com/sqlrest/
+
             var config = new BusConfiguration(
                 new StructureMapObjectBuilder(ObjectFactory.Container),
                 new NewtonsoftJsonSerializer(typeof(JsonConvert).Assembly),
