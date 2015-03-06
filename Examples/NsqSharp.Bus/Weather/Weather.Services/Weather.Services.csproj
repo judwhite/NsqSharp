@@ -37,10 +37,12 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="StructureMap">
+    <Reference Include="StructureMap, Version=3.1.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\packages\structuremap.3.1.4.143\lib\net40\StructureMap.dll</HintPath>
     </Reference>
-    <Reference Include="StructureMap.Net4">
+    <Reference Include="StructureMap.Net4, Version=3.1.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\packages\structuremap.3.1.4.143\lib\net40\StructureMap.Net4.dll</HintPath>
     </Reference>
     <Reference Include="System" />
