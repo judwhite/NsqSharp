@@ -7,8 +7,8 @@
     <ProjectGuid>{EFACE6A2-0B05-4E06-9FB6-53A4E2B3BEAF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Customer.Messages</RootNamespace>
-    <AssemblyName>Customer.Messages</AssemblyName>
+    <RootNamespace>PointOfSale.Messages</RootNamespace>
+    <AssemblyName>PointOfSale.Messages</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -46,10 +46,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CustomerDetailsMessage.cs" />
-    <Compile Include="InvoiceDetailsMessage.cs" />
-    <Compile Include="InvoiceSummaryMessage.cs" />
-    <Compile Include="ProductDetailsMessage.cs" />
+    <Compile Include="GetCustomerDetails.cs" />
+    <Compile Include="GetCustomers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

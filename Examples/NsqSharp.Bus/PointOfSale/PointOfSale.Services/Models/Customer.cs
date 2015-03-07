@@ -1,6 +1,6 @@
-﻿namespace Customer.Messages
+﻿namespace PointOfSale.Services.Models
 {
-    public class CustomerDetailsMessage
+    public class Customer
     {
         public int CustomerId { get; set; }
         public string FirstName { get; set; }

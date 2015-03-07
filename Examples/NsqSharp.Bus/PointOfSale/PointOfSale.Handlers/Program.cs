@@ -1,10 +1,12 @@
-﻿using Customer.Handlers.IoC;
+﻿using System;
 using Newtonsoft.Json;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.BuiltIn;
+using PointOfSale.Handlers.IoC;
+using PointOfSale.Messages;
 
-namespace Customer.Handlers
+namespace PointOfSale.Handlers
 {
     public static class Program
     {
@@ -15,14 +17,22 @@ namespace Customer.Handlers
             var config = new BusConfiguration(
                 new StructureMapObjectBuilder(ObjectFactory.Container),
                 new NewtonsoftJsonSerializer(typeof(JsonConvert).Assembly),
-                defaultThreadsPerHandler: 16,
-                defaultNsqlookupdHttpEndpoints: new[] { "127.0.0.1:4161" }
-                //onStart: SendMessage
+                defaultThreadsPerHandler: 100,
+                defaultNsqlookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
+                onStart: SendMessage
             );
 
             config.AddMessageHandlers(new[] { typeof(Program).Assembly });
 
             BusService.Start(config);
+        }
+
+        private static void SendMessage(IBus bus)
+        {
+            if (bus == null)
+                throw new ArgumentNullException("bus");
+
+            bus.Send<GetCustomers>();
         }
     }
 }

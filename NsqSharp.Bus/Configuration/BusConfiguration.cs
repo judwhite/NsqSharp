@@ -22,7 +22,7 @@ namespace NsqSharp.Bus.Configuration
         private readonly IMessageTypeToTopicConverter _messageTypeToTopicCoverter;
         private readonly IHandlerTypeToChannelConverter _handlerTypeToChannelConverter;
         private readonly string[] _defaultNsqdHttpEndpoints;
-        private readonly Action _onStart;
+        private readonly Action<IBus> _onStart;
         private readonly Action _onStop;
 
         private NsqBus _bus;
@@ -46,7 +46,7 @@ namespace NsqSharp.Bus.Configuration
             string[] defaultNsqlookupdHttpEndpoints,
             int defaultThreadsPerHandler,
             Config defaultConsumerNsqConfig = null,
-            Action onStart = null,
+            Action<IBus> onStart = null,
             Action onStop = null
         )
         {
@@ -195,7 +195,6 @@ namespace NsqSharp.Bus.Configuration
                 Channel = channel,
                 HandlerType = handlerType,
                 MessageType = messageType,
-                IHandleMessagesType = typeof(IHandleMessages<>).MakeGenericType(messageType),
                 NsqLookupdHttpAddresses = nsqLookupdHttpAddresses,
                 Serializer = messageSerializer ?? _defaultMessageSerializer,
                 Config = config ?? _defaultConsumerNsqConfig,
@@ -262,7 +261,7 @@ namespace NsqSharp.Bus.Configuration
             _bus.Start();
 
             if (_onStart != null)
-                _onStart();
+                _onStart(_bus);
         }
 
         internal void StopBus()

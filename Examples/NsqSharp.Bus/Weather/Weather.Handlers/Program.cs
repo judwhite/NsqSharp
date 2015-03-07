@@ -22,12 +22,11 @@ namespace NsqSharp.Bus.Weather
             config.AddMessageHandlers(new[] { typeof(Program).Assembly });
 
             BusService.Start(config);
+            
         }
 
-        private static void SendMessage()
+        private static void SendMessage(IBus bus)
         {
-            var bus = ObjectFactory.Container.GetInstance<IBus>();
-
             bus.Send(new GetWeather { City = "Austin" });
         }
     }

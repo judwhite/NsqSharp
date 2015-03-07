@@ -1,6 +1,6 @@
 ﻿using StructureMap.Configuration.DSL;
 
-namespace Customer.Handlers.IoC
+namespace PointOfSale.Services.IoC
 {
     public class CoreRegistry : Registry
     {
@@ -11,6 +11,8 @@ namespace Customer.Handlers.IoC
                 s.AssemblyContainingType<CoreRegistry>();
                 s.WithDefaultConventions();
             });
+
+            For<ICustomerService>().Add(() => new CustomerService("http://www.thomas-bayer.com/sqlrest/CUSTOMER"));
         }
     }
 }

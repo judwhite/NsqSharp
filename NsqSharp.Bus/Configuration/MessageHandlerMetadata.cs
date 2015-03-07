@@ -8,7 +8,6 @@ namespace NsqSharp.Bus.Configuration
         public string Channel { get; set; }
         public Type HandlerType { get; set; }
         public Type MessageType { get; set; }
-        public Type IHandleMessagesType { get; set; }
         public string[] NsqLookupdHttpAddresses { get; set; }
         public IMessageSerializer Serializer { get; set; }
         public Config Config { get; set; }

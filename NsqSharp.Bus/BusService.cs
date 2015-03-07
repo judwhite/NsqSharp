@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.ServiceProcess;
-using System.Threading;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Utils;
 using NsqSharp.Channels;
@@ -13,6 +13,9 @@ namespace NsqSharp.Bus
     /// </summary>
     public static class BusService
     {
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr GetConsoleWindow();
+
         /// <summary>
         /// Starts the bus service.
         /// </summary>
@@ -23,15 +26,13 @@ namespace NsqSharp.Bus
 
             var service = new WindowsService(busConfiguration);
 
-            if (!Environment.UserInteractive)
+            if (GetConsoleWindow() == IntPtr.Zero)
             {
                 ServiceBase.Run(new ServiceBase[] { service });
             }
             else
             {
                 service.Start();
-
-                var wait = new AutoResetEvent(initialState: false);
 
                 var inputChan = new Chan<string>();
                 var exitChan = new Chan<bool>();
@@ -51,7 +52,6 @@ namespace NsqSharp.Bus
                         select.Execute();
                     }
                 }
-                wait.WaitOne();
             }
         }
 

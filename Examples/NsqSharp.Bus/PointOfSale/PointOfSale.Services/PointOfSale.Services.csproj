@@ -4,16 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7FEAA793-BA87-42CA-AAE3-EF94BBC8811D}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{0E9FD458-7FE1-4917-9717-88376A3896F7}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Customer.Application.Harness</RootNamespace>
-    <AssemblyName>Customer.Application.Harness</AssemblyName>
+    <RootNamespace>PointOfSale.Services</RootNamespace>
+    <AssemblyName>PointOfSale.Services</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +23,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -34,6 +32,12 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="StructureMap">
+      <HintPath>..\..\..\..\..\..\..\..\TRUNK-testbranch\source\Application\NsqSharp\packages\structuremap.3.1.4.143\lib\net40\StructureMap.dll</HintPath>
+    </Reference>
+    <Reference Include="StructureMap.Net4">
+      <HintPath>..\..\..\..\..\..\..\..\TRUNK-testbranch\source\Application\NsqSharp\packages\structuremap.3.1.4.143\lib\net40\StructureMap.Net4.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -43,26 +47,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="CustomerService.cs" />
+    <Compile Include="ICustomerService.cs" />
+    <Compile Include="IoC\CoreRegistry.cs" />
+    <Compile Include="Models\Customer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Customer.Messages\Customer.Messages.csproj">
-      <Project>{eface6a2-0b05-4e06-9fb6-53a4e2b3beaf}</Project>
-      <Name>Customer.Messages</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Examples\NsqSharp.Bus\Customer\Customer.Handlers\Customer.Handlers.csproj">
-      <Project>{254397c5-8034-4ade-a30f-ec80ff86fd39}</Project>
-      <Name>Customer.Handlers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NsqSharp.Bus\NsqSharp.Bus.csproj">
-      <Project>{9635f78d-e740-48c7-b883-0d806c000158}</Project>
-      <Name>NsqSharp.Bus</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NsqSharp\NsqSharp.csproj">
-      <Project>{7327244d-e163-4c35-9c1a-8dbdf06b9408}</Project>
-      <Name>NsqSharp</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

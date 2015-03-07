@@ -26,18 +26,14 @@ namespace NsqSharp.Bus
             _handlerType = messageHandlerMetadata.HandlerType;
             _messageType = messageHandlerMetadata.MessageType;
 
-            var possibleMethods = _handlerType.GetMethods().Where(p => p.Name == "Handle" && p.IsGenericMethod);
+            var possibleMethods = _handlerType.GetMethods().Where(p => p.Name == "Handle" && !p.IsGenericMethod);
             foreach (var possibleMethod in possibleMethods)
             {
-                var genericArguments = possibleMethod.GetGenericArguments();
-                if (genericArguments.Length == 1 && genericArguments[0] == _messageType)
+                var parameters = possibleMethod.GetParameters();
+                if (parameters.Length == 1 && parameters[0].ParameterType == _messageType)
                 {
-                    var parameters = possibleMethod.GetParameters();
-                    if (parameters.Length == 1 && parameters[0].ParameterType == _messageType)
-                    {
-                        _handleMethod = possibleMethod;
-                        break;
-                    }
+                    _handleMethod = possibleMethod;
+                    break;
                 }
             }
 
@@ -47,7 +43,17 @@ namespace NsqSharp.Bus
 
         public void HandleMessage(Message message)
         {
-            object handler = _objectBuilder.GetInstance(_handlerType);
+            object handler;
+            try
+            {
+                handler = _objectBuilder.GetInstance(_handlerType);
+            }
+            catch (Exception)
+            {
+                // TODO: Log handler creation error
+                message.Finish();
+                throw;
+            }
 
             object value;
             try

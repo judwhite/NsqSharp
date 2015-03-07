@@ -4,6 +4,7 @@ using System.Net;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.Converters;
 using NsqSharp.Bus.Utils;
+using NsqSharp.Utils;
 
 namespace NsqSharp.Bus
 {
@@ -127,7 +128,7 @@ namespace NsqSharp.Bus
 
             byte[] serializedMessage = _sendMessageSerializer.Serialize(message);
 
-            if (nsqdHttpAddresses == null)
+            if (nsqdHttpAddresses == null || nsqdHttpAddresses.Length == 0)
             {
                 nsqdHttpAddresses = _defaultProducerNsqdHttpEndpoints;
             }
@@ -212,9 +213,15 @@ namespace NsqSharp.Bus
                 foreach (var item in topicChannelHandler.Value)
                 {
                     Consumer consumer = new Consumer(item.Topic, item.Channel, item.Config);
-                    //consumer.SetLogger(); // TODO
-                    // TODO: max_in_flight vs item.InstanceCount
+                    consumer.SetLogger(new ConsoleLogger(), LogLevel.Warning); // TODO: Configurable
                     consumer.AddConcurrentHandlers(new MessageDistributor(_dependencyInjectionContainer, item), item.InstanceCount);
+
+                    // TODO: max_in_flight vs item.InstanceCount
+                    if (item.Config.MaxInFlight < item.InstanceCount)
+                    {
+                        consumer.ChangeMaxInFlight(item.InstanceCount);
+                    }
+
                     item.Consumer = consumer;
 
                     consumer.ConnectToNSQLookupds(item.NsqLookupdHttpAddresses);

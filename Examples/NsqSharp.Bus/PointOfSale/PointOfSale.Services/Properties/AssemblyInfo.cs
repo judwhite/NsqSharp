@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Customer.Application.Harness")]
+[assembly: AssemblyTitle("PointOfSale.Services")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Judson White")]
-[assembly: AssemblyProduct("Customer.Application.Harness")]
+[assembly: AssemblyProduct("PointOfSale.Services")]
 [assembly: AssemblyCopyright("Copyright © Judson White 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("595a7042-7478-403a-bf98-aa42aa3721b4")]
+[assembly: Guid("8181a5fb-9f38-4dbb-9ed9-bf6cd97da84a")]
 
 // Version information for an assembly consists of the following four values:
 //

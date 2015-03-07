@@ -3,7 +3,7 @@ using System.Threading;
 using StructureMap;
 using StructureMap.Graph;
 
-namespace Customer.Handlers.IoC
+namespace PointOfSale.Handlers.IoC
 {
     public static class ObjectFactory
     {

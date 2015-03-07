@@ -54,7 +54,7 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
                             {
                                 var deserializeMethod = method;
                                 deserializer = (type, byteArray) =>
-                                    deserializeMethod.Invoke(null, new object[] { type, Encoding.UTF8.GetString(byteArray) });
+                                    deserializeMethod.Invoke(null, new object[] { Encoding.UTF8.GetString(byteArray), type });
                             }
                         }
                     }
