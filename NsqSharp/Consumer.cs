@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -491,6 +492,17 @@ namespace NsqSharp
             }
             catch (Exception ex)
             {
+                var webException = ex as WebException;
+                if (webException != null)
+                {
+                    var httpWebResponse = webException.Response as HttpWebResponse;
+                    if (httpWebResponse != null && httpWebResponse.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        log(LogLevel.Warning, "404 querying nsqlookupd for topic {0} ({1}) - {2}", _topic, endpoint, ex);
+                        return;
+                    }
+                }
+
                 log(LogLevel.Error, "error querying nsqlookupd ({0}) - {1}", endpoint, ex);
                 return;
             }

@@ -4,6 +4,7 @@ using System.Net;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.Converters;
 using NsqSharp.Bus.Utils;
+using NsqSharp.Go;
 using NsqSharp.Utils;
 
 namespace NsqSharp.Bus
@@ -225,16 +226,35 @@ namespace NsqSharp.Bus
                     item.Consumer = consumer;
 
                     consumer.ConnectToNSQLookupds(item.NsqLookupdHttpAddresses);
-
-                    // TODO: Start consumers.
                 }
             }
         }
 
         public void Stop()
         {
-            // TODO: Graceful shutdown
-            // TODO: Stop all producers, consumers
+            // Stop all Consumers
+
+            var wg = new WaitGroup();
+            foreach (var topicChannelHandler in _topicChannelHandlers)
+            {
+                foreach (var item in topicChannelHandler.Value)
+                {
+                    var consumer = item.Consumer;
+                    if (consumer != null)
+                    {
+                        wg.Add(1);
+                        GoFunc.Run(() =>
+                        {
+                            consumer.Stop(blockUntilStopCompletes: true);
+                            wg.Done();
+                        });
+                    }
+                }
+            }
+
+            wg.Wait();
+
+            // TODO: Stop all producers
         }
     }
 }

@@ -16,7 +16,7 @@ namespace NsqSharp.Bus.Weather
                 new NewtonsoftJsonSerializer(typeof(JsonConvert).Assembly),
                 defaultThreadsPerHandler: 16,
                 defaultNsqlookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
-                onStart: SendMessage
+                onStarted: SendMessage
             );
             
             config.AddMessageHandlers(new[] { typeof(Program).Assembly });

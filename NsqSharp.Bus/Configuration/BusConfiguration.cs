@@ -22,8 +22,8 @@ namespace NsqSharp.Bus.Configuration
         private readonly IMessageTypeToTopicConverter _messageTypeToTopicCoverter;
         private readonly IHandlerTypeToChannelConverter _handlerTypeToChannelConverter;
         private readonly string[] _defaultNsqdHttpEndpoints;
-        private readonly Action<IBus> _onStart;
-        private readonly Action _onStop;
+        private readonly Action<IBus> _onStarted;
+        private readonly Action _onStopped;
 
         private NsqBus _bus;
 
@@ -38,16 +38,16 @@ namespace NsqSharp.Bus.Configuration
         /// on port 4161.</param>
         /// <param name="defaultThreadsPerHandler">The default number of threads per message handler.</param>
         /// <param name="defaultConsumerNsqConfig">The default NSQ Consumer <see cref="Config"/> (optional).</param>
-        /// <param name="onStart">Method to call after the bus has started (optional).</param>
-        /// <param name="onStop">Method to call after the bus has stopped (optional).</param>
+        /// <param name="onStarted">Method to call after the bus has started (optional).</param>
+        /// <param name="onStopped">Method to call after the bus has stopped (optional).</param>
         public BusConfiguration(
             IObjectBuilder dependencyInjectionContainer,
             IMessageSerializer defaultMessageSerializer,
             string[] defaultNsqlookupdHttpEndpoints,
             int defaultThreadsPerHandler,
             Config defaultConsumerNsqConfig = null,
-            Action<IBus> onStart = null,
-            Action onStop = null
+            Action<IBus> onStarted = null,
+            Action onStopped = null
         )
         {
             if (dependencyInjectionContainer == null)
@@ -72,8 +72,8 @@ namespace NsqSharp.Bus.Configuration
             _defaultConsumerNsqConfig = defaultConsumerNsqConfig ?? new Config();
             _defaultThreadsPerHandler = defaultThreadsPerHandler;
             _defaultNsqdHttpEndpoints = new[] { "127.0.0.1:4151" };
-            _onStart = onStart;
-            _onStop = onStop;
+            _onStarted = onStarted;
+            _onStopped = onStopped;
         }
 
         /// <summary>
@@ -260,16 +260,16 @@ namespace NsqSharp.Bus.Configuration
 
             _bus.Start();
 
-            if (_onStart != null)
-                _onStart(_bus);
+            if (_onStarted != null)
+                _onStarted(_bus);
         }
 
         internal void StopBus()
         {
             _bus.Stop();
 
-            if (_onStop != null)
-                _onStop();
+            if (_onStopped != null)
+                _onStopped();
         }
     }
 }
