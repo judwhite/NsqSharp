@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Net;
 using NsqSharp.Bus.Configuration;
-using NsqSharp.Bus.Configuration.Converters;
+using NsqSharp.Bus.Configuration.Providers;
 using NsqSharp.Bus.Utils;
 using NsqSharp.Go;
 using NsqSharp.Utils;
@@ -13,14 +15,14 @@ namespace NsqSharp.Bus
     {
         private readonly Dictionary<string, List<MessageHandlerMetadata>> _topicChannelHandlers;
         private readonly IObjectBuilder _dependencyInjectionContainer;
-        private readonly IMessageTypeToTopicConverter _messageTypeToTopicConverter;
+        private readonly IMessageTypeToTopicProvider _messageTypeToTopicProvider;
         private readonly IMessageSerializer _sendMessageSerializer;
         private readonly string[] _defaultProducerNsqdHttpEndpoints;
 
         public NsqBus(
             Dictionary<string, List<MessageHandlerMetadata>> topicChannelHandlers,
             IObjectBuilder dependencyInjectionContainer,
-            IMessageTypeToTopicConverter messageTypeToTopicConverter,
+            IMessageTypeToTopicProvider messageTypeToTopicProvider,
             IMessageSerializer sendMessageSerializer,
             string[] defaultProducerNsqdHttpEndpoints
         )
@@ -29,8 +31,8 @@ namespace NsqSharp.Bus
                 throw new ArgumentNullException("topicChannelHandlers");
             if (dependencyInjectionContainer == null)
                 throw new ArgumentNullException("dependencyInjectionContainer");
-            if (messageTypeToTopicConverter == null)
-                throw new ArgumentNullException("messageTypeToTopicConverter");
+            if (messageTypeToTopicProvider == null)
+                throw new ArgumentNullException("messageTypeToTopicProvider");
             if (sendMessageSerializer == null)
                 throw new ArgumentNullException("sendMessageSerializer");
             if (defaultProducerNsqdHttpEndpoints == null)
@@ -40,7 +42,7 @@ namespace NsqSharp.Bus
 
             _topicChannelHandlers = topicChannelHandlers;
             _dependencyInjectionContainer = dependencyInjectionContainer;
-            _messageTypeToTopicConverter = messageTypeToTopicConverter;
+            _messageTypeToTopicProvider = messageTypeToTopicProvider;
             _sendMessageSerializer = sendMessageSerializer;
 
             _defaultProducerNsqdHttpEndpoints = new string[defaultProducerNsqdHttpEndpoints.Length];
@@ -50,20 +52,18 @@ namespace NsqSharp.Bus
                 if (!endpoint.StartsWith("http://"))
                     endpoint = string.Format("http://{0}", endpoint);
 
-                string pingEndpoint = string.Format("{0}/ping", endpoint);
                 try
                 {
-                    var webClient = new WebClient();
-                    string result = webClient.DownloadString(pingEndpoint);
+                    string result = NsqdHttpApi.Ping(endpoint);
 
                     if (result != "OK")
                     {
-                        throw new Exception(string.Format("{0} returned {1}", pingEndpoint, result));
+                        throw new Exception(string.Format("{0}/ping returned {1}", endpoint, result));
                     }
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception(string.Format("Error connecting to {0}", pingEndpoint), ex);
+                    throw new Exception(string.Format("Error connecting to {0}/ping", endpoint), ex);
                 }
 
                 _defaultProducerNsqdHttpEndpoints[i] = endpoint;
@@ -74,7 +74,7 @@ namespace NsqSharp.Bus
 
         private string GetTopic<T>()
         {
-            return _messageTypeToTopicConverter.GetTopic(typeof(T));
+            return _messageTypeToTopicProvider.GetTopic(typeof(T));
         }
 
         public void Send<T>(T message)
@@ -98,7 +98,7 @@ namespace NsqSharp.Bus
             Send(message);
         }
 
-        public void Send<T>(T message, params string[] nsqdHttpAddresses)
+        /*public void Send<T>(T message, params string[] nsqdHttpAddresses)
         {
             Send(message, GetTopic<T>(), nsqdHttpAddresses);
         }
@@ -118,9 +118,9 @@ namespace NsqSharp.Bus
             messageConstructor(message);
 
             Send(message, nsqdHttpAddresses);
-        }
+        }*/
 
-        public void Send<T>(T message, string topic, params string[] nsqdHttpAddresses)
+        private void Send<T>(T message, string topic, params string[] nsqdHttpAddresses)
         {
             if (message == null)
                 throw new ArgumentNullException("message");
@@ -146,7 +146,24 @@ namespace NsqSharp.Bus
             }
         }
 
-        public void Send<T>(string topic, params string[] nsqdHttpAddresses)
+        public void SendMulti<T>(IEnumerable<T> messages)
+        {
+            if (messages == null)
+                throw new ArgumentNullException("messages");
+
+            string topic = GetTopic<T>();
+            var nsqdHttpAddresses = _defaultProducerNsqdHttpEndpoints;
+
+            var msgByteList = messages.Select(p => _sendMessageSerializer.Serialize(p)).ToList();
+
+            // TODO: Re-use Producers per nsqd/topic/thread
+            foreach (var nsqdAddress in nsqdHttpAddresses)
+            {
+                NsqdHttpApi.PublishMultiple(nsqdAddress, topic, msgByteList);
+            }
+        }
+
+        /*public void Send<T>(string topic, params string[] nsqdHttpAddresses)
         {
             if (string.IsNullOrEmpty(topic))
                 throw new ArgumentNullException("topic");
@@ -164,7 +181,7 @@ namespace NsqSharp.Bus
             messageConstructor(message);
 
             Send(message, topic, nsqdHttpAddresses);
-        }
+        }*/
 
         /*public void Defer<T>(TimeSpan delay, T message)
         {
@@ -176,7 +193,7 @@ namespace NsqSharp.Bus
             throw new NotImplementedException();
         }*/
 
-        public IMessage CurrentMessage
+        public Message CurrentMessage
         {
             get { throw new NotImplementedException(); }
         }
@@ -202,9 +219,11 @@ namespace NsqSharp.Bus
             SendLocal(message);
         }
 
-        public T CreateInstance<T>()
+        private T CreateInstance<T>()
         {
-            return _dependencyInjectionContainer.GetInstance<T>();
+            return typeof(T).IsInterface
+                        ? InterfaceBuilder.Create<T>()
+                        : _dependencyInjectionContainer.GetInstance<T>();
         }
 
         public void Start()

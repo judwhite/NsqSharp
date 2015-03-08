@@ -46,10 +46,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GetCustomerDetails.cs" />
-    <Compile Include="GetCustomers.cs" />
+    <Compile Include="Customers\GetCustomerDetails.cs" />
+    <Compile Include="Customers\GetCustomers.cs" />
+    <Compile Include="Invoices\GetInvoiceDetails.cs" />
+    <Compile Include="Invoices\GetInvoices.cs" />
+    <Compile Include="Invoices\GetInvoiceSummary.cs" />
+    <Compile Include="Products\GetProductDetails.cs" />
+    <Compile Include="Products\GetProducts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Topics.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

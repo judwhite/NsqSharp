@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{19199A45-7607-4361-8BCE-209B69C1B27C}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PointOfSale.Handlers.InvoiceHandlers</RootNamespace>
+    <AssemblyName>PointOfSale.Handlers.InvoiceHandlers</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="StructureMap">
+      <HintPath>..\..\..\..\packages\structuremap.3.1.4.143\lib\net40\StructureMap.dll</HintPath>
+    </Reference>
+    <Reference Include="StructureMap.Net4">
+      <HintPath>..\..\..\..\packages\structuremap.3.1.4.143\lib\net40\StructureMap.Net4.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ChannelProvider.cs" />
+    <Compile Include="Handlers\GetInvoiceDetailsHandler.cs" />
+    <Compile Include="Handlers\GetInvoicesHandler.cs" />
+    <Compile Include="CoreRegistry.cs" />
+    <Compile Include="Handlers\GetInvoiceSummaryHandler.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\NsqSharp.Bus\NsqSharp.Bus.csproj">
+      <Project>{9635f78d-e740-48c7-b883-0d806c000158}</Project>
+      <Name>NsqSharp.Bus</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\NsqSharp\NsqSharp.csproj">
+      <Project>{7327244d-e163-4c35-9c1a-8dbdf06b9408}</Project>
+      <Name>NsqSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PointOfSale.Common\PointOfSale.Common.csproj">
+      <Project>{75654883-d9c6-498f-9af5-ac1201769890}</Project>
+      <Name>PointOfSale.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PointOfSale.Messages\PointOfSale.Messages.csproj">
+      <Project>{eface6a2-0b05-4e06-9fb6-53a4e2b3beaf}</Project>
+      <Name>PointOfSale.Messages</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PointOfSale.Services\PointOfSale.Services.csproj">
+      <Project>{0e9fd458-7fe1-4917-9717-88376a3896f7}</Project>
+      <Name>PointOfSale.Services</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

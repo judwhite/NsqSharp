@@ -74,6 +74,7 @@
     <Compile Include="Go\ITcpConn.cs" />
     <Compile Include="Go\IWriter.cs" />
     <Compile Include="Go\Timer.cs" />
+    <Compile Include="NsqdHttpApi.cs" />
     <Compile Include="Utils\ConsoleLogger.cs" />
     <Compile Include="Go\Net.cs" />
     <Compile Include="Go\Once.cs" />

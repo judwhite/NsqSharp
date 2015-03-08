@@ -1,4 +1,5 @@
 ﻿using System;
+using NsqSharp.Bus.Logging;
 
 namespace NsqSharp.Bus.Configuration
 {
@@ -10,6 +11,7 @@ namespace NsqSharp.Bus.Configuration
         public Type MessageType { get; set; }
         public string[] NsqLookupdHttpAddresses { get; set; }
         public IMessageSerializer Serializer { get; set; }
+        public IFailedMessageHandler FailedMessageHandler { get; set; }
         public Config Config { get; set; }
         public int InstanceCount { get; set; }
 

@@ -34,6 +34,16 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="StructureMap">
+      <HintPath>..\..\..\..\packages\structuremap.3.1.4.143\lib\net40\StructureMap.dll</HintPath>
+    </Reference>
+    <Reference Include="StructureMap.Net4">
+      <HintPath>..\..\..\..\packages\structuremap.3.1.4.143\lib\net40\StructureMap.Net4.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -55,9 +65,17 @@
       <Project>{7327244d-e163-4c35-9c1a-8dbdf06b9408}</Project>
       <Name>NsqSharp</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PointOfSale.Handlers\PointOfSale.Handlers.csproj">
+    <ProjectReference Include="..\PointOfSale.Common\PointOfSale.Common.csproj">
+      <Project>{75654883-d9c6-498f-9af5-ac1201769890}</Project>
+      <Name>PointOfSale.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PointOfSale.Handlers.CustomerHandlers\PointOfSale.Handlers.CustomerHandlers.csproj">
       <Project>{254397c5-8034-4ade-a30f-ec80ff86fd39}</Project>
-      <Name>PointOfSale.Handlers</Name>
+      <Name>PointOfSale.Handlers.CustomerHandlers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PointOfSale.Handlers.InvoiceHandlers\PointOfSale.Handlers.InvoiceHandlers.csproj">
+      <Project>{19199a45-7607-4361-8bce-209b69c1b27c}</Project>
+      <Name>PointOfSale.Handlers.InvoiceHandlers</Name>
     </ProjectReference>
     <ProjectReference Include="..\PointOfSale.Messages\PointOfSale.Messages.csproj">
       <Project>{eface6a2-0b05-4e06-9fb6-53a4e2b3beaf}</Project>

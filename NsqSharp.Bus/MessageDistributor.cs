@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using NsqSharp.Bus.Configuration;
+using NsqSharp.Bus.Logging;
 
 namespace NsqSharp.Bus
 {
@@ -12,6 +13,9 @@ namespace NsqSharp.Bus
         private readonly MethodInfo _handleMethod;
         private readonly Type _handlerType;
         private readonly Type _messageType;
+        private readonly IFailedMessageHandler _failedMessageHandler;
+        private readonly string _topic;
+        private readonly string _channel;
 
         public MessageDistributor(IObjectBuilder objectBuilder, MessageHandlerMetadata messageHandlerMetadata)
         {
@@ -25,6 +29,9 @@ namespace NsqSharp.Bus
 
             _handlerType = messageHandlerMetadata.HandlerType;
             _messageType = messageHandlerMetadata.MessageType;
+            _failedMessageHandler = messageHandlerMetadata.FailedMessageHandler;
+            _topic = messageHandlerMetadata.Topic;
+            _channel = messageHandlerMetadata.Channel;
 
             var possibleMethods = _handlerType.GetMethods().Where(p => p.Name == "Handle" && !p.IsGenericMethod);
             foreach (var possibleMethod in possibleMethods)
@@ -48,9 +55,10 @@ namespace NsqSharp.Bus
             {
                 handler = _objectBuilder.GetInstance(_handlerType);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // TODO: Log handler creation error
+                _failedMessageHandler.TryHandle(FailedMessageQueueAction.Finish, FailedMessageReason.HandlerConstructor,
+                    _topic, _channel, _handlerType, _messageType, message, null, ex);
                 message.Finish();
                 throw;
             }
@@ -60,9 +68,10 @@ namespace NsqSharp.Bus
             {
                 value = _serializer.Deserialize(_messageType, message.Body);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // TODO: Log serialization error
+                _failedMessageHandler.TryHandle(FailedMessageQueueAction.Finish, FailedMessageReason.MessageDeserialization,
+                    _topic, _channel, _handlerType, _messageType, message, null, ex);
                 message.Finish();
                 return;
             }
@@ -71,16 +80,27 @@ namespace NsqSharp.Bus
             {
                 _handleMethod.Invoke(handler, new[] { value });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // TODO: Log
+                _failedMessageHandler.TryHandle(FailedMessageQueueAction.Requeue, FailedMessageReason.MessageDeserialization,
+                    _topic, _channel, _handlerType, _messageType, message, value, ex);
                 throw;
             }
         }
 
         public void LogFailedMessage(Message message)
         {
-            throw new NotImplementedException();
+            object value = null;
+            try
+            {
+                value = _serializer.Deserialize(_messageType, message.Body);
+            }
+            catch (Exception)
+            {
+            }
+
+            _failedMessageHandler.TryHandle(FailedMessageQueueAction.Finish, FailedMessageReason.MaxAttemptsExceeded,
+                _topic, _channel, _handlerType, _messageType, message, value, null);
         }
     }
 }

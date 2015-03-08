@@ -51,15 +51,20 @@
   <ItemGroup>
     <Compile Include="BusService.cs" />
     <Compile Include="Configuration\BusConfiguration.cs" />
-    <Compile Include="Configuration\Converters\HandlerTypeToChannelConverter.cs" />
+    <Compile Include="Configuration\IBusStateChangedHandler.cs" />
+    <Compile Include="Configuration\Providers\IHandlerTypeToChannelProvider.cs" />
     <Compile Include="Configuration\IMessageSerializer.cs" />
     <Compile Include="Configuration\MessageHandlerMetadata.cs" />
     <Compile Include="Configuration\BuiltIn\NewtonsoftJsonSerializer.cs" />
     <Compile Include="Configuration\IObjectBuilder.cs" />
     <Compile Include="Configuration\BuiltIn\StructureMapObjectBuilder.cs" />
-    <Compile Include="Configuration\Converters\MessageTypeToTopicConverter.cs" />
+    <Compile Include="Configuration\Providers\IMessageTypeToTopicProvider.cs" />
+    <Compile Include="Configuration\TopicChannels.cs" />
+    <Compile Include="Logging\FailedMessageQueueAction.cs" />
+    <Compile Include="Logging\FailedMessageReason.cs" />
+    <Compile Include="Logging\IFailedMessageHandler.cs" />
+    <Compile Include="Logging\IFailedMessageHandlerExtensions.cs" />
     <Compile Include="MessageDistributor.cs" />
-    <Compile Include="MigrationHelpers\BusExtensions.cs" />
     <Compile Include="Utils\Crc32.cs" />
     <Compile Include="Utils\InterfaceBuilder.cs" />
     <Compile Include="MigrationHelpers\ICommand.cs" />
@@ -78,6 +83,9 @@
       <Project>{7327244d-e163-4c35-9c1a-8dbdf06b9408}</Project>
       <Name>NsqSharp</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Configuration\Converters\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

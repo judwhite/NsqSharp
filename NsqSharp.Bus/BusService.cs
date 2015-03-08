@@ -14,7 +14,7 @@ namespace NsqSharp.Bus
     public static class BusService
     {
         [DllImport("kernel32.dll")]
-        private static extern IntPtr GetConsoleWindow();
+        internal static extern IntPtr GetConsoleWindow();
 
         /// <summary>
         /// Starts the bus service.
