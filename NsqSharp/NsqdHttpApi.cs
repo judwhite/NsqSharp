@@ -110,8 +110,8 @@ namespace NsqSharp
         {
             CheckArguments(nsqdHttpAddress, topic);
 
-            string body = string.Format("topic={0}", topic);
-            return Post(GetEndpoint(nsqdHttpAddress, "/topic/create"), Encoding.UTF8.GetBytes(body));
+            string route = string.Format("/topic/create?topic={0}", topic);
+            return Post(GetEndpoint(nsqdHttpAddress, route));
         }
 
         /// <summary>
@@ -124,8 +124,8 @@ namespace NsqSharp
         {
             CheckArguments(nsqdHttpAddress, topic);
 
-            string body = string.Format("topic={0}", topic);
-            return Post(GetEndpoint(nsqdHttpAddress, "/topic/delete"), Encoding.UTF8.GetBytes(body));
+            string route = string.Format("/topic/delete?topic={0}", topic);
+            return Post(GetEndpoint(nsqdHttpAddress, route));
         }
 
         /// <summary>
@@ -139,8 +139,8 @@ namespace NsqSharp
         {
             CheckArguments(nsqdHttpAddress, topic, channel);
 
-            string body = string.Format("topic={0}&channel={1}", topic, channel);
-            return Post(GetEndpoint(nsqdHttpAddress, "/channel/create"), Encoding.UTF8.GetBytes(body));
+            string route = string.Format("/channel/create?topic={0}&channel={1}", topic, channel);
+            return Post(GetEndpoint(nsqdHttpAddress, route));
         }
 
         /// <summary>
@@ -154,8 +154,8 @@ namespace NsqSharp
         {
             CheckArguments(nsqdHttpAddress, topic, channel);
 
-            string body = string.Format("topic={0}&channel={1}", topic, channel);
-            return Post(GetEndpoint(nsqdHttpAddress, "/channel/delete"), Encoding.UTF8.GetBytes(body));
+            string route = string.Format("/channel/delete?topic={0}&channel={1}", topic, channel);
+            return Post(GetEndpoint(nsqdHttpAddress, route));
         }
 
         /// <summary>
@@ -168,8 +168,8 @@ namespace NsqSharp
         {
             CheckArguments(nsqdHttpAddress, topic);
 
-            string body = string.Format("topic={0}", topic);
-            return Post(GetEndpoint(nsqdHttpAddress, "/topic/empty"), Encoding.UTF8.GetBytes(body));
+            string route = string.Format("/topic/empty?topic={0}", topic);
+            return Post(GetEndpoint(nsqdHttpAddress, route));
         }
 
         /// <summary>
@@ -183,8 +183,8 @@ namespace NsqSharp
         {
             CheckArguments(nsqdHttpAddress, topic, channel);
 
-            string body = string.Format("topic={0}&channel={1}", topic, channel);
-            return Post(GetEndpoint(nsqdHttpAddress, "/channel/empty"), Encoding.UTF8.GetBytes(body));
+            string route = string.Format("/channel/empty?topic={0}&channel={1}", topic, channel);
+            return Post(GetEndpoint(nsqdHttpAddress, route));
         }
 
         /// <summary>
@@ -197,8 +197,8 @@ namespace NsqSharp
         {
             CheckArguments(nsqdHttpAddress, topic);
 
-            string body = string.Format("topic={0}", topic);
-            return Post(GetEndpoint(nsqdHttpAddress, "/topic/pause"), Encoding.UTF8.GetBytes(body));
+            string route = string.Format("/topic/pause?topic={0}", topic);
+            return Post(GetEndpoint(nsqdHttpAddress, route));
         }
 
         /// <summary>
@@ -211,8 +211,8 @@ namespace NsqSharp
         {
             CheckArguments(nsqdHttpAddress, topic);
 
-            string body = string.Format("topic={0}", topic);
-            return Post(GetEndpoint(nsqdHttpAddress, "/topic/unpause"), Encoding.UTF8.GetBytes(body));
+            string route = string.Format("topic={0}", topic);
+            return Post(GetEndpoint(nsqdHttpAddress, route));
         }
 
         /// <summary>
@@ -226,8 +226,8 @@ namespace NsqSharp
         {
             CheckArguments(nsqdHttpAddress, topic, channel);
 
-            string body = string.Format("topic={0}&channel={1}", topic, channel);
-            return Post(GetEndpoint(nsqdHttpAddress, "/channel/pause"), Encoding.UTF8.GetBytes(body));
+            string route = string.Format("/channel/pause?topic={0}&channel={1}", topic, channel);
+            return Post(GetEndpoint(nsqdHttpAddress, route));
         }
 
         /// <summary>
@@ -241,8 +241,8 @@ namespace NsqSharp
         {
             CheckArguments(nsqdHttpAddress, topic, channel);
 
-            string body = string.Format("topic={0}&channel={1}", topic, channel);
-            return Post(GetEndpoint(nsqdHttpAddress, "/channel/unpause"), Encoding.UTF8.GetBytes(body));
+            string route = string.Format("/channel/unpause?topic={0}&channel={1}", topic, channel);
+            return Post(GetEndpoint(nsqdHttpAddress, route));
         }
 
         /// <summary>
@@ -317,14 +317,14 @@ namespace NsqSharp
                 throw new ArgumentNullException("route");
 
             if (!nsqdHttpAddress.StartsWith("http"))
-                nsqdHttpAddress = "http://";
+                nsqdHttpAddress = "http://" + nsqdHttpAddress;
             nsqdHttpAddress = nsqdHttpAddress.TrimEnd(new[] { '/' });
             route = route.TrimStart(new[] { '/' });
 
             return string.Format("{0}/{1}", nsqdHttpAddress, route);
         }
 
-        private static string Post(string endpoint, byte[] body)
+        private static string Post(string endpoint, byte[] body = null)
         {
             return Request(endpoint, "POST", body);
         }
@@ -342,7 +342,7 @@ namespace NsqSharp
             webRequest.Proxy = WebRequest.DefaultWebProxy;
             webRequest.Method = method;
             webRequest.Timeout = timeoutMilliseconds;
-            webRequest.Accept = "application/vnd.nsq; version=1.0";
+            webRequest.Accept = "text/html,application/vnd.nsq; version=1.0";
             webRequest.UserAgent = string.Format("{0}/{1} {2} {3}\\{4}", ClientInfo.ClientName, ClientInfo.Version,
                 Environment.MachineName, Environment.UserDomainName, Environment.UserName);
 

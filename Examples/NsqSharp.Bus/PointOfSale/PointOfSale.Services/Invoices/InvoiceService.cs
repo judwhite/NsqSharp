@@ -58,7 +58,7 @@ namespace PointOfSale.Services.Invoices
             var list = new Collection<InvoiceDetail>();
             foreach (var lineItem in xml.Elements("INVOICEID"))
             {
-                var invoiceDetail = new InvoiceDetail();
+                var invoiceDetail = new InvoiceDetail { InvoiceId = (int)lineItem };
 
                 var element = (XElement)lineItem.NextNode;
                 while (element != null && element.Name != "INVOICEID")
@@ -78,6 +78,8 @@ namespace PointOfSale.Services.Invoices
                             invoiceDetail.Cost = (decimal)element;
                             break;
                     }
+
+                    element = (XElement)element.NextNode;
                 }
 
                 list.Add(invoiceDetail);

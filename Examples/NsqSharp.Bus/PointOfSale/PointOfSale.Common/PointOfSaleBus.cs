@@ -23,7 +23,7 @@ namespace PointOfSale.Common
                 new FailedMessageHandler(),
                 new TopicProvider(),
                 channelProvider,
-                defaultThreadsPerHandler: 1,
+                defaultThreadsPerHandler: 8,
                 defaultNsqlookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
                 busStateChangedHandler: busStateChangedHandler
             );

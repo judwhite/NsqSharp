@@ -98,28 +98,6 @@ namespace NsqSharp.Bus
             Send(message);
         }
 
-        /*public void Send<T>(T message, params string[] nsqdHttpAddresses)
-        {
-            Send(message, GetTopic<T>(), nsqdHttpAddresses);
-        }
-
-        public void Send<T>(params string[] nsqdHttpAddresses)
-        {
-            T message = (typeof(T).IsInterface ? InterfaceBuilder.Create<T>() : CreateInstance<T>());
-            Send(message, nsqdHttpAddresses);
-        }
-
-        public void Send<T>(Action<T> messageConstructor, params string[] nsqdHttpAddresses)
-        {
-            if (messageConstructor == null)
-                throw new ArgumentNullException("messageConstructor");
-
-            T message = (typeof(T).IsInterface ? InterfaceBuilder.Create<T>() : CreateInstance<T>());
-            messageConstructor(message);
-
-            Send(message, nsqdHttpAddresses);
-        }*/
-
         private void Send<T>(T message, string topic, params string[] nsqdHttpAddresses)
         {
             if (message == null)
@@ -134,15 +112,11 @@ namespace NsqSharp.Bus
                 nsqdHttpAddresses = _defaultProducerNsqdHttpEndpoints;
             }
 
-            // TODO: Re-use Producers per nsqd/topic/thread
-            foreach (var nsqdAddress in nsqdHttpAddresses)
+            // TODO: When not usig HTTP, re-use Producers per nsqd/topic/thread
+            foreach (var nsqdHttpAddress in nsqdHttpAddresses)
             {
-                // NOTE: WebClient instance methods are not thread safe
-                string publishAddress = string.Format("{0}/pub?topic={1}", nsqdAddress, topic);
-
                 // TODO: What happens if this call fails? Error code or exception? Logging?
-                WebClient webClient = new WebClient();
-                webClient.UploadData(publishAddress, serializedMessage);
+                NsqdHttpApi.Publish(nsqdHttpAddress, topic, serializedMessage);
             }
         }
 
@@ -162,26 +136,6 @@ namespace NsqSharp.Bus
                 NsqdHttpApi.PublishMultiple(nsqdAddress, topic, msgByteList);
             }
         }
-
-        /*public void Send<T>(string topic, params string[] nsqdHttpAddresses)
-        {
-            if (string.IsNullOrEmpty(topic))
-                throw new ArgumentNullException("topic");
-
-            T message = (typeof(T).IsInterface ? InterfaceBuilder.Create<T>() : CreateInstance<T>());
-            Send(message, topic, nsqdHttpAddresses);
-        }
-
-        public void Send<T>(Action<T> messageConstructor, string topic, params string[] nsqdHttpAddresses)
-        {
-            if (messageConstructor == null)
-                throw new ArgumentNullException("messageConstructor");
-
-            T message = (typeof(T).IsInterface ? InterfaceBuilder.Create<T>() : CreateInstance<T>());
-            messageConstructor(message);
-
-            Send(message, topic, nsqdHttpAddresses);
-        }*/
 
         /*public void Defer<T>(TimeSpan delay, T message)
         {

@@ -29,10 +29,9 @@ namespace PointOfSale.Handlers.InvoiceHandlers.Handlers
 
             var invoiceIds = _invoiceService.GetInvoiceIds();
 
-            //_bus.SendMulti(invoiceIds.Select(id => new GetInvoiceDetails { InvoiceId = id }));
-            //_bus.SendMulti(invoiceIds.Select(id => new GetInvoiceSummary { InvoiceId = id }));
-            _bus.Send(new GetInvoiceSummary { InvoiceId = invoiceIds[0] });
-
+            _bus.SendMulti(invoiceIds.Select(id => new GetInvoiceDetails { InvoiceId = id }));
+            _bus.SendMulti(invoiceIds.Select(id => new GetInvoiceSummary { InvoiceId = id }));
+            
             Console.WriteLine("Invoice Count: {0}", invoiceIds.Count);
         }
     }

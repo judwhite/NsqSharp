@@ -38,7 +38,7 @@ namespace NsqSharp.Bus
                 var exitChan = new Chan<bool>();
 
                 GoFunc.Run(() => ReadStdin(inputChan));
-                Console.CancelKeyPress += delegate { exitChan.Close(); };
+                Console.CancelKeyPress += (s, e) => Console_CancelKeyPress(e, exitChan);
 
                 bool doLoop = true;
 
@@ -52,6 +52,24 @@ namespace NsqSharp.Bus
                         select.Execute();
                     }
                 }
+
+                service.Stop();
+            }
+        }
+
+        private static bool _isFirstCancelRequest = true;
+        private static void Console_CancelKeyPress(ConsoleCancelEventArgs e, Chan<bool> stopChan)
+        {
+            if (_isFirstCancelRequest)
+            {
+                Console.WriteLine("Stopping... Press ^C again to force quit");
+                e.Cancel = true;
+                stopChan.Close();
+                _isFirstCancelRequest = false;
+            }
+            else
+            {
+                Console.WriteLine("^C pressed again, force quitting...");
             }
         }
 

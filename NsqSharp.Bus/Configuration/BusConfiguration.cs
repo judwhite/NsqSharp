@@ -6,6 +6,7 @@ using System.Reflection;
 using NsqSharp.Bus.Configuration.BuiltIn;
 using NsqSharp.Bus.Configuration.Providers;
 using NsqSharp.Bus.Logging;
+using NsqSharp.Go;
 
 namespace NsqSharp.Bus.Configuration
 {
@@ -266,6 +267,38 @@ namespace NsqSharp.Bus.Configuration
 
         internal void StartBus()
         {
+            var wg = new WaitGroup();
+            foreach (var tch in GetHandledTopics())
+            {
+                foreach (var nsqdHttpAddress in _defaultNsqdHttpEndpoints)
+                {
+                    foreach (var channel in tch.Channels)
+                    {
+                        string localNsqdHttpAddress = nsqdHttpAddress;
+                        string localTopic = tch.Topic;
+                        string localChannel = channel;
+
+                        wg.Add(1);
+                        GoFunc.Run(() =>
+                        {
+                            try
+                            {
+                                NsqdHttpApi.CreateTopic(localNsqdHttpAddress, localTopic);
+                                NsqdHttpApi.CreateChannel(localNsqdHttpAddress, localTopic, localChannel);
+                            }
+                            catch (Exception)
+                            {
+                                // TODO: Log
+                            }
+
+                            wg.Done();
+                        });
+                    }
+                }
+            }
+
+            wg.Wait();
+
             if (_busStateChangedHandler != null)
                 _busStateChangedHandler.OnBusStarting(this);
 
@@ -303,11 +336,13 @@ namespace NsqSharp.Bus.Configuration
             var list = new Collection<ITopicChannels>();
             foreach (var tch in _topicChannelHandlers)
             {
+                var topic = tch.Value.Select(p => p.Topic).Distinct().Single();
+
                 var channels = new Collection<string>(
                     tch.Value.Select(p => p.Channel).ToList()
                 );
 
-                list.Add(new TopicChannels { Topic = tch.Key, Channels = channels });
+                list.Add(new TopicChannels { Topic = topic, Channels = channels });
             }
 
             return new Collection<ITopicChannels>(list);
