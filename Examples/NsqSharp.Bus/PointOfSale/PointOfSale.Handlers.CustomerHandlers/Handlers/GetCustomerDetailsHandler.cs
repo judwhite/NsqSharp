@@ -1,11 +1,11 @@
 ﻿using System;
 using NsqSharp.Bus;
-using PointOfSale.Messages.Customers;
+using PointOfSale.Messages.Customers.Events;
 using PointOfSale.Services.Customers;
 
 namespace PointOfSale.Handlers.CustomerHandlers.Handlers
 {
-    public class GetCustomerDetailsHandler : IHandleMessages<GetCustomerDetails>
+    public class GetCustomerDetailsHandler : IHandleMessages<CustomerIdFoundEvent>
     {
         private readonly ICustomerService _customerService;
 
@@ -17,7 +17,7 @@ namespace PointOfSale.Handlers.CustomerHandlers.Handlers
             _customerService = customerService;
         }
 
-        public void Handle(GetCustomerDetails message)
+        public void Handle(CustomerIdFoundEvent message)
         {
             if (message == null)
                 throw new ArgumentNullException("message");

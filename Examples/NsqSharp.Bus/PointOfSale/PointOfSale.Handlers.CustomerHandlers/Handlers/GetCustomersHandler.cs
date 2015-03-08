@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Linq;
 using NsqSharp.Bus;
-using PointOfSale.Messages;
-using PointOfSale.Messages.Customers;
-using PointOfSale.Services;
+using PointOfSale.Messages.Customers.Commands;
+using PointOfSale.Messages.Customers.Events;
 using PointOfSale.Services.Customers;
 
 namespace PointOfSale.Handlers.CustomerHandlers.Handlers
 {
-    public class GetCustomersHandler : IHandleMessages<GetCustomers>
+    public class GetCustomersHandler : IHandleMessages<GetCustomersCommand>
     {
         private readonly IBus _bus;
         private readonly ICustomerService _customerService;
@@ -24,14 +23,14 @@ namespace PointOfSale.Handlers.CustomerHandlers.Handlers
             _customerService = customerService;
         }
 
-        public void Handle(GetCustomers message)
+        public void Handle(GetCustomersCommand message)
         {
             if (message == null)
                 throw new ArgumentNullException("message");
 
             var customerIds = _customerService.GetCustomerIds();
 
-            var getCustomersDetails = customerIds.Select(id => new GetCustomerDetails { CustomerId = id });
+            var getCustomersDetails = customerIds.Select(id => new CustomerIdFoundEvent { CustomerId = id });
             _bus.SendMulti(getCustomersDetails);
 
             Console.WriteLine("Customer Count: {0}", customerIds.Count);

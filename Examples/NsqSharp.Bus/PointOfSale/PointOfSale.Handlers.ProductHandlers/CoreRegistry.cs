@@ -1,6 +1,6 @@
 ﻿using StructureMap.Configuration.DSL;
 
-namespace PointOfSale.Handlers.CustomerHandlers
+namespace PointOfSale.Handlers.ProductHandlers
 {
     public class CoreRegistry : Registry
     {

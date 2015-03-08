@@ -1,6 +1,7 @@
 ﻿using PointOfSale.Common;
 using PointOfSale.Handlers.CustomerHandlers.Handlers;
-using PointOfSale.Messages.Customers;
+using PointOfSale.Messages.Customers.Commands;
+using PointOfSale.Messages.Customers.Events;
 
 namespace PointOfSale.Handlers.CustomerHandlers
 {
@@ -8,8 +9,8 @@ namespace PointOfSale.Handlers.CustomerHandlers
     {
         public ChannelProvider()
         {
-            Add<GetCustomerDetailsHandler, GetCustomerDetails>("get-customer-details");
-            Add<GetCustomersHandler, GetCustomers>("get-customers");
+            Add<GetCustomersHandler, GetCustomersCommand>("get-customers");
+            Add<GetCustomerDetailsHandler, CustomerIdFoundEvent>("get-customer-details");
         }
     }
 }

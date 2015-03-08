@@ -1,6 +1,7 @@
 ﻿using PointOfSale.Common;
 using PointOfSale.Handlers.InvoiceHandlers.Handlers;
-using PointOfSale.Messages.Invoices;
+using PointOfSale.Messages.Invoices.Commands;
+using PointOfSale.Messages.Invoices.Events;
 
 namespace PointOfSale.Handlers.InvoiceHandlers
 {
@@ -8,9 +9,9 @@ namespace PointOfSale.Handlers.InvoiceHandlers
     {
         public ChannelProvider()
         {
-            Add<GetInvoiceDetailsHandler, GetInvoiceDetails>("get-invoice-details");
-            Add<GetInvoicesHandler, GetInvoices>("get-invoices");
-            Add<GetInvoiceSummaryHandler, GetInvoiceSummary>("get-invoice-summary");
+            Add<GetInvoicesHandler, GetInvoicesCommand>("get-invoices");
+            Add<GetInvoiceDetailsHandler, InvoiceIdFoundEvent>("get-invoice-details");
+            Add<GetInvoiceSummaryHandler, InvoiceIdFoundEvent>("get-invoice-summary");
         }
     }
 }

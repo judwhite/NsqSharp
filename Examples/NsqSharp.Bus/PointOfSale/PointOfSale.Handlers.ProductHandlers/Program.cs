@@ -2,14 +2,12 @@
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using PointOfSale.Common;
-using PointOfSale.Messages.Invoices.Commands;
+using PointOfSale.Messages.Products.Commands;
 
-namespace PointOfSale.Handlers.InvoiceHandlers
+namespace PointOfSale.Handlers.ProductHandlers
 {
     class Program
     {
-        // This project demos two handlers listening to the same topic on different channels.
-
         static void Main()
         {
             PointOfSaleBus.Start(new ChannelProvider(), new BusStateChangedHandler());
@@ -26,7 +24,7 @@ namespace PointOfSale.Handlers.InvoiceHandlers
                 if (bus == null)
                     throw new ArgumentNullException("bus");
 
-                bus.Send<GetInvoicesCommand>();
+                bus.Send<GetProductsCommand>();
             }
         }
     }

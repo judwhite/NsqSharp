@@ -1,11 +1,11 @@
 ﻿using System;
 using NsqSharp.Bus;
-using PointOfSale.Messages.Invoices;
+using PointOfSale.Messages.Invoices.Events;
 using PointOfSale.Services.Invoices;
 
 namespace PointOfSale.Handlers.InvoiceHandlers.Handlers
 {
-    public class GetInvoiceDetailsHandler : IHandleMessages<GetInvoiceDetails>
+    public class GetInvoiceDetailsHandler : IHandleMessages<InvoiceIdFoundEvent>
     {
         private readonly IInvoiceService _invoiceService;
 
@@ -17,7 +17,7 @@ namespace PointOfSale.Handlers.InvoiceHandlers.Handlers
             _invoiceService = invoiceService;
         }
 
-        public void Handle(GetInvoiceDetails message)
+        public void Handle(InvoiceIdFoundEvent message)
         {
             if (message == null)
                 throw new ArgumentNullException("message");

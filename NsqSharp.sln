@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp", "NsqSharp\NsqSharp.csproj", "{7327244D-E163-4C35-9C1A-8DBDF06B9408}"
 EndProject
@@ -38,6 +38,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PointOfSale.Handlers.InvoiceHandlers", "Examples\NsqSharp.Bus\PointOfSale\PointOfSale.Handlers.InvoiceHandlers\PointOfSale.Handlers.InvoiceHandlers.csproj", "{19199A45-7607-4361-8BCE-209B69C1B27C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PointOfSale.Handlers.CustomerHandlers", "Examples\NsqSharp.Bus\PointOfSale\PointOfSale.Handlers.CustomerHandlers\PointOfSale.Handlers.CustomerHandlers.csproj", "{254397C5-8034-4ADE-A30F-EC80FF86FD39}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PointOfSale.Handlers.ProductHandlers", "Examples\NsqSharp.Bus\PointOfSale\PointOfSale.Handlers.ProductHandlers\PointOfSale.Handlers.ProductHandlers.csproj", "{6FAECB24-5201-4FAC-92CD-2AE220DED98D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -97,6 +99,10 @@ Global
 		{254397C5-8034-4ADE-A30F-EC80FF86FD39}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{254397C5-8034-4ADE-A30F-EC80FF86FD39}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{254397C5-8034-4ADE-A30F-EC80FF86FD39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FAECB24-5201-4FAC-92CD-2AE220DED98D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FAECB24-5201-4FAC-92CD-2AE220DED98D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FAECB24-5201-4FAC-92CD-2AE220DED98D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FAECB24-5201-4FAC-92CD-2AE220DED98D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -116,5 +122,6 @@ Global
 		{75654883-D9C6-498F-9AF5-AC1201769890} = {8E6E3D9F-3F25-4E95-B228-4F270A1760B1}
 		{19199A45-7607-4361-8BCE-209B69C1B27C} = {8E6E3D9F-3F25-4E95-B228-4F270A1760B1}
 		{254397C5-8034-4ADE-A30F-EC80FF86FD39} = {8E6E3D9F-3F25-4E95-B228-4F270A1760B1}
+		{6FAECB24-5201-4FAC-92CD-2AE220DED98D} = {8E6E3D9F-3F25-4E95-B228-4F270A1760B1}
 	EndGlobalSection
 EndGlobal

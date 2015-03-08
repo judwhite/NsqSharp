@@ -2,6 +2,7 @@
 using NsqSharp.Bus.Configuration;
 using PointOfSale.Common;
 using PointOfSale.Messages.Customers;
+using PointOfSale.Messages.Customers.Commands;
 
 namespace PointOfSale.Handlers.CustomerHandlers
 {
@@ -20,7 +21,7 @@ namespace PointOfSale.Handlers.CustomerHandlers
 
             public void OnBusStarted(IBusConfiguration config, IBus bus)
             {
-                bus.Send<GetCustomers>();
+                bus.Send<GetCustomersCommand>();
             }
         }
     }

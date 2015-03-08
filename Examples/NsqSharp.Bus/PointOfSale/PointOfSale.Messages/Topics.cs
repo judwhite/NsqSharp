@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using PointOfSale.Messages.Customers;
-using PointOfSale.Messages.Invoices;
-using PointOfSale.Messages.Products;
+using PointOfSale.Messages.Customers.Commands;
+using PointOfSale.Messages.Customers.Events;
+using PointOfSale.Messages.Invoices.Commands;
+using PointOfSale.Messages.Invoices.Events;
+using PointOfSale.Messages.Products.Commands;
+using PointOfSale.Messages.Products.Events;
 
 namespace PointOfSale.Messages
 {
@@ -16,17 +19,16 @@ namespace PointOfSale.Messages
             _typeTopics = new Dictionary<Type, string>();
 
             // Customers
-            Add<GetCustomerDetails>("pos.customer.get-details");
-            Add<GetCustomers>("pos.customer.get-all");
+            Add<GetCustomersCommand>("pos.customer.cmd.get-all");
+            Add<CustomerIdFoundEvent>("pos.customer.evnt.customerid-found");
 
             // Invoices
-            Add<GetInvoiceDetails>("pos.invoice.get-details");
-            Add<GetInvoices>("pos.invoice.get-all");
-            Add<GetInvoiceSummary>("pos.invoice.get-summary");
+            Add<GetInvoicesCommand>("pos.invoice.cmd.get-all");
+            Add<InvoiceIdFoundEvent>("pos.invoice.evnt.invoiceid-found");
 
             // Products
-            Add<GetProductDetails>("pos.products.get-details");
-            Add<GetProducts>("pos.products.get-all");
+            Add<GetProductsCommand>("pos.products.cmd.get-all");
+            Add<ProductIdFoundEvent>("pos.products.evnt.productid-found");
 
             Validate();
         }
