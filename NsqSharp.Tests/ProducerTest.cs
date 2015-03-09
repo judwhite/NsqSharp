@@ -13,7 +13,7 @@ using NUnit.Framework;
 
 namespace NsqSharp.Tests
 {
-    //[TestFixture(IgnoreReason = "NSQD Integration Test")]
+    [TestFixture(IgnoreReason = "NSQD Integration Test")]
     public class ProducerTest
     {
         [Test]
@@ -303,7 +303,7 @@ namespace NsqSharp.Tests
         }
     }
 
-    //[TestFixture(IgnoreReason = "Live Benchmark")]
+    [TestFixture(IgnoreReason = "Live Benchmark")]
     public class ProducerBenchmarkTest
     {
         [Test]

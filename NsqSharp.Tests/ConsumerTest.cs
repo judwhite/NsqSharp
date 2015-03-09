@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 namespace NsqSharp.Tests
 {
-    //[TestFixture(IgnoreReason = "NSQD Integration Test")]
+    [TestFixture(IgnoreReason = "NSQD Integration Test")]
     public class ConsumerTest
     {
         [Test]
