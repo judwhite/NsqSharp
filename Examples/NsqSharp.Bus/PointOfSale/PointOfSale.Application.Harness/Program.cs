@@ -16,9 +16,9 @@ namespace PointOfSale.Application.Harness
         {
             var channelProviders = new ChannelProviderBase[]
                 {
-                        new Handlers.CustomerHandlers.ChannelProvider(),
-                        new Handlers.InvoiceHandlers.ChannelProvider(),
-                        new Handlers.ProductHandlers.ChannelProvider()
+                    new Handlers.CustomerHandlers.ChannelProvider(),
+                    new Handlers.InvoiceHandlers.ChannelProvider(),
+                    new Handlers.ProductHandlers.ChannelProvider()
                 };
 
             PointOfSaleBus.Start(

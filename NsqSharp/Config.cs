@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using NsqSharp.Attributes;
-using NsqSharp.Extensions;
-using NsqSharp.Go;
+using NsqSharp.Core;
+using NsqSharp.Utils;
+using NsqSharp.Utils.Attributes;
+using NsqSharp.Utils.Extensions;
 
 namespace NsqSharp
 {

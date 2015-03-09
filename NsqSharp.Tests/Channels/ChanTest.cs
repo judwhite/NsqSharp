@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using NsqSharp.Channels;
-using NsqSharp.Go;
+using NsqSharp.Utils;
+using NsqSharp.Utils.Channels;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests.Channels

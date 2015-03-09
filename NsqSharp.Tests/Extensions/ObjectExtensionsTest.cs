@@ -1,5 +1,5 @@
 ﻿using System;
-using NsqSharp.Extensions;
+using NsqSharp.Utils.Extensions;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests.Extensions

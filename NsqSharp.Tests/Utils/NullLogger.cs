@@ -1,4 +1,4 @@
-﻿using NsqSharp.Go;
+﻿using NsqSharp.Utils;
 
 namespace NsqSharp.Tests.Utils
 {

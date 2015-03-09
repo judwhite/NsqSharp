@@ -1,6 +1,7 @@
 ﻿using System;
 using NsqSharp;
 using NsqSharp.Bus.Logging;
+using NsqSharp.Core;
 
 namespace PointOfSale.Common
 {

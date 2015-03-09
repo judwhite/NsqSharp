@@ -5,11 +5,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using NsqSharp.Channels;
-using NsqSharp.Extensions;
-using NsqSharp.Go;
+using NsqSharp.Core;
 using NsqSharp.Tests.Utils;
 using NsqSharp.Utils;
+using NsqSharp.Utils.Channels;
+using NsqSharp.Utils.Extensions;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests
@@ -167,8 +167,8 @@ namespace NsqSharp.Tests
         private void listen()
         {
             tcpListener = new TcpListener(IPAddress.Loopback, 4152);
-            tcpListener.Start();
             tcpAddr = tcpListener.LocalEndpoint.ToString();
+            tcpListener.Start();
 
             log.Printf("TCP: listening on {0}", tcpListener.LocalEndpoint);
 

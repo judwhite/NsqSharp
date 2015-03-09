@@ -5,15 +5,15 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
-using NsqSharp.Channels;
-using NsqSharp.Extensions;
-using NsqSharp.Go;
+using NsqSharp.Core;
 using NsqSharp.Utils;
+using NsqSharp.Utils.Channels;
+using NsqSharp.Utils.Extensions;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests
 {
-    [TestFixture(IgnoreReason = "NSQD Integration Test")]
+    //[TestFixture(IgnoreReason = "NSQD Integration Test")]
     public class ProducerTest
     {
         [Test]
@@ -303,7 +303,7 @@ namespace NsqSharp.Tests
         }
     }
 
-    [TestFixture(IgnoreReason = "Live Benchmark")]
+    //[TestFixture(IgnoreReason = "Live Benchmark")]
     public class ProducerBenchmarkTest
     {
         [Test]
@@ -344,7 +344,7 @@ namespace NsqSharp.Tests
 
         private void BenchmarkTcp(int parallel)
         {
-            const int benchmarkNum = 100000;
+            const int benchmarkNum = 30000;
 
             byte[] body = new byte[512];
 
@@ -373,13 +373,13 @@ namespace NsqSharp.Tests
             wg.Wait();
             stopwatch.Stop();
 
-            Console.WriteLine(string.Format("{0:#,0} sent in {1:mm\\:ss\\.fff}; Avg: {2:#,0} msgs/s",
-                benchmarkNum, stopwatch.Elapsed, benchmarkNum / stopwatch.Elapsed.TotalSeconds));
+            Console.WriteLine(string.Format("{0:#,0} sent in {1:mm\\:ss\\.fff}; Avg: {2:#,0} msgs/s; Threads: {3}",
+                benchmarkNum, stopwatch.Elapsed, benchmarkNum / stopwatch.Elapsed.TotalSeconds, parallel));
         }
 
         private void BenchmarkHttp(int parallel)
         {
-            const int benchmarkNum = 100000;
+            const int benchmarkNum = 30000;
 
             byte[] body = new byte[512];
 
@@ -405,8 +405,8 @@ namespace NsqSharp.Tests
             wg.Wait();
             stopwatch.Stop();
 
-            Console.WriteLine(string.Format("{0:#,0} sent in {1:mm\\:ss\\.fff}; Avg: {2:#,0} msgs/s",
-                benchmarkNum, stopwatch.Elapsed, benchmarkNum / stopwatch.Elapsed.TotalSeconds));
+            Console.WriteLine(string.Format("{0:#,0} sent in {1:mm\\:ss\\.fff}; Avg: {2:#,0} msgs/s; Threads: {3}",
+                benchmarkNum, stopwatch.Elapsed, benchmarkNum / stopwatch.Elapsed.TotalSeconds, parallel));
         }
     }
 

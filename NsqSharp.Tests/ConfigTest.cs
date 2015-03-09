@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Authentication;
-using NsqSharp.Attributes;
-using NsqSharp.Extensions;
-using NsqSharp.Go;
+using NsqSharp.Core;
+using NsqSharp.Utils;
+using NsqSharp.Utils.Attributes;
+using NsqSharp.Utils.Extensions;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests

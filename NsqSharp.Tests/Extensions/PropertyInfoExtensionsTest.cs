@@ -1,6 +1,6 @@
 ﻿using System;
-using NsqSharp.Attributes;
-using NsqSharp.Extensions;
+using NsqSharp.Utils.Attributes;
+using NsqSharp.Utils.Extensions;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests.Extensions

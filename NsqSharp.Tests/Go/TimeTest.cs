@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using NsqSharp.Channels;
-using NsqSharp.Go;
 using NsqSharp.Tests.Utils;
+using NsqSharp.Utils;
+using NsqSharp.Utils.Channels;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests.Go

@@ -6,11 +6,11 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using NsqSharp.Channels;
-using NsqSharp.Extensions;
-using NsqSharp.Go;
+using NsqSharp.Core;
 using NsqSharp.Utils;
-using Timer = NsqSharp.Go.Timer;
+using NsqSharp.Utils.Channels;
+using NsqSharp.Utils.Extensions;
+using Timer = NsqSharp.Utils.Timer;
 
 namespace NsqSharp
 {

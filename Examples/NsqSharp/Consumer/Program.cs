@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using NsqSharp;
+using NsqSharp.Core;
 
 namespace ConsumerExample
 {

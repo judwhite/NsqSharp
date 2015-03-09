@@ -1,15 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp.Net40", "NsqSharp\NsqSharp.Net40.csproj", "{7327244D-E163-4C35-9C1A-8DBDF06B9408}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp.Tests.Net40", "NsqSharp.Tests\NsqSharp.Tests.Net40.csproj", "{6962DA1C-5532-4C12-B2A3-36B53877A1FB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{1FEB459E-121B-4DC2-B239-AC625DCF9CD5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp.Bus.Net40", "NsqSharp.Bus\NsqSharp.Bus.Net40.csproj", "{9635F78D-E740-48C7-B883-0D806C000158}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp.Bus.Tests.Net40", "NsqSharp.Bus.Tests\NsqSharp.Bus.Tests.Net40.csproj", "{B3EC80D4-4869-4C8D-AEB4-A212C197F9F1}"
 EndProject
@@ -37,10 +35,6 @@ Global
 		{6962DA1C-5532-4C12-B2A3-36B53877A1FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6962DA1C-5532-4C12-B2A3-36B53877A1FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6962DA1C-5532-4C12-B2A3-36B53877A1FB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9635F78D-E740-48C7-B883-0D806C000158}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9635F78D-E740-48C7-B883-0D806C000158}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9635F78D-E740-48C7-B883-0D806C000158}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9635F78D-E740-48C7-B883-0D806C000158}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B3EC80D4-4869-4C8D-AEB4-A212C197F9F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B3EC80D4-4869-4C8D-AEB4-A212C197F9F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3EC80D4-4869-4C8D-AEB4-A212C197F9F1}.Release|Any CPU.ActiveCfg = Release|Any CPU

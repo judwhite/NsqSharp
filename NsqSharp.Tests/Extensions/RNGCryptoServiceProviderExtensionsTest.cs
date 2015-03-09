@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Security.Cryptography;
-using NsqSharp.Extensions;
+using NsqSharp.Utils.Extensions;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests.Extensions

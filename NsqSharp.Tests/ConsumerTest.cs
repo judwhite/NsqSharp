@@ -4,13 +4,14 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
-using NsqSharp.Extensions;
-using NsqSharp.Go;
+using NsqSharp.Core;
+using NsqSharp.Utils;
+using NsqSharp.Utils.Extensions;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests
 {
-    [TestFixture(IgnoreReason = "NSQD Integration Test")]
+    //[TestFixture(IgnoreReason = "NSQD Integration Test")]
     public class ConsumerTest
     {
         [Test]
@@ -143,6 +144,7 @@ namespace NsqSharp.Tests
 
             // should be able to disconnect from an nsqd
             q.DisconnectFromNSQD("1.2.3.4:4150");
+            q.DisconnectFromNSQD("127.0.0.1:4150");
 
             q.StopChan.Receive();
 

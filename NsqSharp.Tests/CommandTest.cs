@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using NsqSharp.Go;
+using NsqSharp.Core;
+using NsqSharp.Utils;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests

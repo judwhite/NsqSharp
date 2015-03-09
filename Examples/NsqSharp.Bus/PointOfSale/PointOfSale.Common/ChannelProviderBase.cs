@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NsqSharp;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration.Providers;
+using NsqSharp.Core;
 
 namespace PointOfSale.Common
 {

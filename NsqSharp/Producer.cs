@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using NsqSharp.Channels;
-using NsqSharp.Go;
+using NsqSharp.Core;
 using NsqSharp.Utils;
+using NsqSharp.Utils.Channels;
 
 namespace NsqSharp
 {

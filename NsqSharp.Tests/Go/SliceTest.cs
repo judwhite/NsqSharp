@@ -1,5 +1,5 @@
 ﻿using System;
-using NsqSharp.Go;
+using NsqSharp.Utils;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests.Go
