@@ -39,7 +39,7 @@ namespace NsqSharp
         /// <summary>Name</summary>
         public byte[] Name { get; set; }
         /// <summary>Params</summary>
-        public List<byte[]> Params { get; set; }
+        public ICollection<byte[]> Params { get; set; }
         /// <summary>Body</summary>
         public byte[] Body { get; set; }
 
@@ -72,7 +72,7 @@ namespace NsqSharp
         /// <summary>
         /// Initializes a new instance of the <see cref="Command" /> class.
         /// </summary>
-        public Command(byte[] name, byte[] body, List<byte[]> parameters)
+        public Command(byte[] name, byte[] body, ICollection<byte[]> parameters)
         {
             Name = name;
             Body = body;
@@ -232,7 +232,7 @@ namespace NsqSharp
         /// MultiPublish creates a new Command to write more than one message to a given topic.
         /// This is useful for high-throughput situations to avoid roundtrips and saturate the pipe.
         /// </summary>
-        public static Command MultiPublish(string topic, List<byte[]> bodies)
+        public static Command MultiPublish(string topic, ICollection<byte[]> bodies)
         {
             if (bodies == null)
                 throw new ArgumentNullException("bodies");

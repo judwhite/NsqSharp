@@ -65,7 +65,6 @@
     <Compile Include="Logging\IFailedMessageHandler.cs" />
     <Compile Include="Logging\IFailedMessageHandlerExtensions.cs" />
     <Compile Include="MessageDistributor.cs" />
-    <Compile Include="Utils\Crc32.cs" />
     <Compile Include="Utils\InterfaceBuilder.cs" />
     <Compile Include="NsqBus.cs" />
     <Compile Include="IBus.cs" />
@@ -81,9 +80,7 @@
       <Name>NsqSharp</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Configuration\Converters\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -10,7 +10,6 @@ namespace NsqSharp.Go
     public class Timer
     {
         private readonly Chan<DateTime> _timerChan = new Chan<DateTime>();
-        private readonly Chan<bool> _stopChan = new Chan<bool>(bufferSize: 1);
         private bool _isTimerActive;
 
         /// <summary>
@@ -22,16 +21,16 @@ namespace NsqSharp.Go
             _isTimerActive = true;
 
             GoFunc.Run(() =>
-                Select
-                    .CaseReceive(_stopChan)
-                    .CaseReceive(Time.After(duration), o =>
-                    {
-                        _isTimerActive = false;
-                        _timerChan.Send(DateTime.Now);
-                        _timerChan.Close();
-                    })
-                    .NoDefault()
-            );
+            {
+                bool ok;
+                Time.After(duration).ReceiveOk(out ok);
+                if (ok)
+                {
+                    _isTimerActive = false;
+                    _timerChan.Send(DateTime.Now);
+                    _timerChan.Close();
+                }
+            });
         }
 
         /// <summary>
@@ -53,7 +52,7 @@ namespace NsqSharp.Go
                 return false;
 
             _isTimerActive = false;
-            _stopChan.Send(true);
+            _timerChan.Close();
 
             return true;
         }

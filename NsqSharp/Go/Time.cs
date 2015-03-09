@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using NsqSharp.Channels;
 
 namespace NsqSharp.Go
@@ -27,6 +26,9 @@ namespace NsqSharp.Go
         /// <summary>Hour</summary>
         public const long Hour = Minute * 60;
 
+        private static readonly List<System.Threading.Timer> _threadingTimers = new List<System.Threading.Timer>();
+        private static readonly object _threadingTimersLocker = new object();
+
         /// <summary>
         /// Creates a channel which fires after the specified timeout.
         /// </summary>
@@ -37,11 +39,41 @@ namespace NsqSharp.Go
 
             var timeoutChan = new Chan<bool>();
 
-            GoFunc.Run(() =>
+            System.Threading.Timer localTimer = null;
+            System.Threading.Timer t = new System.Threading.Timer(
+                delegate
+                {
+                    try
+                    {
+                        if (localTimer != null)
+                        {
+                            lock (_threadingTimersLocker)
+                            {
+                                _threadingTimers.Remove(localTimer);
+                                localTimer.Dispose();
+                                localTimer = null;
+                            }
+                        }
+                    }
+                    catch (Exception) { }
+
+                    try
+                    {
+                        timeoutChan.Send(default(bool));
+                    }
+                    catch (Exception) { }
+
+                }, null, timeout, TimeSpan.FromMilliseconds(-1));
+
+            localTimer = t;
+
+            lock (_threadingTimersLocker)
             {
-                Thread.Sleep(timeout);
-                timeoutChan.Send(default(bool));
-            });
+                if (localTimer != null)
+                {
+                    _threadingTimers.Add(localTimer);
+                }
+            }
 
             return timeoutChan;
         }
@@ -60,15 +92,13 @@ namespace NsqSharp.Go
             var timer = new Timer(duration);
 
             GoFunc.Run(() =>
-                Select
-                    .CaseReceiveOk(timer.C, (v, ok) =>
-                    {
-                        if (ok)
-                            f();
-                    })
-                    .CaseReceive(After(duration + TimeSpan.FromSeconds(120))) // clean up if the timer was stopped
-                    .NoDefault()
-            );
+                       {
+                           bool ok;
+                           timer.C.ReceiveOk(out ok);
+                           
+                           if (ok)
+                               f();
+                       });
 
             return timer;
         }

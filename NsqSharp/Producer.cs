@@ -239,7 +239,7 @@ namespace NsqSharp
         /// will receive a `ProducerTransaction` instance with the supplied variadic arguments
         /// and the response error if present
         /// </summary>
-        public void PublishAsync(string topic, byte[] body, Chan<ProducerTransaction> doneChan, params object[] args)
+        private void PublishAsync(string topic, byte[] body, Chan<ProducerTransaction> doneChan, params object[] args)
         {
             sendCommandAsync(Command.Publish(topic, body), doneChan, args);
         }
@@ -253,7 +253,7 @@ namespace NsqSharp
         /// will receive a `ProducerTransaction` instance with the supplied variadic arguments
         /// and the response error if present
         /// </summary>
-        public void PublishAsync(string topic, string value, Chan<ProducerTransaction> doneChan, params object[] args)
+        private void PublishAsync(string topic, string value, Chan<ProducerTransaction> doneChan, params object[] args)
         {
             sendCommandAsync(Command.Publish(topic, Encoding.UTF8.GetBytes(value)), doneChan, args);
         }
@@ -267,7 +267,7 @@ namespace NsqSharp
         /// will receive a `ProducerTransaction` instance with the supplied variadic arguments
         /// and the response error if present
         /// </summary>
-        public void MultiPublishAsync(string topic, List<byte[]> body, Chan<ProducerTransaction> doneChan, params object[] args)
+        private void MultiPublishAsync(string topic, ICollection<byte[]> body, Chan<ProducerTransaction> doneChan, params object[] args)
         {
             var cmd = Command.MultiPublish(topic, body);
             sendCommandAsync(cmd, doneChan, args);
@@ -295,29 +295,34 @@ namespace NsqSharp
         /// MultiPublish synchronously publishes a slice of message bodies to the specified topic, returning
         /// the an error if publish failed
         /// </summary>
-        public void MultiPublish(string topic, List<byte[]> body)
+        public void MultiPublish(string topic, ICollection<byte[]> body)
         {
             var cmd = Command.MultiPublish(topic, body);
             sendCommand(cmd);
         }
 
+        // TODO: temporary until multithreaded issue is figured out
+        private readonly object _sendCommandLocker = new object();
         private void sendCommand(Command cmd)
         {
-            var doneChan = new Chan<ProducerTransaction>();
-
-            try
+            lock (_sendCommandLocker)
             {
-                sendCommandAsync(cmd, doneChan, null);
-            }
-            catch (Exception)
-            {
-                doneChan.Close();
-                throw;
-            }
+                var doneChan = new Chan<ProducerTransaction>();
 
-            var t = doneChan.Receive();
-            if (t.Error != null)
-                throw t.Error;
+                try
+                {
+                    sendCommandAsync(cmd, doneChan, null);
+                }
+                catch (Exception)
+                {
+                    doneChan.Close();
+                    throw;
+                }
+
+                var t = doneChan.Receive();
+                if (t.Error != null)
+                    throw t.Error;
+            }
         }
 
         private void sendCommandAsync(Command cmd, Chan<ProducerTransaction> doneChan, params object[] args)
