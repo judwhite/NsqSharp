@@ -267,6 +267,9 @@ namespace NsqSharp.Bus.Configuration
 
         internal void StartBus()
         {
+            // Pre-create topics/channels
+            // TODO: make this configurable
+
             var wg = new WaitGroup();
             foreach (var tch in GetHandledTopics())
             {
@@ -348,11 +351,20 @@ namespace NsqSharp.Bus.Configuration
             return new Collection<ITopicChannels>(list);
         }
 
+        /// <summary>
+        /// <c>true</c> if the process is running in a console window.
+        /// </summary>
+        public bool IsConsoleMode
+        {
+            get { return (BusService.GetConsoleWindow() != IntPtr.Zero); }
+        }
+
         private void EnterInteractiveMode()
         {
-            if (BusService.GetConsoleWindow() == IntPtr.Zero)
+            if (!IsConsoleMode)
                 return;
 
+            // TODO
             throw new NotImplementedException();
         }
     }
@@ -402,5 +414,10 @@ namespace NsqSharp.Bus.Configuration
             params string[] nsqLookupdHttpAddresses
         )
             where THandler : IHandleMessages<TMessage>;
+
+        /// <summary>
+        /// <c>true</c> if the process is running in a console window.
+        /// </summary>
+        bool IsConsoleMode { get; }
     }
 }

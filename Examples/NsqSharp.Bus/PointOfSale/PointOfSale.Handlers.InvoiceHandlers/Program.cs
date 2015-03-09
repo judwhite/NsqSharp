@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Reflection;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using PointOfSale.Common;
@@ -6,13 +6,13 @@ using PointOfSale.Messages.Invoices.Commands;
 
 namespace PointOfSale.Handlers.InvoiceHandlers
 {
-    class Program
+    public class Program
     {
         // This project demos two handlers listening to the same topic on different channels.
 
         static void Main()
         {
-            PointOfSaleBus.Start(new ChannelProvider(), new BusStateChangedHandler());
+            PointOfSaleBus.Start(new ChannelProvider(), new[] { typeof(Program).Assembly }, new BusStateChangedHandler());
         }
 
         public class BusStateChangedHandler : IBusStateChangedHandler
@@ -23,10 +23,10 @@ namespace PointOfSale.Handlers.InvoiceHandlers
 
             public void OnBusStarted(IBusConfiguration config, IBus bus)
             {
-                if (bus == null)
-                    throw new ArgumentNullException("bus");
-
-                bus.Send<GetInvoicesCommand>();
+                if (config.IsConsoleMode && Assembly.GetEntryAssembly() == typeof(Program).Assembly)
+                {
+                    bus.Send<GetInvoicesCommand>();
+                }
             }
         }
     }

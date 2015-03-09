@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Newtonsoft.Json;
 using NsqSharp.Bus;
@@ -10,7 +11,11 @@ namespace PointOfSale.Common
 {
     public static class PointOfSaleBus
     {
-        public static void Start(IHandlerTypeToChannelProvider channelProvider, IBusStateChangedHandler busStateChangedHandler)
+        public static void Start(
+            IHandlerTypeToChannelProvider channelProvider,
+            IEnumerable<Assembly> handlerAssemblies,
+            IBusStateChangedHandler busStateChangedHandler = null
+        )
         {
             if (channelProvider == null)
                 throw new ArgumentNullException("channelProvider");
@@ -28,7 +33,7 @@ namespace PointOfSale.Common
                 busStateChangedHandler: busStateChangedHandler
             );
 
-            config.AddMessageHandlers(new[] { Assembly.GetCallingAssembly() });
+            config.AddMessageHandlers(handlerAssemblies);
 
             BusService.Start(config);
         }

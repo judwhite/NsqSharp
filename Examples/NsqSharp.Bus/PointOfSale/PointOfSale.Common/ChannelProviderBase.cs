@@ -22,6 +22,11 @@ namespace PointOfSale.Common
             return _channels[handlerType];
         }
 
+        public Dictionary<Type, string> GetAll()
+        {
+            return _channels;
+        }
+
         public void Add<THandler, TMessageType>(string channelName)
             where THandler : IHandleMessages<TMessageType>
         {

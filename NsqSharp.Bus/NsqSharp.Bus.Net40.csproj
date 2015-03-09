@@ -66,9 +66,6 @@
     <Compile Include="Logging\IFailedMessageHandler.cs" />
     <Compile Include="Logging\IFailedMessageHandlerExtensions.cs" />
     <Compile Include="MessageDistributor.cs" />
-    <Compile Include="MigrationHelpers\ICommand.cs" />
-    <Compile Include="MigrationHelpers\IEvent.cs" />
-    <Compile Include="MigrationHelpers\IMessage.cs" />
     <Compile Include="NsqBus.cs" />
     <Compile Include="IBus.cs" />
     <Compile Include="IHandleMessages.cs" />

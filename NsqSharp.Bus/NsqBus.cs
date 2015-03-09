@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.Providers;
 using NsqSharp.Bus.Utils;
@@ -137,40 +135,9 @@ namespace NsqSharp.Bus
             }
         }
 
-        /*public void Defer<T>(TimeSpan delay, T message)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Defer<T>(DateTime processAt, T message)
-        {
-            throw new NotImplementedException();
-        }*/
-
         public Message CurrentMessage
         {
             get { throw new NotImplementedException(); }
-        }
-
-        public void SendLocal<T>(T message)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SendLocal<T>()
-        {
-            SendLocal<T>(mc => { });
-        }
-
-        public void SendLocal<T>(Action<T> messageConstructor)
-        {
-            if (messageConstructor == null)
-                throw new ArgumentNullException("messageConstructor");
-
-            T message = (typeof(T).IsInterface ? InterfaceBuilder.Create<T>() : CreateInstance<T>());
-            messageConstructor(message);
-
-            SendLocal(message);
         }
 
         private T CreateInstance<T>()

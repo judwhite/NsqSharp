@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Reflection;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using PointOfSale.Common;
@@ -6,11 +6,11 @@ using PointOfSale.Messages.Products.Commands;
 
 namespace PointOfSale.Handlers.ProductHandlers
 {
-    class Program
+    public class Program
     {
         static void Main()
         {
-            PointOfSaleBus.Start(new ChannelProvider(), new BusStateChangedHandler());
+            PointOfSaleBus.Start(new ChannelProvider(), new[] { typeof(Program).Assembly }, new BusStateChangedHandler());
         }
 
         public class BusStateChangedHandler : IBusStateChangedHandler
@@ -21,10 +21,10 @@ namespace PointOfSale.Handlers.ProductHandlers
 
             public void OnBusStarted(IBusConfiguration config, IBus bus)
             {
-                if (bus == null)
-                    throw new ArgumentNullException("bus");
-
-                bus.Send<GetProductsCommand>();
+                if (config.IsConsoleMode && Assembly.GetEntryAssembly() == typeof(Program).Assembly)
+                {
+                    bus.Send<GetProductsCommand>();
+                }
             }
         }
     }
