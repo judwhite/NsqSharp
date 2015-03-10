@@ -8,7 +8,7 @@ namespace PointOfSale.Handlers.CustomerHandlers
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static void Main()
         {
             PointOfSaleBus.Start(new ChannelProvider(), new[] { typeof(Program).Assembly }, new BusStateChangedHandler());
         }

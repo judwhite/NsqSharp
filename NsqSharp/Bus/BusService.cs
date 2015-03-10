@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
+using System.Threading;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Utils;
-using NsqSharp.Utils.Channels;
 
 namespace NsqSharp.Bus
 {
@@ -15,6 +15,23 @@ namespace NsqSharp.Bus
         [DllImport("kernel32.dll")]
         internal static extern IntPtr GetConsoleWindow();
 
+        [DllImport("Kernel32")]
+        internal static extern bool SetConsoleCtrlHandler(HandlerRoutineCallback handler, bool add);
+
+        internal delegate bool HandlerRoutineCallback(CtrlType dwCtrlType);
+
+        internal enum CtrlType
+        {
+            CTRL_C_EVENT = 0,
+            CTRL_BREAK_EVENT,
+            CTRL_CLOSE_EVENT,
+            CTRL_LOGOFF_EVENT = 5,
+            CTRL_SHUTDOWN_EVENT
+        }
+
+        private static WindowsService _service;
+        private static AutoResetEvent _wait;
+
         /// <summary>
         /// Starts the bus service.
         /// </summary>
@@ -23,39 +40,41 @@ namespace NsqSharp.Bus
             if (busConfiguration == null)
                 throw new ArgumentNullException("busConfiguration");
 
-            var service = new WindowsService(busConfiguration);
+            _service = new WindowsService(busConfiguration);
 
             if (GetConsoleWindow() == IntPtr.Zero)
             {
-                ServiceBase.Run(new ServiceBase[] { service });
+                ServiceBase.Run(new ServiceBase[] { _service });
             }
             else
             {
-                service.Start();
+                _service.Start();
 
-                var exitChan = new Chan<bool>();
-
-                Console.CancelKeyPress += (s, e) => Console_CancelKeyPress(e, exitChan);
-
-                exitChan.Receive();
-
-                service.Stop();
+                _wait = new AutoResetEvent(initialState: false);
+                SetConsoleCtrlHandler(ConsoleCtrlCheck, add: true);
+                _wait.WaitOne();
             }
         }
 
         private static bool _isFirstCancelRequest = true;
-        private static void Console_CancelKeyPress(ConsoleCancelEventArgs e, Chan<bool> stopChan)
+        private static bool ConsoleCtrlCheck(CtrlType ctrlType)
         {
+            if (ctrlType == CtrlType.CTRL_CLOSE_EVENT)
+                return false;
+
             if (_isFirstCancelRequest)
             {
-                Console.WriteLine("Stopping... Press ^C again to force quit");
-                e.Cancel = true;
-                stopChan.Close();
+                Console.WriteLine("Stopping...");
+                _service.Stop();
                 _isFirstCancelRequest = false;
+                _wait.Set();
+                return true;
             }
             else
             {
-                Console.WriteLine("^C pressed again, force quitting...");
+                Console.WriteLine("Force Stopping...");
+                _wait.Set();
+                return true;
             }
         }
     }
