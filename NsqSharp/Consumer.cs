@@ -603,7 +603,7 @@ namespace NsqSharp
                 bool ok = _connections.ContainsKey(addr);
                 if (pendingOk || ok)
                 {
-                    throw new ErrAlreadyConnected();
+                    return;
                 }
                 _pendingConnections[addr] = conn;
                 if (!_nsqdTCPAddrs.Contains(addr))

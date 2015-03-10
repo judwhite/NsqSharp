@@ -17,10 +17,10 @@ install:
 script:
   - xbuild /p:Configuration=Release NsqSharp.sln
   - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Tests/bin/Release/NsqSharp.Tests.dll
-  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Tests/bin/Release/NsqSharp.Bus.Tests.dll
+  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Bus.Tests/bin/Release/NsqSharp.Bus.Tests.dll
   - xbuild /p:Configuration=Release NsqSharp.Net40.sln
   - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Tests/bin/Release-net40/NsqSharp.Tests.dll
-  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Tests/bin/Release-net40/NsqSharp.Bus.Tests.dll
+  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Bus.Tests/bin/Release-net40/NsqSharp.Bus.Tests.dll
 #  - export LD_LIBRARY_PATH=/usr/local/lib
 #  - mono --debug --profile=monocov:outfile=monocovCoverage.cov,+[NsqSharp],+[NsqSharp.Tests] ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Tests/bin/Release/NsqSharp.Tests.dll
 #  - mono --debug --profile=monocov:outfile=monocovCoverage.cov,+[NsqSharp],+[NsqSharp.Tests] ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./NsqSharp.Tests/bin/Release/NsqSharp.Tests.dll /noshadow
