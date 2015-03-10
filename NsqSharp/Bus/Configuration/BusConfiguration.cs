@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reflection;
 using NsqSharp.Bus.Configuration.BuiltIn;
 using NsqSharp.Bus.Configuration.Providers;
 using NsqSharp.Bus.Logging;
@@ -88,32 +87,9 @@ namespace NsqSharp.Bus.Configuration
             _defaultThreadsPerHandler = defaultThreadsPerHandler;
             _defaultNsqdHttpEndpoints = new[] { "127.0.0.1:4151" };
             _busStateChangedHandler = busStateChangedHandler;
-        }
 
-        /// <summary>
-        /// Add message handlers by scanning the specified <paramref name="assemblies"/> for implementations of
-        /// <see cref="IHandleMessages&lt;T&gt;"/>. Uses defaults specified in
-        /// the <see cref="BusConfiguration"/> constructor.
-        /// </summary>
-        /// <param name="assemblies">The assemblies to scan.</param>
-        public void AddMessageHandlers(IEnumerable<Assembly> assemblies)
-        {
-            if (assemblies == null)
-                throw new ArgumentNullException("assemblies");
-
-            var types = assemblies.SelectMany(p => p.GetTypes());
-
-            var handlerTypes = new List<Type>();
-            foreach (var type in types)
-            {
-                Type messageType;
-                if (IsMessageHandler(type, out messageType))
-                {
-                    handlerTypes.Add(type);
-                }
-            }
-
-            AddMessageHandlers(handlerTypes.ToArray());
+            var handlerTypes = _handlerTypeToChannelProvider.GetHandlerTypes();
+            AddMessageHandlers(handlerTypes);
         }
 
         /// <summary>
@@ -121,7 +97,7 @@ namespace NsqSharp.Bus.Configuration
         /// Uses defaults specified in the <see cref="BusConfiguration"/> constructor.
         /// </summary>
         /// <param name="handlerTypes">The message handler types to add. Throws if a type is an invalid message handler.</param>
-        public void AddMessageHandlers(IEnumerable<Type> handlerTypes)
+        private void AddMessageHandlers(IEnumerable<Type> handlerTypes)
         {
             if (handlerTypes == null)
                 throw new ArgumentNullException("handlerTypes");
@@ -380,41 +356,6 @@ namespace NsqSharp.Bus.Configuration
         /// </summary>
         /// <returns>A list of topics/channels currently handled by this process.</returns>
         Collection<ITopicChannels> GetHandledTopics();
-
-        /// <summary>
-        /// Add message handlers by scanning the specified <paramref name="assemblies"/> for implementations of
-        /// <see cref="IHandleMessages&lt;T&gt;"/>. Uses defaults specified in
-        /// the <see cref="BusConfiguration"/> constructor.
-        /// </summary>
-        /// <param name="assemblies">The assemblies to scan.</param>
-        void AddMessageHandlers(IEnumerable<Assembly> assemblies);
-
-        /// <summary>
-        /// Add message handlers from the specified list of <paramref name="handlerTypes"/>.
-        /// Uses defaults specified in the <see cref="BusConfiguration"/> constructor.
-        /// </summary>
-        /// <param name="handlerTypes">The message handler types to add. Throws if a type is an invalid message handler.</param>
-        void AddMessageHandlers(IEnumerable<Type> handlerTypes);
-
-        /// <summary>
-        /// Adds a message handler. If a duplicate <paramref name="topic"/>, <paramref name="channel"/>, and
-        /// <typeparamref name="THandler" /> is added the old value will be overwritten.
-        /// </summary>
-        /// <typeparam name="THandler">The concrete message handler type.</typeparam>
-        /// <typeparam name="TMessage">The message type.</typeparam>
-        /// <param name="topic">The topic name.</param>
-        /// <param name="channel">The channel name.</param>
-        /// <param name="messageSerializer">The message serializer (optional; otherwise uses default).</param>
-        /// <param name="config">The Consumer <see cref="Config"/> to use (optional; otherwise uses default).</param>
-        /// <param name="threadsPerHandler">The number of threads per message handler (optional; otherwise uses default).</param>
-        /// <param name="nsqLookupdHttpAddresses">The nsqlookupd HTTP addresses to use (optional; otherwise uses default).</param>
-        void AddMessageHandler<THandler, TMessage>(string topic, string channel,
-            IMessageSerializer messageSerializer = null,
-            Config config = null,
-            int? threadsPerHandler = null,
-            params string[] nsqLookupdHttpAddresses
-        )
-            where THandler : IHandleMessages<TMessage>;
 
         /// <summary>
         /// <c>true</c> if the process is running in a console window.

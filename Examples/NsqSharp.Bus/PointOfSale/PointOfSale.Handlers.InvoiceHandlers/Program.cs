@@ -12,7 +12,7 @@ namespace PointOfSale.Handlers.InvoiceHandlers
 
         static void Main()
         {
-            PointOfSaleBus.Start(new ChannelProvider(), new[] { typeof(Program).Assembly }, new BusStateChangedHandler());
+            PointOfSaleBus.Start(new ChannelProvider(), new BusStateChangedHandler());
         }
 
         public class BusStateChangedHandler : IBusStateChangedHandler
@@ -23,7 +23,7 @@ namespace PointOfSale.Handlers.InvoiceHandlers
 
             public void OnBusStarted(IBusConfiguration config, IBus bus)
             {
-                if (config.IsConsoleMode && Assembly.GetEntryAssembly() == typeof(Program).Assembly)
+                if (config.IsConsoleMode)
                 {
                     bus.Send<GetInvoicesCommand>();
                 }

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Reflection;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using PointOfSale.Common;
@@ -23,7 +21,6 @@ namespace PointOfSale.Application.Harness
 
             PointOfSaleBus.Start(
                 channelProvider: new CompositeChannelProvider(channelProviders),
-                handlerAssemblies: channelProviders.Select(p => p.GetType().Assembly),
                 busStateChangedHandler: new BusStateChangedHandler()
             );
         }
@@ -36,7 +33,7 @@ namespace PointOfSale.Application.Harness
 
             public void OnBusStarted(IBusConfiguration config, IBus bus)
             {
-                if (config.IsConsoleMode && Assembly.GetEntryAssembly() == typeof(Program).Assembly)
+                if (config.IsConsoleMode)
                 {
                     Console.Write("Press enter to begin . . . ");
                     while (Console.ReadKey().Key != ConsoleKey.Enter)

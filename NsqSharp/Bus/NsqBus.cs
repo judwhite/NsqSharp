@@ -90,7 +90,7 @@ namespace NsqSharp.Bus
             if (messageConstructor == null)
                 throw new ArgumentNullException("messageConstructor");
 
-            T message = (typeof(T).IsInterface ? InterfaceBuilder.Create<T>() : CreateInstance<T>());
+            T message = CreateInstance<T>();
             messageConstructor(message);
 
             Send(message);
@@ -143,7 +143,7 @@ namespace NsqSharp.Bus
         private T CreateInstance<T>()
         {
             return typeof(T).IsInterface
-                        ? InterfaceBuilder.Create<T>()
+                        ? InterfaceBuilder.CreateObject<T>()
                         : _dependencyInjectionContainer.GetInstance<T>();
         }
 

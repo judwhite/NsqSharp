@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace NsqSharp.Bus.Configuration.Providers
 {
@@ -13,8 +14,14 @@ namespace NsqSharp.Bus.Configuration.Providers
         /// <summary>
         /// Gets the channel the specified <paramref name="handlerType"/> should consume/subscribe to.
         /// </summary>
-        /// <param name="handlerType">The message handler type. See <see cref="IHandleMessages&lt;T&gt;"/></param>
+        /// <param name="handlerType">The message handler type. See <see cref="IHandleMessages&lt;T&gt;"/>.</param>
         /// <returns>The channel the specified <paramref name="handlerType"/> should consume/subscribe to.</returns>
         string GetChannel(Type handlerType);
+
+        /// <summary>
+        /// Gets the registered handler types implementing <see cref="IHandleMessages&lt;T&gt;"/>.
+        /// </summary>
+        /// <returns>The registered handler types implementing <see cref="IHandleMessages&lt;T&gt;"/>.</returns>
+        IEnumerable<Type> GetHandlerTypes();
     }
 }

@@ -17,9 +17,10 @@ namespace PointOfSale.Application.Harness
             _channels = new Dictionary<Type, string>();
             foreach (var channelProvider in channelProviders)
             {
-                foreach (var kvp in channelProvider.GetAll())
+                foreach (var handler in channelProvider.GetHandlerTypes())
                 {
-                    _channels.Add(kvp.Key, kvp.Value);
+                    var channel = channelProvider.GetChannel(handler);
+                    _channels.Add(handler, channel);
                 }
             }
         }
@@ -27,6 +28,11 @@ namespace PointOfSale.Application.Harness
         public string GetChannel(Type handlerType)
         {
             return _channels[handlerType];
+        }
+
+        public IEnumerable<Type> GetHandlerTypes()
+        {
+            return _channels.Keys;
         }
     }
 }

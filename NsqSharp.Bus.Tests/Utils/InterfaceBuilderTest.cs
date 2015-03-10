@@ -1,5 +1,4 @@
 ﻿using System;
-using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Utils;
 using NUnit.Framework;
 
@@ -11,7 +10,7 @@ namespace NsqSharp.Bus.Tests.Utils
         [Test]
         public void MustBeInterface()
         {
-            Assert.Throws<ArgumentException>(() => InterfaceBuilder.Create<Details>());
+            Assert.Throws<ArgumentException>(() => InterfaceBuilder.CreateObject<Details>());
         }
 
         [Test]
@@ -23,7 +22,7 @@ namespace NsqSharp.Bus.Tests.Utils
             const string expectedMessage = "Happy Birthday";
 
             // Act
-            IBaseInterface baseInterface = InterfaceBuilder.Create<IBaseInterface>();
+            IBaseInterface baseInterface = InterfaceBuilder.CreateObject<IBaseInterface>();
 
             baseInterface.Details = new Details { Timestamp = expectedTimestamp, Count = expectedCount };
             baseInterface.Message = expectedMessage;
@@ -44,7 +43,7 @@ namespace NsqSharp.Bus.Tests.Utils
             var expectedId = Guid.Parse("DA536BB4-CEA5-49B8-ADE2-FC5A92706DBC");
 
             // Act
-            ISubInterface subInterface = InterfaceBuilder.Create<ISubInterface>();
+            ISubInterface subInterface = InterfaceBuilder.CreateObject<ISubInterface>();
 
             subInterface.Details = new Details { Timestamp = expectedTimestamp, Count = expectedCount };
             subInterface.Message = expectedMessage;
@@ -68,7 +67,7 @@ namespace NsqSharp.Bus.Tests.Utils
             const double expectedPi = Math.PI;
 
             // Act
-            IDoubleSubInterface obj = InterfaceBuilder.Create<IDoubleSubInterface>();
+            IDoubleSubInterface obj = InterfaceBuilder.CreateObject<IDoubleSubInterface>();
 
             obj.Details = new Details { Timestamp = expectedTimestamp, Count = expectedCount };
             obj.Message = expectedMessage;

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Logging;
+using NsqSharp.Bus.Utils;
 using NsqSharp.Core;
 
 namespace NsqSharp.Bus
@@ -14,6 +15,7 @@ namespace NsqSharp.Bus
         private readonly MethodInfo _handleMethod;
         private readonly Type _handlerType;
         private readonly Type _messageType;
+        private readonly Type _concreteMessageType;
         private readonly IFailedMessageHandler _failedMessageHandler;
         private readonly string _topic;
         private readonly string _channel;
@@ -47,6 +49,15 @@ namespace NsqSharp.Bus
 
             if (_handleMethod == null)
                 throw new Exception(string.Format("Handle({0}) not found on {1}", _messageType, _handlerType));
+
+            if (!_messageType.IsInterface)
+            {
+                _concreteMessageType = _messageType;
+            }
+            else
+            {
+                _concreteMessageType = InterfaceBuilder.CreateType(_messageType);
+            }
         }
 
         public void HandleMessage(Message message)
@@ -67,7 +78,7 @@ namespace NsqSharp.Bus
             object value;
             try
             {
-                value = _serializer.Deserialize(_messageType, message.Body);
+                value = _serializer.Deserialize(_concreteMessageType, message.Body);
             }
             catch (Exception ex)
             {

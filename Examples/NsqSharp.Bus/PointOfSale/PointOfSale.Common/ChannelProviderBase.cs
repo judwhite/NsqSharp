@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using NsqSharp;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration.Providers;
 using NsqSharp.Core;
@@ -23,9 +22,9 @@ namespace PointOfSale.Common
             return _channels[handlerType];
         }
 
-        public Dictionary<Type, string> GetAll()
+        public IEnumerable<Type> GetHandlerTypes()
         {
-            return _channels;
+            return _channels.Keys;
         }
 
         public void Add<THandler, TMessageType>(string channelName)

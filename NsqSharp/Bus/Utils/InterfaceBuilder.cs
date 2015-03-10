@@ -22,35 +22,54 @@ namespace NsqSharp.Bus.Utils
         }
 
         /// <summary>
+        /// Create a concrete object based on an interface.
+        /// </summary>
+        public static T CreateObject<T>()
+        {
+            return (T)CreateObject(typeof(T));
+        }
+
+        /// <summary>
+        /// Create a concrete object based on an interface.
+        /// </summary>
+        public static object CreateObject(Type interfaceType)
+        {
+            var type = CreateType(interfaceType);
+            return Activator.CreateInstance(type);
+        }
+
+        /// <summary>
         /// Create a concrete type based on an interface.
         /// </summary>
-        public static T Create<T>()
+        public static Type CreateType(Type interfaceType)
         {
-            if (!typeof(T).IsInterface)
-                throw new ArgumentException(string.Format("Type '{0}' is not an interface.", typeof(T)));
+            if (interfaceType == null)
+                throw new ArgumentNullException("interfaceType");
+            if (!interfaceType.IsInterface)
+                throw new ArgumentException(string.Format("Type '{0}' is not an interface.", interfaceType));
 
             Type type;
             lock (_interfaceDynamicTypesLocker)
             {
-                if (!_interfaceDynamicTypes.TryGetValue(typeof(T), out type))
+                if (!_interfaceDynamicTypes.TryGetValue(interfaceType, out type))
                 {
-                    type = GetDynamicType<T>();
-                    _interfaceDynamicTypes.Add(typeof(T), type);
+                    type = GetDynamicType(interfaceType);
+                    _interfaceDynamicTypes.Add(interfaceType, type);
                 }
             }
 
-            return (T)Activator.CreateInstance(type);
+            return type;
         }
 
-        private static Type GetDynamicType<T>()
+        private static Type GetDynamicType(Type type)
         {
-            var typeBuilder = _moduleBuilder.DefineType(typeof(T).Name, TypeAttributes.Public);
-            typeBuilder.AddInterfaceImplementation(typeof(T));
+            var typeBuilder = _moduleBuilder.DefineType(type.Name, TypeAttributes.Public);
+            typeBuilder.AddInterfaceImplementation(type);
 
             const MethodAttributes getSetAttr = MethodAttributes.Public | MethodAttributes.SpecialName |
                 MethodAttributes.HideBySig | MethodAttributes.Virtual;
 
-            foreach (var propertyInfo in GetProperties(typeof(T)))
+            foreach (var propertyInfo in GetProperties(type))
             {
                 var fieldBuilder = typeBuilder.DefineField(string.Format("__{0}", CamelCase(propertyInfo.Name)),
                     propertyInfo.PropertyType, FieldAttributes.Private);

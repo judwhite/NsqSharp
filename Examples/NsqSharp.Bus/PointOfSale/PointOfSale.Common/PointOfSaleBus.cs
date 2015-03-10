@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
 using Newtonsoft.Json;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
@@ -13,7 +11,6 @@ namespace PointOfSale.Common
     {
         public static void Start(
             IHandlerTypeToChannelProvider channelProvider,
-            IEnumerable<Assembly> handlerAssemblies,
             IBusStateChangedHandler busStateChangedHandler = null
         )
         {
@@ -32,8 +29,6 @@ namespace PointOfSale.Common
                 defaultNsqlookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
                 busStateChangedHandler: busStateChangedHandler
             );
-
-            config.AddMessageHandlers(handlerAssemblies);
 
             BusService.Start(config);
         }

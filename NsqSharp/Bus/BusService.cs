@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Threading;
@@ -49,6 +50,8 @@ namespace NsqSharp.Bus
             else
             {
                 _service.Start();
+
+                Console.WriteLine("{0} bus started", Assembly.GetEntryAssembly().GetName().Name);
 
                 _wait = new AutoResetEvent(initialState: false);
                 SetConsoleCtrlHandler(ConsoleCtrlCheck, add: true);
