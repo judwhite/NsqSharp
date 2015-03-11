@@ -28,11 +28,10 @@ w.Stop();
 #### Consumer
 
 ```C#
-// Create a new Consumer for each topic or channel
+// Create a new Consumer for each topic/channel
 var r = new Consumer("string-topic-name", "channel-name");
 r.AddHandler(/* instance of IHandler */);
-r.ConnectToNSQD("127.0.0.1:4150");
-// or r.ConnectToNSQLookupd("127.0.0.1:4161");
+r.ConnectToNSQD("127.0.0.1:4150"); // or r.ConnectToNSQLookupd("127.0.0.1:4161");
 
 // ...
 
