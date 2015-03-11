@@ -88,8 +88,8 @@
     <Compile Include="Utils\Channels\IReceiveOnlyChan.cs" />
     <Compile Include="Utils\Channels\ISendOnlyChan.cs" />
     <Compile Include="Utils\Channels\Select.cs" />
-    <Compile Include="Utils\ConsoleLogger.cs" />
-    <Compile Include="Utils\TraceLogger.cs" />
+    <Compile Include="Utils\Loggers\ConsoleLogger.cs" />
+    <Compile Include="Utils\Loggers\TraceLogger.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Producer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -101,7 +101,7 @@
     <Compile Include="Utils\Extensions\TimeSpanExtensions.cs" />
     <Compile Include="Utils\GoFunc.cs" />
     <Compile Include="Utils\IConn.cs" />
-    <Compile Include="Utils\ILogger.cs" />
+    <Compile Include="Core\ILogger.cs" />
     <Compile Include="Utils\IReader.cs" />
     <Compile Include="Utils\ITcpConn.cs" />
     <Compile Include="Utils\IWriter.cs" />

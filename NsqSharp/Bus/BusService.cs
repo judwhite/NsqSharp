@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
@@ -32,6 +33,7 @@ namespace NsqSharp.Bus
 
         private static WindowsService _service;
         private static AutoResetEvent _wait;
+        private static HandlerRoutineCallback _onCloseCallback;
 
         /// <summary>
         /// Starts the bus service.
@@ -51,10 +53,11 @@ namespace NsqSharp.Bus
             {
                 _service.Start();
 
-                Console.WriteLine("{0} bus started", Assembly.GetEntryAssembly().GetName().Name);
+                Trace.WriteLine(string.Format("{0} bus started", Assembly.GetEntryAssembly().GetName().Name));
 
                 _wait = new AutoResetEvent(initialState: false);
-                SetConsoleCtrlHandler(ConsoleCtrlCheck, add: true);
+                _onCloseCallback = ConsoleCtrlCheck; // prevent callback handler from being GC'd
+                SetConsoleCtrlHandler(_onCloseCallback, add: true);
                 _wait.WaitOne();
             }
         }
@@ -67,7 +70,7 @@ namespace NsqSharp.Bus
 
             if (_isFirstCancelRequest)
             {
-                Console.WriteLine("Stopping...");
+                Trace.WriteLine("Stopping...");
                 _service.Stop();
                 _isFirstCancelRequest = false;
                 _wait.Set();
@@ -75,7 +78,7 @@ namespace NsqSharp.Bus
             }
             else
             {
-                Console.WriteLine("Force Stopping...");
+                Trace.WriteLine("Force Stopping...");
                 _wait.Set();
                 return true;
             }

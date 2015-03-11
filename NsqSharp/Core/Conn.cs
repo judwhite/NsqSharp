@@ -90,7 +90,6 @@ namespace NsqSharp.Core
         private readonly IConnDelegate _delegate;
 
         private ILogger _logger;
-        private LogLevel _logLvl;
         private string _logFmt;
 
         private IReader _r;
@@ -140,13 +139,12 @@ namespace NsqSharp.Core
         /// context to the log messages that the connection will print, the default
         /// is '({0})'.
         /// </summary>
-        public void SetLogger(ILogger l, LogLevel lvl, string format)
+        public void SetLogger(ILogger l, string format)
         {
             if (l == null)
                 throw new ArgumentNullException("l");
 
             _logger = l;
-            _logLvl = lvl;
             _logFmt = format;
             if (string.IsNullOrWhiteSpace(_logFmt))
             {
@@ -330,7 +328,7 @@ namespace NsqSharp.Core
             }
             catch (Exception ex)
             {
-                log(LogLevel.Error, "IO error - {0}", ex);
+                log(LogLevel.Error, string.Format("IO error - {0}", ex));
                 _delegate.OnIOError(this, ex);
                 throw;
             }
@@ -409,7 +407,7 @@ namespace NsqSharp.Core
                 }
 
                 string respJson = Encoding.UTF8.GetString(data);
-                log(LogLevel.Debug, "IDENTIFY response: {0}", respJson);
+                log(LogLevel.Debug, string.Format("IDENTIFY response: {0}", respJson));
 
                 IdentifyResponse resp;
                 var serializer = new DataContractJsonSerializer(typeof(IdentifyResponse));
@@ -504,8 +502,8 @@ namespace NsqSharp.Core
                 resp = (AuthResponse)serializer.ReadObject(memoryStream);
             }
 
-            log(LogLevel.Info, "Auth accepted. Identity: {0} {1} Permissions: {2}",
-                resp.Identity, resp.IdentityUrl, resp.PermissionCount);
+            log(LogLevel.Info, string.Format("Auth accepted. Identity: {0} {1} Permissions: {2}",
+                resp.Identity, resp.IdentityUrl, resp.PermissionCount));
         }
 
         private void readLoop()
@@ -531,9 +529,10 @@ namespace NsqSharp.Core
                     catch (Exception ex)
                     {
                         // TODO: determine equivalent exception type from .NET runtime
+                        // if !strings.Contains(err.Error(), "use of closed network connection")
                         if (_closeFlag != 1)
                         {
-                            log(LogLevel.Error, "IO error - {0}", ex.Message);
+                            log(LogLevel.Error, string.Format("IO error - {0}", ex.Message));
                             _delegate.OnIOError(this, ex);
                         }
                         break;
@@ -550,7 +549,7 @@ namespace NsqSharp.Core
                         {
                             if (_closeFlag != 1)
                             {
-                                log(LogLevel.Error, "IO error - {0}", ex);
+                                log(LogLevel.Error, string.Format("IO error - {0}", ex));
                                 _delegate.OnIOError(this, ex);
                             }
                             break;
@@ -571,7 +570,7 @@ namespace NsqSharp.Core
                             }
                             catch (Exception ex)
                             {
-                                log(LogLevel.Error, "IO error - {0}", ex.Message);
+                                log(LogLevel.Error, string.Format("IO error - {0}", ex));
                                 _delegate.OnIOError(this, ex);
                                 doLoop = false;
                                 break;
@@ -587,14 +586,15 @@ namespace NsqSharp.Core
                             break;
                         case FrameType.Error:
                             string errMsg = Encoding.UTF8.GetString(data);
-                            log(LogLevel.Error, "protocol error - {0}", errMsg);
+                            log(LogLevel.Error, string.Format("protocol error - {0}", errMsg));
                             _delegate.OnError(this, data);
                             break;
                         default:
                             // TODO: what would 'err' be in this case?
                             // https://github.com/bitly/go-nsq/blob/v1.0.3/conn.go#L518
-                            log(LogLevel.Error, "IO error");
-                            _delegate.OnIOError(this, new Exception(string.Format("unknown frame type {0}", frameType)));
+                            var unknownFrameTypeEx = new Exception(string.Format("unknown frame type {0}", frameType));
+                            log(LogLevel.Error, string.Format("IO error - {0}", unknownFrameTypeEx.Message));
+                            _delegate.OnIOError(this, unknownFrameTypeEx);
                             break;
                     }
                 }
@@ -613,7 +613,7 @@ namespace NsqSharp.Core
                 }
                 else
                 {
-                    log(LogLevel.Warning, "delaying close, {0} outstanding messages", messagesInFlight);
+                    log(LogLevel.Warning, string.Format("delaying close, {0} outstanding messages", messagesInFlight));
                 }
                 _wg.Done();
                 log(LogLevel.Info, "readLoop exiting");
@@ -640,7 +640,7 @@ namespace NsqSharp.Core
                         }
                         catch (Exception ex)
                         {
-                            log(LogLevel.Error, "error sending command {0} - {1}", cmd, ex.Message);
+                            log(LogLevel.Error, string.Format("error sending command {0} - {1}", cmd, ex.Message));
                             close();
                             // TODO: Create PR to remove unnecessary continue in go-nsq
                             // https://github.com/bitly/go-nsq/blob/v1.0.3/conn.go#L552
@@ -653,7 +653,7 @@ namespace NsqSharp.Core
 
                         if (resp.success)
                         {
-                            log(LogLevel.Debug, "FIN {0}", resp.msg.ID);
+                            log(LogLevel.Debug, string.Format("FIN {0}", resp.msg.IdHexString));
                             _delegate.OnMessageFinished(this, resp.msg);
                             if (resp.backoff)
                             {
@@ -662,7 +662,7 @@ namespace NsqSharp.Core
                         }
                         else
                         {
-                            log(LogLevel.Debug, "REQ {0}", resp.msg.ID);
+                            log(LogLevel.Debug, string.Format("REQ {0}", resp.msg.IdHexString));
                             _delegate.OnMessageRequeued(this, resp.msg);
                             if (resp.backoff)
                             {
@@ -681,12 +681,13 @@ namespace NsqSharp.Core
                         }
                         catch (Exception ex)
                         {
-                            log(LogLevel.Error, "error sending command {0} - {1}", resp.cmd, ex);
+                            log(LogLevel.Error, string.Format("error sending command {0} - {1}", resp.cmd, ex));
                             close();
                         }
                     })
                     .NoDefault(defer: true))
             {
+                // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
                 while (doLoop)
                 {
                     select.Execute();
@@ -763,7 +764,7 @@ namespace NsqSharp.Core
                 {
                     if (DateTime.Now - lastWarning > TimeSpan.FromSeconds(1))
                     {
-                        log(LogLevel.Warning, "draining... waiting for {0} messages in flight", msgsInFlight);
+                        log(LogLevel.Warning, string.Format("draining... waiting for {0} messages in flight", msgsInFlight));
                         lastWarning = DateTime.Now;
                     }
                     continue;
@@ -833,22 +834,16 @@ namespace NsqSharp.Core
                 .NoDefault();
         }
 
-        private void log(LogLevel lvl, string line, params object[] args)
+        private void log(LogLevel lvl, string line)
         {
             // TODO: thread safety
 
             if (_logger == null)
                 return;
 
-            if (_logLvl > lvl)
-            {
-                return;
-            }
-
             // TODO: Review format string
-            _logger.Output(string.Format("{0} {1} {2}", Log.Prefix(lvl),
-                string.Format(_logFmt, ToString()),
-                string.Format(line, args)));
+            _logger.Output(lvl, string.Format("{0} {1}",
+                string.Format(_logFmt, ToString()), line));
         }
     }
 

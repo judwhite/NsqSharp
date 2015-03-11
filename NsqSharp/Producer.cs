@@ -5,6 +5,7 @@ using System.Threading;
 using NsqSharp.Core;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Channels;
+using NsqSharp.Utils.Loggers;
 
 namespace NsqSharp
 {
@@ -23,7 +24,7 @@ namespace NsqSharp
         /// context to the log messages that the connection will print, the default
         /// is '({0})'.
         /// </summary>
-        void SetLogger(ILogger l, LogLevel lvl, string format);
+        void SetLogger(ILogger l, string format);
 
         /// <summary>
         /// Connect dials and bootstraps the nsqd connection
@@ -57,8 +58,7 @@ namespace NsqSharp
         private IConn _conn;
         private readonly Config _config;
 
-        private ILogger _logger;
-        private LogLevel _logLvl;
+        private readonly ILogger _logger;
 
         private readonly Chan<byte[]> _responseChan;
         private readonly Chan<byte[]> _errorChan;
@@ -122,14 +122,38 @@ namespace NsqSharp
         /// <param name="config">The config. After Config is passed into NewProducer the values are
         /// no longer mutable (they are copied).</param>
         public Producer(string addr, Config config)
-            : this(addr, config, null)
+            : this(addr, new ConsoleLogger(LogLevel.Info), config, null)
         {
         }
 
-        private Producer(string addr, Config config, Func<Producer, IConn> connFactory)
+        /// <summary>
+        /// Initializes a new instance of the Producer class.
+        /// </summary>
+        /// <param name="addr">The address.</param>
+        /// <param name="logger">The logger.</param>
+        public Producer(string addr, ILogger logger)
+            : this(addr, logger, new Config(), null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the Producer class.
+        /// </summary>
+        /// <param name="addr">The address.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="config">The config. After Config is passed into NewProducer the values are
+        /// no longer mutable (they are copied).</param>
+        public Producer(string addr, ILogger logger, Config config)
+            : this(addr, logger, config, null)
+        {
+        }
+
+        private Producer(string addr, ILogger logger, Config config, Func<Producer, IConn> connFactory)
         {
             if (string.IsNullOrEmpty(addr))
                 throw new ArgumentNullException("addr");
+            if (logger == null)
+                throw new ArgumentNullException("logger");
             if (config == null)
                 throw new ArgumentNullException("config");
 
@@ -140,8 +164,7 @@ namespace NsqSharp
             _addr = addr;
             _config = config.Clone();
 
-            _logger = new ConsoleLogger(); // TODO
-            _logLvl = LogLevel.Info;
+            _logger = logger;
 
             _transactionChan = new Chan<ProducerTransaction>();
             _exitChan = new Chan<int>();
@@ -158,12 +181,13 @@ namespace NsqSharp
         /// Initializes a new instance of the Producer class.
         /// </summary>
         /// <param name="addr">The address.</param>
+        /// <param name="logger">The logger.</param>
         /// <param name="config">The config. After Config is passed into NewProducer the values are
         /// no longer mutable (they are copied).</param>
         /// <param name="connFactory">The method to create a new connection (used for mocking)</param>
-        public static Producer Create(string addr, Config config, Func<Producer, IConn> connFactory)
+        public static Producer Create(string addr, ILogger logger, Config config, Func<Producer, IConn> connFactory)
         {
-            return new Producer(addr, config, connFactory);
+            return new Producer(addr, logger, config, connFactory);
         }
 
         /// <summary>
@@ -180,23 +204,6 @@ namespace NsqSharp
 
             // TODO: PR: go-nsq, what does writing NO_OP prove above just Connect? nsqd does not respond to NO_OP
             _conn.WriteCommand(Command.Nop());
-        }
-
-        /// <summary>
-        /// SetLogger assigns the logger to use as well as a level
-        ///
-        /// The logger parameter is an interface that requires the following
-        /// method to be implemented (such as the the stdlib log.Logger):
-        ///
-        ///    Output(calldepth int, s string)
-        ///
-        /// </summary>
-        /// <param name="l">The <see cref="ILogger"/></param>
-        /// <param name="lvl">The <see cref="LogLevel"/></param>
-        public void SetLogger(ILogger l, LogLevel lvl)
-        {
-            _logger = l;
-            _logLvl = lvl;
         }
 
         /// <summary>
@@ -373,10 +380,10 @@ namespace NsqSharp
                     throw new ErrNotConnected();
                 }
 
-                log(LogLevel.Info, "{0} connecting to nsqd", _addr);
+                log(LogLevel.Info, string.Format("{0} connecting to nsqd", _addr));
 
                 _conn = _connFactory(this);
-                _conn.SetLogger(_logger, _logLvl, string.Format("{0} ({{0}})", _id));
+                _conn.SetLogger(_logger, string.Format("P{0} ({{0}})", _id));
                 try
                 {
                     _conn.Connect();
@@ -384,7 +391,7 @@ namespace NsqSharp
                 catch (Exception ex)
                 {
                     _conn.Close();
-                    log(LogLevel.Error, "({0}) error connecting to nsqd - {1}", _addr, ex.Message);
+                    log(LogLevel.Error, string.Format("({0}) error connecting to nsqd - {1}", _addr, ex.Message));
                     _state = (int)State.Init;
                     throw;
                 }
@@ -430,7 +437,7 @@ namespace NsqSharp
                         }
                         catch (Exception ex)
                         {
-                            log(LogLevel.Error, "({0}) sending command - {1}", _conn, ex.Message);
+                            log(LogLevel.Error, string.Format("({0}) sending command - {1}", _conn, ex.Message));
                             close();
                         }
                     })
@@ -450,6 +457,7 @@ namespace NsqSharp
                     })
                     .NoDefault(defer: true))
             {
+                // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
                 while (doLoop)
                 {
                     select.Execute();
@@ -485,6 +493,7 @@ namespace NsqSharp
             // with the cleanup process (blocked on writing
             // to transactionChan)
             bool doLoop = true;
+            // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
             while (doLoop)
             {
                 Select
@@ -508,18 +517,10 @@ namespace NsqSharp
             }
         }
 
-        private void log(LogLevel lvl, string line, params object[] args)
+        private void log(LogLevel lvl, string line)
         {
-            // TODO: fix race condition on w.logger
-            var logger = _logger;
-            if (logger == null)
-                return;
-
-            if (_logLvl > lvl)
-                return;
-
             // TODO: proper width formatting
-            logger.Output(string.Format("{0} {1} {2}", Log.Prefix(lvl), _id, string.Format(line, args)));
+            _logger.Output(lvl, string.Format("P{0} {1}", _id, line));
         }
 
         void IConnDelegate.OnResponse(Conn c, byte[] data)

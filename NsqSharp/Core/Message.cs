@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using NsqSharp.Utils;
+using System.Text;
 
 namespace NsqSharp.Core
 {
@@ -11,12 +13,13 @@ namespace NsqSharp.Core
     /// Message is the fundamental data type containing
     /// the id, body, and metadata
     /// </summary>
+    [DebuggerDisplay("Id={IdHexString}, Attempts={Attempts}, TS={TimeStamp}, NSQD={NSQDAddress}")]
     public class Message
     {
         /// <summary>The number of bytes for a Message.ID</summary>
         internal const int MsgIdLength = 16;
 
-        private static readonly DateTime EPOCH = new DateTime(1970, 1, 1);
+        private static readonly DateTime _epoch = new DateTime(1970, 1, 1);
 
         /// <summary>ID</summary>
         public byte[] ID { get; internal set; }
@@ -35,6 +38,7 @@ namespace NsqSharp.Core
 
         private int _autoResponseDisabled;
         private int _responded;
+        private string _idHexString;
 
         /// <summary>
         /// Creates a Message, initializes some metadata,
@@ -164,13 +168,13 @@ namespace NsqSharp.Core
 
             using (var writer = new BinaryWriter(w))
             {
-                ulong ns = (ulong)(Timestamp - EPOCH).Ticks * 100;
+                ulong ns = (ulong)(Timestamp - _epoch).Ticks * 100;
                 Binary.BigEndian.PutUint64(writer, ns);
                 Binary.BigEndian.PutUint16(writer, Attempts);
                 total = 10;
 
                 writer.Write(ID);
-                total += ID.Length;
+                total += MsgIdLength;
 
                 writer.Write(Body);
                 total += Body.Length;
@@ -199,7 +203,26 @@ namespace NsqSharp.Core
 
                 byte[] body = binaryReader.ReadBytes(b.Length - MsgIdLength - 10);
 
-                return new Message(id, body) { Timestamp = EPOCH + timeOffset, Attempts = attempts };
+                return new Message(id, body) { Timestamp = _epoch + timeOffset, Attempts = attempts };
+            }
+        }
+
+        /// <summary>
+        /// The 16-byte message ID as a hex string.
+        /// </summary>
+        public string IdHexString
+        {
+            get
+            {
+                if (_idHexString == null)
+                {
+                    var sb = new StringBuilder();
+                    foreach (var b in ID)
+                        sb.Append(string.Format("{0:x2}", b));
+                    _idHexString = sb.ToString();
+                }
+
+                return _idHexString;
             }
         }
     }

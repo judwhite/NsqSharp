@@ -10,6 +10,7 @@ using NsqSharp.Core;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Channels;
 using NsqSharp.Utils.Extensions;
+using NsqSharp.Utils.Loggers;
 using Timer = NsqSharp.Utils.Timer;
 
 namespace NsqSharp
@@ -94,8 +95,7 @@ namespace NsqSharp
 
         private readonly ReaderWriterLockSlim _mtx = new ReaderWriterLockSlim();
 
-        private ILogger _logger;
-        private LogLevel _logLvl;
+        private readonly ILogger _logger;
 
         private IDiscoveryFilter _behaviorDelegate;
 
@@ -137,24 +137,40 @@ namespace NsqSharp
         private readonly Chan<int> _stopChan;
         private readonly Chan<int> _exitChan;
 
-        /// <summary>
-        /// Creates a new instance of Consumer for the specified topic/channel
-        /// </summary>
+        /// <summary>Creates a new instance of Consumer for the specified topic/channel</summary>
         /// <param name="topic">The topic.</param>
         /// <param name="channel">The channel.</param>
         public Consumer(string topic, string channel)
-            : this(topic, channel, new Config())
+            : this(topic, channel, new ConsoleLogger(LogLevel.Info))
         {
         }
 
-        /// <summary>
-        /// Creates a new instance of Consumer for the specified topic/channel
-        /// </summary>
+        /// <summary>Creates a new instance of Consumer for the specified topic/channel</summary>
+        /// <param name="topic">The topic.</param>
+        /// <param name="channel">The channel.</param>
+        /// <param name="logger">The logger.</param>
+        public Consumer(string topic, string channel, ILogger logger)
+            : this(topic, channel, logger, new Config())
+        {
+        }
+
+        /// <summary>Creates a new instance of Consumer for the specified topic/channel</summary>
         /// <param name="topic">The topic.</param>
         /// <param name="channel">The channel.</param>
         /// <param name="config">The config. After config is passed in the values
         /// are no longer mutable (they are copied).</param>
         public Consumer(string topic, string channel, Config config)
+            : this(topic, channel, new ConsoleLogger(LogLevel.Info), config)
+        {
+        }
+
+        /// <summary>Creates a new instance of Consumer for the specified topic/channel</summary>
+        /// <param name="topic">The topic.</param>
+        /// <param name="channel">The channel.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="config">The config. After config is passed in the values
+        /// are no longer mutable (they are copied).</param>
+        public Consumer(string topic, string channel, ILogger logger, Config config)
         {
             if (string.IsNullOrEmpty(topic))
                 throw new ArgumentNullException("topic");
@@ -162,6 +178,8 @@ namespace NsqSharp
                 throw new ArgumentNullException("channel");
             if (config == null)
                 throw new ArgumentNullException("config");
+            if (logger == null)
+                throw new ArgumentNullException("logger");
 
             config.Validate();
 
@@ -180,9 +198,8 @@ namespace NsqSharp
             _topic = topic;
             _channel = channel;
             _config = config.Clone();
+            _logger = logger;
 
-            _logger = new ConsoleLogger(); // TODO: writes to stderr, not console
-            _logLvl = LogLevel.Info;
             _maxInFlight = config.MaxInFlight;
 
             _incomingMessages = new Chan<Message>();
@@ -234,23 +251,6 @@ namespace NsqSharp
             {
                 _mtx.ExitReadLock();
             }
-        }
-
-        /// <summary>
-        /// SetLogger assigns the logger to use as well as a level
-        ///
-        /// The logger parameter is an interface that requires the following
-        /// method to be implemented (such as the the stdlib log.Logger):
-        ///
-        ///    Output(calldepth int, s string)
-        ///
-        /// </summary>
-        /// <param name="l">The <see cref="ILogger"/></param>
-        /// <param name="lvl">The <see cref="LogLevel"/></param>
-        public void SetLogger(ILogger l, LogLevel lvl)
-        {
-            _logger = l;
-            _logLvl = lvl;
         }
 
         /// <summary>
@@ -483,7 +483,7 @@ namespace NsqSharp
         {
             string endpoint = nextLookupdEndpoint();
 
-            log(LogLevel.Info, "querying nsqlookupd {0}", endpoint);
+            log(LogLevel.Info, string.Format("querying nsqlookupd {0}", endpoint));
 
             INsqLookupdApiResponseProducers data;
             try
@@ -498,12 +498,12 @@ namespace NsqSharp
                     var httpWebResponse = webException.Response as HttpWebResponse;
                     if (httpWebResponse != null && httpWebResponse.StatusCode == HttpStatusCode.NotFound)
                     {
-                        log(LogLevel.Warning, "404 querying nsqlookupd for topic {0} ({1}) - {2}", _topic, endpoint, ex);
+                        log(LogLevel.Warning, string.Format("404 querying nsqlookupd ({0}) for topic {1}", endpoint, _topic));
                         return;
                     }
                 }
 
-                log(LogLevel.Error, "error querying nsqlookupd ({0}) - {1}", endpoint, ex);
+                log(LogLevel.Error, string.Format("error querying nsqlookupd ({0}) - {1}", endpoint, ex));
                 return;
             }
 
@@ -541,12 +541,12 @@ namespace NsqSharp
                 {
                     ConnectToNSQD(addr);
                 }
+                catch (ErrAlreadyConnected)
+                {
+                }
                 catch (Exception ex)
                 {
-                    if (!(ex is ErrAlreadyConnected))
-                    {
-                        log(LogLevel.Error, "({0}) error connecting to nsqd - {1}", addr, ex);
-                    }
+                    log(LogLevel.Error, string.Format("({0}) error connecting to nsqd - {1}", addr, ex));
                 }
             }
         }
@@ -594,7 +594,7 @@ namespace NsqSharp
 
             var conn = new Conn(addr, _config, new ConsumerConnDelegate { r = this });
             // TODO: Check log format
-            conn.SetLogger(_logger, _logLvl, string.Format("{0} [{1}/{2}] ({{0}})", _id, _topic, _channel));
+            conn.SetLogger(_logger, string.Format("C{0} [{1}/{2}] ({{0}})", _id, _topic, _channel));
 
             _mtx.EnterWriteLock();
             try
@@ -614,7 +614,7 @@ namespace NsqSharp
                 _mtx.ExitWriteLock();
             }
 
-            log(LogLevel.Info, "({0}) connecting to nsqd", addr);
+            log(LogLevel.Info, string.Format("({0}) connecting to nsqd", addr));
 
             var cleanupConnection = new Action(() =>
             {
@@ -644,8 +644,9 @@ namespace NsqSharp
             {
                 if (resp.MaxRdyCount < getMaxInFlight())
                 {
-                    log(LogLevel.Warning, "({0}) max RDY count {1} < consumer max in flight {2}, truncation possible",
-                        conn, resp.MaxRdyCount, getMaxInFlight());
+                    log(LogLevel.Warning, string.Format(
+                        "({0}) max RDY count {1} < consumer max in flight {2}, truncation possible",
+                        conn, resp.MaxRdyCount, getMaxInFlight()));
                 }
             }
 
@@ -733,7 +734,8 @@ namespace NsqSharp
                     throw new ErrNotConnected();
 
                 if (_lookupdHTTPAddrs.Count == 1)
-                    throw new Exception(string.Format("cannot disconnect from only remaining nsqlookupd HTTP address {0}", addr));
+                    throw new Exception(string.Format(
+                        "cannot disconnect from only remaining nsqlookupd HTTP address {0}", addr));
 
                 _lookupdHTTPAddrs.Remove(addr);
             }
@@ -820,7 +822,7 @@ namespace NsqSharp
             {
                 // exit backoff
                 long count = perConnMaxInFlight();
-                log(LogLevel.Warning, "exiting backoff, returning all to RDY {0}", count);
+                log(LogLevel.Warning, string.Format("exiting backoff, returning all to RDY {0}", count));
                 foreach (var c in conns())
                 {
                     updateRDY(c, count);
@@ -834,8 +836,9 @@ namespace NsqSharp
                 Time.AfterFunc(backoffDuration, backoff);
 
                 // TODO: review log format
-                log(LogLevel.Warning, "backing off for {0:0.0000} seconds (backoff level {1}), setting all to RDY 0",
-                    backoffDuration.TotalSeconds, backoffCounter);
+                log(LogLevel.Warning, string.Format(
+                    "backing off for {0:0.0000} seconds (backoff level {1}), setting all to RDY 0",
+                    backoffDuration.TotalSeconds, backoffCounter));
 
                 // send RDY 0 immediately (to *all* connections)
                 foreach (var c in conns())
@@ -866,8 +869,8 @@ namespace NsqSharp
             var choice = connections[idx];
 
             log(LogLevel.Warning,
-                "({0}) backoff timeout expired, sending RDY 1",
-                choice);
+                string.Format("({0}) backoff timeout expired, sending RDY 1",
+                choice));
             // while in backoff only ever let 1 message at a time through
             updateRDY(choice, 1);
         }
@@ -879,7 +882,7 @@ namespace NsqSharp
                 // server is ready for us to close (it ack'd our StartClose)
                 // we can assume we will not receive any more messages over this channel
                 // (but we can still write back responses)
-                log(LogLevel.Info, "({0}) received CLOSE_WAIT from nsqd", c);
+                log(LogLevel.Info, string.Format("({0}) received CLOSE_WAIT from nsqd", c));
                 c.Close();
             }
         }
@@ -937,7 +940,7 @@ namespace NsqSharp
                 _mtx.ExitWriteLock();
             }
 
-            log(LogLevel.Warning, "there are {0} connections left alive", left);
+            log(LogLevel.Warning, string.Format("there are {0} connections left alive", left));
 
             if ((hasRDYRetryTimer || rdyCount > 0) &&
                 (left == getMaxInFlight() || inBackoff()))
@@ -988,7 +991,7 @@ namespace NsqSharp
                 {
                     while (true)
                     {
-                        log(LogLevel.Info, "({0}) re-connecting in 15 seconds...", connAddr);
+                        log(LogLevel.Info, string.Format("({0}) re-connecting in 15 seconds...", connAddr));
                         Thread.Sleep(TimeSpan.FromSeconds(15));
                         if (_stopFlag == 1)
                         {
@@ -999,20 +1002,20 @@ namespace NsqSharp
                         _mtx.ExitReadLock();
                         if (!reconnect)
                         {
-                            log(LogLevel.Warning, "({0}) skipped reconnect after removal...", connAddr);
+                            log(LogLevel.Warning, string.Format("({0}) skipped reconnect after removal...", connAddr));
                             return;
                         }
                         try
                         {
                             ConnectToNSQD(connAddr);
                         }
+                        catch (ErrAlreadyConnected)
+                        {
+                        }
                         catch (Exception ex)
                         {
-                            if (!(ex is ErrAlreadyConnected))
-                            {
-                                log(LogLevel.Error, "({0}) error connecting to nsqd - {1}", connAddr, ex);
-                                continue;
-                            }
+                            log(LogLevel.Error, string.Format("({0}) error connecting to nsqd - {1}", connAddr, ex));
+                            continue;
                             // TODO: PR go-nsq if we get DialTimeout this loop stops. check other exceptions.
                         }
                         break;
@@ -1053,14 +1056,14 @@ namespace NsqSharp
             // refill when at 1, or at 25%, or if connections have changed and we're imbalanced
             if (remain <= 1 || remain < (lastRdyCount / 4) || (count > 0 && count < remain))
             {
-                log(LogLevel.Debug, "({0}) sending RDY {1} ({2} remain from last RDY {3})",
-                    conn, count, remain, lastRdyCount);
+                log(LogLevel.Debug, string.Format("({0}) sending RDY {1} ({2} remain from last RDY {3})",
+                    conn, count, remain, lastRdyCount));
                 updateRDY(conn, count);
             }
             else
             {
-                log(LogLevel.Debug, "({0}) skip sending RDY {1} ({2} remain out of last RDY {3})",
-                    conn, count, remain, lastRdyCount);
+                log(LogLevel.Debug, string.Format("({0}) skip sending RDY {1} ({2} remain out of last RDY {3})",
+                    conn, count, remain, lastRdyCount));
             }
         }
 
@@ -1075,6 +1078,7 @@ namespace NsqSharp
                         .CaseReceive(_exitChan, o => doLoop = false)
                         .NoDefault(defer: true))
             {
+                // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
                 while (doLoop)
                 {
                     select.Execute();
@@ -1150,7 +1154,7 @@ namespace NsqSharp
             catch (Exception ex)
             {
                 // NOTE: errors intentionally not rethrown
-                log(LogLevel.Error, "({0}) error in updateRDY {1} - {2}", c, count, ex);
+                log(LogLevel.Error, string.Format("({0}) error in updateRDY {1} - {2}", c, count, ex));
             }
         }
 
@@ -1170,7 +1174,7 @@ namespace NsqSharp
             }
             catch (Exception ex)
             {
-                log(LogLevel.Error, "({0}) error sending RDY {1} - {2}", c, count, ex);
+                log(LogLevel.Error, string.Format("({0}) error sending RDY {1} - {2}", c, count, ex));
                 throw;
             }
         }
@@ -1184,14 +1188,14 @@ namespace NsqSharp
             int maxInFlight = getMaxInFlight();
             if (numConns > maxInFlight)
             {
-                log(LogLevel.Debug, "redistributing RDY state ({0} conns > {1} max_in_flight)",
-                    numConns, maxInFlight);
+                log(LogLevel.Debug, string.Format("redistributing RDY state ({0} conns > {1} max_in_flight)",
+                    numConns, maxInFlight));
                 _needRDYRedistributed = 1;
             }
 
             if (inBackoff() && numConns > 1)
             {
-                log(LogLevel.Debug, "redistributing RDY state (in backoff and {0} conns > 1)", numConns);
+                log(LogLevel.Debug, string.Format("redistributing RDY state (in backoff and {0} conns > 1)", numConns));
                 _needRDYRedistributed = 1;
             }
 
@@ -1206,11 +1210,11 @@ namespace NsqSharp
             {
                 var lastMsgDuration = DateTime.Now.Subtract(c.LastMessageTime);
                 long rdyCount = c.RDY;
-                log(LogLevel.Debug, "({0}) rdy: {1} (last message received {2})",
-                    c, rdyCount, lastMsgDuration);
+                log(LogLevel.Debug, string.Format("({0}) rdy: {1} (last message received {2})",
+                    c, rdyCount, lastMsgDuration));
                 if (rdyCount > 0 && lastMsgDuration > _config.LowRdyIdleTimeout)
                 {
-                    log(LogLevel.Debug, "({0}) idle connection, giving up RDY", c);
+                    log(LogLevel.Debug, string.Format("({0}) idle connection, giving up RDY", c));
                     updateRDY(c, 0);
                 }
                 possibleConns.Add(c);
@@ -1229,7 +1233,7 @@ namespace NsqSharp
                 var c = possibleConns[i];
                 // delete
                 possibleConns.Remove(c);
-                log(LogLevel.Debug, "({0}) redistributing RDY", c);
+                log(LogLevel.Debug, string.Format("({0}) redistributing RDY", c));
                 updateRDY(c, 1);
             }
         }
@@ -1276,7 +1280,7 @@ namespace NsqSharp
                     }
                     catch (Exception ex)
                     {
-                        log(LogLevel.Error, "({0}) error sending CLS - {1}", c, ex);
+                        log(LogLevel.Error, string.Format("({0}) error sending CLS - {1}", c, ex));
                     }
 
                     // if we've waited this long handlers are blocked on processing messages
@@ -1367,7 +1371,7 @@ namespace NsqSharp
                 }
                 catch (Exception ex)
                 {
-                    log(LogLevel.Error, "Handler returned error for msg {0} - {1}", message.ID, ex);
+                    log(LogLevel.Error, string.Format("Handler returned error for msg {0} - {1}", message.IdHexString, ex));
                     if (!message.IsAutoResponseDisabled())
                         message.Requeue(null);
                     continue;
@@ -1389,8 +1393,8 @@ namespace NsqSharp
         {
             if (_config.MaxAttempts > 0 && message.Attempts > _config.MaxAttempts)
             {
-                log(LogLevel.Warning, "msg {0} attempted {1} times, giving up",
-                    message.ID, message.Attempts);
+                log(LogLevel.Warning, string.Format("msg {0} attempted {1} times, giving up",
+                    message.IdHexString, message.Attempts));
 
                 try
                 {
@@ -1398,7 +1402,8 @@ namespace NsqSharp
                 }
                 catch (Exception ex)
                 {
-                    log(LogLevel.Error, "LogFailedMessage returned error for msg {0} - {1}", message.ID, ex);
+                    log(LogLevel.Error, string.Format("LogFailedMessage returned error for msg {0} - {1}",
+                        message.IdHexString, ex));
                 }
 
                 return true;
@@ -1416,20 +1421,10 @@ namespace NsqSharp
             });
         }
 
-        private void log(LogLevel lvl, string line, params object[] args)
+        private void log(LogLevel lvl, string msg)
         {
-            // TODO: fix race condition on logger
-            var logger = _logger;
-            if (logger == null)
-                return;
-
-            if (_logLvl > lvl)
-                return;
-
             // TODO: proper width formatting
-            logger.Output(string.Format("{0} {1} [{2}/{3}] {4}",
-                Log.Prefix(lvl), _id, _topic, _channel,
-                string.Format(line, args)));
+            _logger.Output(lvl, string.Format("C{0} [{1}/{2}] {3}", _id, _topic, _channel, msg));
         }
     }
 }

@@ -1,10 +1,10 @@
-﻿using NsqSharp.Utils;
+﻿using NsqSharp.Core;
 
 namespace NsqSharp.Tests.Utils
 {
     public class NullLogger : ILogger
     {
-        public void Output(string s)
+        public void Output(LogLevel logLevel, string message)
         {
         }
     }

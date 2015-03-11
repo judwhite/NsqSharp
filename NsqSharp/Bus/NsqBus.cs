@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.Providers;
 using NsqSharp.Bus.Utils;
 using NsqSharp.Core;
 using NsqSharp.Utils;
+using NsqSharp.Utils.Loggers;
 
 namespace NsqSharp.Bus
 {
@@ -17,6 +19,9 @@ namespace NsqSharp.Bus
         private readonly IMessageTypeToTopicProvider _messageTypeToTopicProvider;
         private readonly IMessageSerializer _sendMessageSerializer;
         private readonly string[] _defaultProducerNsqdHttpEndpoints;
+
+        private readonly Dictionary<int, Message> _threadMessages = new Dictionary<int, Message>();
+        private readonly object _threadMessagesLocker = new object();
 
         public NsqBus(
             Dictionary<string, List<MessageHandlerMetadata>> topicChannelHandlers,
@@ -138,7 +143,13 @@ namespace NsqSharp.Bus
 
         public Message CurrentMessage
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                lock (_threadMessagesLocker)
+                {
+                    return _threadMessages[Thread.CurrentThread.ManagedThreadId];
+                }
+            }
         }
 
         private T CreateInstance<T>()
@@ -156,9 +167,10 @@ namespace NsqSharp.Bus
             {
                 foreach (var item in topicChannelHandler.Value)
                 {
-                    Consumer consumer = new Consumer(item.Topic, item.Channel, item.Config);
-                    consumer.SetLogger(new ConsoleLogger(), LogLevel.Warning); // TODO: Configurable
-                    consumer.AddConcurrentHandlers(new MessageDistributor(_dependencyInjectionContainer, item), item.InstanceCount);
+                    // TODO: Configurable logger
+                    var consumer = new Consumer(item.Topic, item.Channel, new TraceLogger(), item.Config);
+                    var distributor = new MessageDistributor(this, _dependencyInjectionContainer, item);
+                    consumer.AddConcurrentHandlers(distributor, item.InstanceCount);
 
                     // TODO: max_in_flight vs item.InstanceCount
                     if (item.Config.MaxInFlight < item.InstanceCount)
@@ -202,6 +214,22 @@ namespace NsqSharp.Bus
             wg.Wait();
 
             Trace.WriteLine("Stopped.");
+        }
+
+        internal void AddMessage(Message message)
+        {
+            lock (_threadMessagesLocker)
+            {
+                _threadMessages.Add(Thread.CurrentThread.ManagedThreadId, message);
+            }
+        }
+
+        internal void RemoveMessage()
+        {
+            lock (_threadMessagesLocker)
+            {
+                _threadMessages.Remove(Thread.CurrentThread.ManagedThreadId);
+            }
         }
     }
 }

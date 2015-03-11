@@ -10,6 +10,7 @@ using NsqSharp.Tests.Utils;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Channels;
 using NsqSharp.Utils.Extensions;
+using NsqSharp.Utils.Loggers;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests
@@ -57,8 +58,7 @@ namespace NsqSharp.Tests
             var config = new Config();
             config.MaxInFlight = 5;
             config.BackoffMultiplier = Time.Duration(10 * Time.Millisecond);
-            var q = new Consumer(topicName, "ch", config);
-            q.SetLogger(new ConsoleLogger(), LogLevel.Debug);
+            var q = new Consumer(topicName, "ch", new ConsoleLogger(LogLevel.Debug), config);
             q.AddHandler(new testHandler());
             q.ConnectToNSQD(n.tcpAddr);
 

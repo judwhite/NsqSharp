@@ -10,6 +10,7 @@ namespace NsqSharp.Bus
 {
     internal class MessageDistributor : IHandler
     {
+        private readonly NsqBus _bus;
         private readonly IObjectBuilder _objectBuilder;
         private readonly IMessageSerializer _serializer;
         private readonly MethodInfo _handleMethod;
@@ -20,13 +21,17 @@ namespace NsqSharp.Bus
         private readonly string _topic;
         private readonly string _channel;
 
-        public MessageDistributor(IObjectBuilder objectBuilder, MessageHandlerMetadata messageHandlerMetadata)
+        public MessageDistributor(NsqBus bus, IObjectBuilder objectBuilder, MessageHandlerMetadata messageHandlerMetadata)
         {
+            if (bus == null)
+                throw new ArgumentNullException("bus");
             if (objectBuilder == null)
                 throw new ArgumentNullException("objectBuilder");
             if (messageHandlerMetadata == null)
                 throw new ArgumentNullException("messageHandlerMetadata");
 
+            _bus = bus;
+            
             _objectBuilder = objectBuilder;
             _serializer = messageHandlerMetadata.Serializer;
 
@@ -62,50 +67,59 @@ namespace NsqSharp.Bus
 
         public void HandleMessage(Message message)
         {
-            object handler;
             try
             {
-                handler = _objectBuilder.GetInstance(_handlerType);
-            }
-            catch (Exception ex)
-            {
-                while (ex is TargetInvocationException && ex.InnerException != null)
-                    ex = ex.InnerException;
+                _bus.AddMessage(message);
 
-                _failedMessageHandler.TryHandle(FailedMessageQueueAction.Finish, FailedMessageReason.HandlerConstructor,
-                    _topic, _channel, _handlerType, _messageType, message, null, ex);
-                message.Finish();
-                throw;
-            }
+                object handler;
+                try
+                {
+                    handler = _objectBuilder.GetInstance(_handlerType);
+                }
+                catch (Exception ex)
+                {
+                    while (ex is TargetInvocationException && ex.InnerException != null)
+                        ex = ex.InnerException;
 
-            object value;
-            try
-            {
-                value = _serializer.Deserialize(_concreteMessageType, message.Body);
-            }
-            catch (Exception ex)
-            {
-                while (ex is TargetInvocationException && ex.InnerException != null)
-                    ex = ex.InnerException;
+                    _failedMessageHandler.TryHandle(FailedMessageQueueAction.Finish, FailedMessageReason.HandlerConstructor,
+                        _topic, _channel, _handlerType, _messageType, message, null, ex);
+                    message.Finish();
+                    throw;
+                }
 
-                _failedMessageHandler.TryHandle(FailedMessageQueueAction.Finish, FailedMessageReason.MessageDeserialization,
-                    _topic, _channel, _handlerType, _messageType, message, null, ex);
-                message.Finish();
-                return;
-            }
+                object value;
+                try
+                {
+                    value = _serializer.Deserialize(_concreteMessageType, message.Body);
+                }
+                catch (Exception ex)
+                {
+                    while (ex is TargetInvocationException && ex.InnerException != null)
+                        ex = ex.InnerException;
 
-            try
-            {
-                _handleMethod.Invoke(handler, new[] { value });
-            }
-            catch (Exception ex)
-            {
-                while (ex is TargetInvocationException && ex.InnerException != null)
-                    ex = ex.InnerException;
+                    _failedMessageHandler.TryHandle(FailedMessageQueueAction.Finish, FailedMessageReason.MessageDeserialization,
+                        _topic, _channel, _handlerType, _messageType, message, null, ex);
+                    message.Finish();
+                    return;
+                }
 
-                _failedMessageHandler.TryHandle(FailedMessageQueueAction.Requeue, FailedMessageReason.MessageDeserialization,
-                    _topic, _channel, _handlerType, _messageType, message, value, ex);
-                throw;
+                try
+                {
+                    _handleMethod.Invoke(handler, new[] { value });
+                }
+                catch (Exception ex)
+                {
+                    while (ex is TargetInvocationException && ex.InnerException != null)
+                        ex = ex.InnerException;
+
+                    _failedMessageHandler.TryHandle(FailedMessageQueueAction.Requeue, FailedMessageReason.HandlerException,
+                        _topic, _channel, _handlerType, _messageType, message, value, ex);
+                    throw;
+                }
+            }
+            finally
+            {
+                _bus.RemoveMessage();
             }
         }
 

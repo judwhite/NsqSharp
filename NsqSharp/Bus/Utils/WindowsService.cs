@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.ServiceProcess;
 using System.Threading;
 using NsqSharp.Bus.Configuration;
@@ -48,6 +49,9 @@ namespace NsqSharp.Bus.Utils
 
         public void Start()
         {
+            EventLog.Log = "Application";
+            EventLog.Source = Assembly.GetEntryAssembly().GetName().Name;
+
             _busConfiguration.StartBus();
         }
 

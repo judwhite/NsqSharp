@@ -133,8 +133,10 @@ namespace NsqSharp.Tests
             var stats = q.Stats();
             Assert.AreNotEqual(0, stats.Connections, "stats report 0 connections (should be > 0)");
 
-            Assert.Throws<ErrAlreadyConnected>(() => q.ConnectToNSQD(addr),
-                "should not be able to connect to the same NSQ twice");
+            // NOTE: changed to just return without throwing; throwing Exceptions is a little more disruptive in .NET
+            // than returning err in Go
+            //Assert.Throws<ErrAlreadyConnected>(() => q.ConnectToNSQD(addr),
+            //    "should not be able to connect to the same NSQ twice");
 
             Assert.Throws<ErrNotConnected>(() => q.DisconnectFromNSQD("1.2.3.4:4150"),
                 "should not be able to disconnect from an unknown nsqd");

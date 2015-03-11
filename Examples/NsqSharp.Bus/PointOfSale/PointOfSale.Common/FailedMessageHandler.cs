@@ -19,6 +19,8 @@ namespace PointOfSale.Common
             Exception exception
         )
         {
+            // TODO: Write to TraceSource
+
             Trace.WriteLine(string.Format("[FAIL] action:{0} reason:{1} topic:{2} channel:{3} msg:{4} ex:{5}",
                 action, reason, topic, channel, deserializedMessageBody, exception));
         }
