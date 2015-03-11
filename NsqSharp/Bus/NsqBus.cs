@@ -19,6 +19,7 @@ namespace NsqSharp.Bus
         private readonly IMessageTypeToTopicProvider _messageTypeToTopicProvider;
         private readonly IMessageSerializer _sendMessageSerializer;
         private readonly string[] _defaultProducerNsqdHttpEndpoints;
+        private readonly ILogger _nsqLogger;
 
         private readonly Dictionary<int, Message> _threadMessages = new Dictionary<int, Message>();
         private readonly object _threadMessagesLocker = new object();
@@ -28,7 +29,8 @@ namespace NsqSharp.Bus
             IObjectBuilder dependencyInjectionContainer,
             IMessageTypeToTopicProvider messageTypeToTopicProvider,
             IMessageSerializer sendMessageSerializer,
-            string[] defaultProducerNsqdHttpEndpoints
+            string[] defaultProducerNsqdHttpEndpoints,
+            ILogger nsqLogger
         )
         {
             if (topicChannelHandlers == null)
@@ -43,11 +45,14 @@ namespace NsqSharp.Bus
                 throw new ArgumentNullException("defaultProducerNsqdHttpEndpoints");
             if (defaultProducerNsqdHttpEndpoints.Length == 0)
                 throw new ArgumentException("must contain elements", "defaultProducerNsqdHttpEndpoints");
+            if (nsqLogger == null)
+                throw new ArgumentNullException("nsqLogger");
 
             _topicChannelHandlers = topicChannelHandlers;
             _dependencyInjectionContainer = dependencyInjectionContainer;
             _messageTypeToTopicProvider = messageTypeToTopicProvider;
             _sendMessageSerializer = sendMessageSerializer;
+            _nsqLogger = nsqLogger;
 
             _defaultProducerNsqdHttpEndpoints = new string[defaultProducerNsqdHttpEndpoints.Length];
             for (int i = 0; i < defaultProducerNsqdHttpEndpoints.Length; i++)
@@ -167,8 +172,7 @@ namespace NsqSharp.Bus
             {
                 foreach (var item in topicChannelHandler.Value)
                 {
-                    // TODO: Configurable logger
-                    var consumer = new Consumer(item.Topic, item.Channel, new TraceLogger(), item.Config);
+                    var consumer = new Consumer(item.Topic, item.Channel, _nsqLogger, item.Config);
                     var distributor = new MessageDistributor(this, _dependencyInjectionContainer, item);
                     consumer.AddConcurrentHandlers(distributor, item.InstanceCount);
 

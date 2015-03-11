@@ -483,7 +483,7 @@ namespace NsqSharp
         {
             string endpoint = nextLookupdEndpoint();
 
-            log(LogLevel.Info, string.Format("querying nsqlookupd {0}", endpoint));
+            log(LogLevel.Debug, string.Format("querying nsqlookupd {0}", endpoint));
 
             INsqLookupdApiResponseProducers data;
             try
@@ -540,9 +540,6 @@ namespace NsqSharp
                 try
                 {
                     ConnectToNSQD(addr);
-                }
-                catch (ErrAlreadyConnected)
-                {
                 }
                 catch (Exception ex)
                 {
@@ -940,7 +937,8 @@ namespace NsqSharp
                 _mtx.ExitWriteLock();
             }
 
-            log(LogLevel.Warning, string.Format("there are {0} connections left alive", left));
+            var connsAlivelogLevel = (_stopFlag == 1 ? LogLevel.Info : LogLevel.Warning);
+            log(connsAlivelogLevel, string.Format("there are {0} connections left alive", left));
 
             if ((hasRDYRetryTimer || rdyCount > 0) &&
                 (left == getMaxInFlight() || inBackoff()))
@@ -1008,9 +1006,6 @@ namespace NsqSharp
                         try
                         {
                             ConnectToNSQD(connAddr);
-                        }
-                        catch (ErrAlreadyConnected)
-                        {
                         }
                         catch (Exception ex)
                         {
@@ -1373,7 +1368,7 @@ namespace NsqSharp
                 {
                     log(LogLevel.Error, string.Format("Handler returned error for msg {0} - {1}", message.IdHexString, ex));
                     if (!message.IsAutoResponseDisabled())
-                        message.Requeue(null);
+                        message.Requeue();
                     continue;
                 }
 

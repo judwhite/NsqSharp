@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using NsqSharp.Core;
 
 namespace NsqSharp.Bus.Logging
@@ -20,6 +21,9 @@ namespace NsqSharp.Bus.Logging
         {
             try
             {
+                while (exception is TargetInvocationException && exception.InnerException != null)
+                    exception = exception.InnerException;
+
                 failedMessageHandler.Handle(action, reason, topic, channel,
                     handlerType, messageType, message, deserializedMessageBody, exception);
             }

@@ -7,6 +7,7 @@ using NsqSharp.Bus.Configuration.Providers;
 using NsqSharp.Bus.Logging;
 using NsqSharp.Core;
 using NsqSharp.Utils;
+using NsqSharp.Utils.Loggers;
 
 namespace NsqSharp.Bus.Configuration
 {
@@ -27,6 +28,7 @@ namespace NsqSharp.Bus.Configuration
         private readonly IHandlerTypeToChannelProvider _handlerTypeToChannelProvider;
         private readonly string[] _defaultNsqdHttpEndpoints;
         private readonly IBusStateChangedHandler _busStateChangedHandler;
+        private readonly ILogger _nsqLogger;
 
         private NsqBus _bus;
 
@@ -45,6 +47,8 @@ namespace NsqSharp.Bus.Configuration
         /// <param name="defaultThreadsPerHandler">The default number of threads per message handler.</param>
         /// <param name="defaultConsumerNsqConfig">The default NSQ Consumer <see cref="Config"/> (optional).</param>
         /// <param name="busStateChangedHandler">Handle bus start and stop events (optional).</param>
+        /// <param name="nsqLogger">The <see cref="ILogger"/> used by NsqSharp when communicating with nsqd/nsqlookupd.
+        /// (default = <see cref="TraceLogger"/></param>
         public BusConfiguration(
             IObjectBuilder dependencyInjectionContainer,
             IMessageSerializer defaultMessageSerializer,
@@ -54,7 +58,8 @@ namespace NsqSharp.Bus.Configuration
             string[] defaultNsqlookupdHttpEndpoints,
             int defaultThreadsPerHandler,
             Config defaultConsumerNsqConfig = null,
-            IBusStateChangedHandler busStateChangedHandler = null
+            IBusStateChangedHandler busStateChangedHandler = null,
+            ILogger nsqLogger = null
         )
         {
             if (dependencyInjectionContainer == null)
@@ -87,6 +92,7 @@ namespace NsqSharp.Bus.Configuration
             _defaultThreadsPerHandler = defaultThreadsPerHandler;
             _defaultNsqdHttpEndpoints = new[] { "127.0.0.1:4151" };
             _busStateChangedHandler = busStateChangedHandler;
+            _nsqLogger = nsqLogger ?? new TraceLogger();
 
             var handlerTypes = _handlerTypeToChannelProvider.GetHandlerTypes();
             AddMessageHandlers(handlerTypes);
@@ -287,7 +293,8 @@ namespace NsqSharp.Bus.Configuration
                 _dependencyInjectionContainer,
                 _messageTypeToTopicProvider,
                 _defaultMessageSerializer,
-                _defaultNsqdHttpEndpoints
+                _defaultNsqdHttpEndpoints,
+                _nsqLogger
             );
 
             _bus.Start();
@@ -334,15 +341,6 @@ namespace NsqSharp.Bus.Configuration
         public bool IsConsoleMode
         {
             get { return (BusService.GetConsoleWindow() != IntPtr.Zero); }
-        }
-
-        private void EnterInteractiveMode()
-        {
-            if (!IsConsoleMode)
-                return;
-
-            // TODO
-            throw new NotImplementedException();
         }
     }
 

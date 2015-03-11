@@ -126,9 +126,9 @@ namespace NsqSharp.Core
         /// based on the number of attempts and the
         /// configured default_requeue_delay
         /// </summary>
-        public void Requeue(TimeSpan? delay)
+        public void Requeue(TimeSpan? delay = null)
         {
-            doRequeue(delay, true);
+            doRequeue(delay, backoff: true);
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace NsqSharp.Core
         /// </summary>
         public void RequeueWithoutBackoff(TimeSpan? delay)
         {
-            doRequeue(delay, false);
+            doRequeue(delay, backoff: false);
         }
 
         private void doRequeue(TimeSpan? delay, bool backoff)
