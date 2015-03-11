@@ -216,10 +216,7 @@ namespace NsqSharp.Core
             {
                 if (_idHexString == null)
                 {
-                    var sb = new StringBuilder();
-                    foreach (var b in ID)
-                        sb.Append(string.Format("{0:x2}", b));
-                    _idHexString = sb.ToString();
+                    _idHexString = Encoding.UTF8.GetString(ID);
                 }
 
                 return _idHexString;

@@ -19,10 +19,17 @@ namespace PointOfSale.Common
             Exception exception
         )
         {
-            // TODO: Write to TraceSource
-
-            Trace.WriteLine(string.Format("[FAIL] action:{0} reason:{1} topic:{2} channel:{3} msg:{4} ex:{5}",
-                action, reason, topic, channel, deserializedMessageBody, exception));
+            string logEntry = string.Format("id: {0} action:{1} reason:{2} topic:{3} channel:{4} msg:{5} ex:{6}",
+                 message.IdHexString, action, reason, topic, channel, deserializedMessageBody, exception);
+            
+            if (action == FailedMessageQueueAction.Requeue)
+            {
+                Trace.TraceWarning(logEntry);
+            }
+            else
+            {
+                Trace.TraceError(logEntry);
+            }
         }
     }
 }
