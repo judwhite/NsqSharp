@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using NsqSharp.Bus;
 using PointOfSale.Messages.Invoices.Events;
 using PointOfSale.Services.Invoices;
@@ -24,8 +25,8 @@ namespace PointOfSale.Handlers.InvoiceHandlers.Handlers
 
             var summary = _invoiceService.GetInvoiceSummary(message.InvoiceId);
 
-            Console.WriteLine("Invoice Summary: InvoiceId: {0} CustomerId: {1} Total: {2:c}",
-                summary.InvoiceId, summary.CustomerId, summary.Total);
+            Trace.WriteLine(string.Format("Invoice Summary: InvoiceId: {0} CustomerId: {1} Total: {2:c}",
+                summary.InvoiceId, summary.CustomerId, summary.Total));
         }
     }
 }

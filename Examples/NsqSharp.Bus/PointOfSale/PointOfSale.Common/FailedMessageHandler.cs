@@ -1,5 +1,5 @@
 ﻿using System;
-using NsqSharp;
+using System.Diagnostics;
 using NsqSharp.Bus.Logging;
 using NsqSharp.Core;
 
@@ -19,8 +19,8 @@ namespace PointOfSale.Common
             Exception exception
         )
         {
-            // TODO
-            throw new NotImplementedException();
+            Trace.WriteLine(string.Format("[FAIL] action:{0} reason:{1} topic:{2} channel:{3} msg:{4} ex:{5}",
+                action, reason, topic, channel, deserializedMessageBody, exception));
         }
     }
 }

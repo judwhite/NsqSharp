@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using NsqSharp.Bus;
 using PointOfSale.Messages.Customers.Commands;
@@ -33,7 +34,7 @@ namespace PointOfSale.Handlers.CustomerHandlers.Handlers
             var getCustomersDetails = customerIds.Select(id => new CustomerIdFoundEvent { CustomerId = id });
             _bus.SendMulti(getCustomersDetails);
 
-            Console.WriteLine("Customer Count: {0}", customerIds.Count);
+            Trace.WriteLine(string.Format("Customer Count: {0}", customerIds.Count));
         }
     }
 }

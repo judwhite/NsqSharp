@@ -89,6 +89,7 @@
     <Compile Include="Utils\Channels\ISendOnlyChan.cs" />
     <Compile Include="Utils\Channels\Select.cs" />
     <Compile Include="Utils\ConsoleLogger.cs" />
+    <Compile Include="Utils\TraceLogger.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Producer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

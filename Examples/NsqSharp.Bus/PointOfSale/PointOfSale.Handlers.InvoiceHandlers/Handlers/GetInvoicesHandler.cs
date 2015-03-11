@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using NsqSharp.Bus;
 using PointOfSale.Messages.Invoices.Commands;
@@ -31,8 +32,8 @@ namespace PointOfSale.Handlers.InvoiceHandlers.Handlers
             var invoiceIds = _invoiceService.GetInvoiceIds();
 
             _bus.SendMulti(invoiceIds.Select(id => new InvoiceIdFoundEvent { InvoiceId = id }));
-            
-            Console.WriteLine("Invoice Count: {0}", invoiceIds.Count);
+
+            Trace.WriteLine(string.Format("Invoice Count: {0}", invoiceIds.Count));
         }
     }
 }

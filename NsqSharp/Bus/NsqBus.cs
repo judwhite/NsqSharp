@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.Providers;
@@ -149,6 +150,8 @@ namespace NsqSharp.Bus
 
         public void Start()
         {
+            Trace.WriteLine("Starting...");
+
             foreach (var topicChannelHandler in _topicChannelHandlers)
             {
                 foreach (var item in topicChannelHandler.Value)
@@ -168,10 +171,14 @@ namespace NsqSharp.Bus
                     consumer.ConnectToNSQLookupds(item.NsqLookupdHttpAddresses);
                 }
             }
+
+            Trace.WriteLine("Started.");
         }
 
         public void Stop()
         {
+            Trace.WriteLine("Stopping...");
+
             // Stop all Consumers
 
             var wg = new WaitGroup();
@@ -194,7 +201,7 @@ namespace NsqSharp.Bus
 
             wg.Wait();
 
-            // TODO: Stop all producers
+            Trace.WriteLine("Stopped.");
         }
     }
 }

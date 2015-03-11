@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using NsqSharp.Bus;
 using PointOfSale.Messages.Products.Commands;
@@ -32,7 +33,7 @@ namespace PointOfSale.Handlers.ProductHandlers.Handlers
 
             _bus.SendMulti(productIds.Select(id => new ProductIdFoundEvent { ProductId = id }));
 
-            Console.WriteLine("Product Count: {0}", productIds.Count);
+            Trace.WriteLine(string.Format("Product Count: {0}", productIds.Count));
         }
     }
 }

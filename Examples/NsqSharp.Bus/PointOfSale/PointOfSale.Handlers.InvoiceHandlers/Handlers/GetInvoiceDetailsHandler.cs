@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using NsqSharp.Bus;
 using PointOfSale.Messages.Invoices.Events;
 using PointOfSale.Services.Invoices;
@@ -26,8 +27,8 @@ namespace PointOfSale.Handlers.InvoiceHandlers.Handlers
 
             foreach (var item in invoiceDetails)
             {
-                Console.WriteLine("Invoice Details: Id: {0} ItemIdx: {1} ProductId: {2} Quantity: {3} Cost: {4:c}",
-                    item.InvoiceId, item.ItemIndex, item.ProductId, item.Quantity, item.Cost);
+                Trace.WriteLine(string.Format("Invoice Details: Id: {0} ItemIdx: {1} ProductId: {2} Quantity: {3} Cost: {4:c}",
+                    item.InvoiceId, item.ItemIndex, item.ProductId, item.Quantity, item.Cost));
             }
         }
     }

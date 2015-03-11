@@ -69,6 +69,9 @@ namespace NsqSharp.Bus
             }
             catch (Exception ex)
             {
+                while (ex is TargetInvocationException && ex.InnerException != null)
+                    ex = ex.InnerException;
+
                 _failedMessageHandler.TryHandle(FailedMessageQueueAction.Finish, FailedMessageReason.HandlerConstructor,
                     _topic, _channel, _handlerType, _messageType, message, null, ex);
                 message.Finish();
@@ -82,6 +85,9 @@ namespace NsqSharp.Bus
             }
             catch (Exception ex)
             {
+                while (ex is TargetInvocationException && ex.InnerException != null)
+                    ex = ex.InnerException;
+
                 _failedMessageHandler.TryHandle(FailedMessageQueueAction.Finish, FailedMessageReason.MessageDeserialization,
                     _topic, _channel, _handlerType, _messageType, message, null, ex);
                 message.Finish();
@@ -94,6 +100,9 @@ namespace NsqSharp.Bus
             }
             catch (Exception ex)
             {
+                while (ex is TargetInvocationException && ex.InnerException != null)
+                    ex = ex.InnerException;
+
                 _failedMessageHandler.TryHandle(FailedMessageQueueAction.Requeue, FailedMessageReason.MessageDeserialization,
                     _topic, _channel, _handlerType, _messageType, message, value, ex);
                 throw;

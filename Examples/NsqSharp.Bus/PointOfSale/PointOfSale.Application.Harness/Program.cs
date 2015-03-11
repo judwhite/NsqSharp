@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using PointOfSale.Common;
@@ -35,11 +36,9 @@ namespace PointOfSale.Application.Harness
             {
                 if (config.IsConsoleMode)
                 {
-                    Console.Write("Press enter to begin . . . ");
-                    while (Console.ReadKey().Key != ConsoleKey.Enter)
-                    {
-                    }
-                    Console.WriteLine();
+                    Trace.Write("Press enter to begin . . . ");
+                    while (Console.ReadKey().Key != ConsoleKey.Enter) { }
+                    Trace.WriteLine(string.Empty);
 
                     bus.Send<GetCustomersCommand>();
                     bus.Send<GetInvoicesCommand>();
