@@ -17,7 +17,6 @@ The public API has not reached stability. Future commits may change the API slig
 
 ```C#
 var w = new Producer("127.0.0.1:4150");
-w.SetLogger(new ConsoleLogger(), LogLevel.Debug);
 
 w.Publish("string-topic-name", "Hello!");
 w.Publish("bytes-topic-name", new byte[] { 1, 2, 3, 4 });
@@ -32,7 +31,6 @@ w.Stop();
 ```C#
 // Create a new Consumer for each topic or channel
 var r = new Consumer("string-topic-name", "channel-name");
-r.SetLogger(new ConsoleLogger(), LogLevel.Debug);
 
 r.AddHandler(/* instance of IHandler */);
 
