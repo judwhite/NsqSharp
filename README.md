@@ -63,7 +63,7 @@ The example highlights:
 
 NsqSharp has no 3rd party dependencies. StructureMap 2/3 and Newtonsoft.Json are supported through convenience classes which use reflection for the initial wire-up. Other containers and serializers can be used by implementing `IObjectBuilder` and `IMessageSerializer` wrappers in your code.
 
-The [nsq-0.3.2-bin](https://github.com/judwhite/NsqSharp/tree/master/nsq-0.3.2-bin) folder contains Windows compiled versions of NSQ tools for convenience. The `nsqd` and `nsqlookupd` processes have been modified to run as either console applications or Windows Services, and batch files exist to install/uninstall the services. [This repository](https://github.com/judwhite/nsq/tree/master/apps) contains the modified source for running as a Windows Service. Please encourage the NSQ team to support Windows Services in the official repository :)
+The [nsq-0.3.2-bin](https://github.com/judwhite/NsqSharp/tree/master/nsq-0.3.2-bin) folder contains Windows compiled versions of NSQ tools for convenience. The `nsqd` and `nsqlookupd` processes have been modified to run as either console applications or Windows Services; batch files exist to install/uninstall the services. [This repository](https://github.com/judwhite/nsq/tree/master/apps) contains the modified source for running as a Windows Service. Please encourage the NSQ team to support Windows Services in the official repository :)
 
 ## License
 
