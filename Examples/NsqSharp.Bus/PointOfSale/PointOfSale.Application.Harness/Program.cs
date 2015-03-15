@@ -1,4 +1,5 @@
-﻿using NsqSharp.Bus;
+﻿using System.Threading.Tasks;
+using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using PointOfSale.Common;
 using PointOfSale.Messages.Customers.Commands;
@@ -15,7 +16,8 @@ namespace PointOfSale.Application.Harness
                 {
                     new Handlers.CustomerHandlers.ChannelProvider(),
                     new Handlers.InvoiceHandlers.ChannelProvider(),
-                    new Handlers.ProductHandlers.ChannelProvider()
+                    new Handlers.ProductHandlers.ChannelProvider(),
+                    new Handlers.Audit.ChannelProvider()
                 };
 
             PointOfSaleBus.Start(
@@ -34,9 +36,12 @@ namespace PointOfSale.Application.Harness
             {
                 if (config.IsConsoleMode)
                 {
-                    bus.Send<GetCustomersCommand>();
-                    bus.Send<GetInvoicesCommand>();
-                    bus.Send<GetProductsCommand>();
+                    Task.Factory.StartNew(() =>
+                                          {
+                                              bus.Send<GetCustomersCommand>();
+                                              bus.Send<GetInvoicesCommand>();
+                                              bus.Send<GetProductsCommand>();
+                                          });
                 }
             }
         }

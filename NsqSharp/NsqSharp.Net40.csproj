@@ -57,8 +57,9 @@
     <Compile Include="Bus\IHandleMessages.cs" />
     <Compile Include="Bus\Logging\FailedMessageQueueAction.cs" />
     <Compile Include="Bus\Logging\FailedMessageReason.cs" />
-    <Compile Include="Bus\Logging\IFailedMessageHandler.cs" />
-    <Compile Include="Bus\Logging\IFailedMessageHandlerExtensions.cs" />
+    <Compile Include="Bus\Logging\IMessageAuditor.cs" />
+    <Compile Include="Bus\Logging\IMessageAuditorExtensions.cs" />
+    <Compile Include="Bus\Logging\IMessageInformation.cs" />
     <Compile Include="Bus\MessageDistributor.cs" />
     <Compile Include="Bus\NsqBus.cs" />
     <Compile Include="Bus\Utils\InterfaceBuilder.cs" />

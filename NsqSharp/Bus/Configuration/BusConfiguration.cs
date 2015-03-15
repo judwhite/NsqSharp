@@ -20,7 +20,7 @@ namespace NsqSharp.Bus.Configuration
 
         private readonly IObjectBuilder _dependencyInjectionContainer;
         private readonly IMessageSerializer _defaultMessageSerializer;
-        private readonly IFailedMessageHandler _failedMessageHandler;
+        private readonly IMessageAuditor _messageAuditor;
         private readonly string[] _defaultNsqlookupdHttpEndpoints;
         private readonly Config _defaultConsumerNsqConfig;
         private readonly int _defaultThreadsPerHandler;
@@ -39,7 +39,7 @@ namespace NsqSharp.Bus.Configuration
         /// <see cref="StructureMapObjectBuilder"/> for a default implementation.</param>
         /// <param name="defaultMessageSerializer">The default message serializer/deserializer. See
         /// <see cref="NewtonsoftJsonSerializer" /> for a default implementation.</param>
-        /// <param name="failedMessageHandler">The handler to call when a message fails to process.</param>
+        /// <param name="messageAuditor">The handler to call when a message fails to process.</param>
         /// <param name="messageTypeToTopicProvider">The message type to topic provider.</param>
         /// <param name="handlerTypeToChannelProvider">The handler type to channel provider.</param>
         /// <param name="defaultNsqlookupdHttpEndpoints">The default nsqlookupd HTTP endpoints; typically listening
@@ -48,11 +48,11 @@ namespace NsqSharp.Bus.Configuration
         /// <param name="defaultConsumerNsqConfig">The default NSQ Consumer <see cref="Config"/> (optional).</param>
         /// <param name="busStateChangedHandler">Handle bus start and stop events (optional).</param>
         /// <param name="nsqLogger">The <see cref="ILogger"/> used by NsqSharp when communicating with nsqd/nsqlookupd.
-        /// (default = <see cref="TraceLogger"/></param>
+        /// (default = <see cref="TraceLogger"/>).</param>
         public BusConfiguration(
             IObjectBuilder dependencyInjectionContainer,
             IMessageSerializer defaultMessageSerializer,
-            IFailedMessageHandler failedMessageHandler,
+            IMessageAuditor messageAuditor,
             IMessageTypeToTopicProvider messageTypeToTopicProvider,
             IHandlerTypeToChannelProvider handlerTypeToChannelProvider,
             string[] defaultNsqlookupdHttpEndpoints,
@@ -66,8 +66,8 @@ namespace NsqSharp.Bus.Configuration
                 throw new ArgumentNullException("dependencyInjectionContainer");
             if (defaultMessageSerializer == null)
                 throw new ArgumentNullException("defaultMessageSerializer");
-            if (failedMessageHandler == null)
-                throw new ArgumentNullException("failedMessageHandler");
+            if (messageAuditor == null)
+                throw new ArgumentNullException("messageAuditor");
             if (messageTypeToTopicProvider == null)
                 throw new ArgumentNullException("messageTypeToTopicProvider");
             if (handlerTypeToChannelProvider == null)
@@ -86,7 +86,7 @@ namespace NsqSharp.Bus.Configuration
 
             _dependencyInjectionContainer = dependencyInjectionContainer;
             _defaultMessageSerializer = defaultMessageSerializer;
-            _failedMessageHandler = failedMessageHandler;
+            _messageAuditor = messageAuditor;
             _defaultNsqlookupdHttpEndpoints = defaultNsqlookupdHttpEndpoints;
             _defaultConsumerNsqConfig = defaultConsumerNsqConfig ?? new Config();
             _defaultThreadsPerHandler = defaultThreadsPerHandler;
@@ -113,7 +113,17 @@ namespace NsqSharp.Bus.Configuration
                 Type messageType;
                 if (IsMessageHandler(handlerType, out messageType))
                 {
-                    string topic = _messageTypeToTopicProvider.GetTopic(messageType);
+                    string topic;
+                    try
+                    {
+                        topic = _messageTypeToTopicProvider.GetTopic(messageType);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(string.Format(
+                            "Topic for message type '{0}' not registered.", messageType.FullName), ex);
+                    }
+
                     string channel = _handlerTypeToChannelProvider.GetChannel(handlerType);
                     AddMessageHandler(handlerType, messageType, topic, channel);
                 }
@@ -196,7 +206,7 @@ namespace NsqSharp.Bus.Configuration
                 MessageType = messageType,
                 NsqLookupdHttpAddresses = nsqLookupdHttpAddresses,
                 Serializer = messageSerializer ?? _defaultMessageSerializer,
-                FailedMessageHandler = _failedMessageHandler,
+                MessageAuditor = _messageAuditor,
                 Config = config ?? _defaultConsumerNsqConfig,
                 InstanceCount = threadsPerHandler ?? _defaultThreadsPerHandler
             };

@@ -11,7 +11,8 @@ namespace PointOfSale.Common
     {
         public static void Start(
             IHandlerTypeToChannelProvider channelProvider,
-            IBusStateChangedHandler busStateChangedHandler = null
+            IBusStateChangedHandler busStateChangedHandler = null,
+            IMessageTypeToTopicProvider topicProvider = null
         )
         {
             if (channelProvider == null)
@@ -22,8 +23,8 @@ namespace PointOfSale.Common
             var config = new BusConfiguration(
                 new StructureMapObjectBuilder(ObjectFactory.Container),
                 new NewtonsoftJsonSerializer(typeof(JsonConvert).Assembly),
-                new FailedMessageHandler(),
-                new TopicProvider(),
+                new MessageAuditor(),
+                topicProvider ?? new TopicProvider(),
                 channelProvider,
                 defaultThreadsPerHandler: 8,
                 defaultNsqlookupdHttpEndpoints: new[] { "127.0.0.1:4161" },

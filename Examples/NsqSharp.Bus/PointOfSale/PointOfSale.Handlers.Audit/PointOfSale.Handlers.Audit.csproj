@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7FEAA793-BA87-42CA-AAE3-EF94BBC8811D}</ProjectGuid>
+    <ProjectGuid>{FE0A4331-9FA1-44F0-B5ED-51EE4C66015C}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PointOfSale.Application.Harness</RootNamespace>
-    <AssemblyName>PointOfSale.Application.Harness</AssemblyName>
+    <RootNamespace>PointOfSale.Handlers.Audit</RootNamespace>
+    <AssemblyName>PointOfSale.Handlers.Audit</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -34,22 +34,18 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="NLog">
-      <HintPath>..\..\..\..\packages\NLog.3.2.0.0\lib\net45\NLog.dll</HintPath>
-    </Reference>
-    <Reference Include="StructureMap">
-      <HintPath>..\..\..\..\packages\structuremap.3.1.4.143\lib\net40\StructureMap.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CompositeChannelProvider.cs" />
+    <Compile Include="ChannelProvider.cs" />
+    <Compile Include="Handlers\TransportAuditHandler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\NsqSharp\NsqSharp.csproj">
@@ -60,40 +56,12 @@
       <Project>{75654883-d9c6-498f-9af5-ac1201769890}</Project>
       <Name>PointOfSale.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PointOfSale.Handlers.Audit\PointOfSale.Handlers.Audit.csproj">
-      <Project>{fe0a4331-9fa1-44f0-b5ed-51ee4c66015c}</Project>
-      <Name>PointOfSale.Handlers.Audit</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PointOfSale.Handlers.CustomerHandlers\PointOfSale.Handlers.CustomerHandlers.csproj">
-      <Project>{254397c5-8034-4ade-a30f-ec80ff86fd39}</Project>
-      <Name>PointOfSale.Handlers.CustomerHandlers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PointOfSale.Handlers.InvoiceHandlers\PointOfSale.Handlers.InvoiceHandlers.csproj">
-      <Project>{19199a45-7607-4361-8bce-209b69c1b27c}</Project>
-      <Name>PointOfSale.Handlers.InvoiceHandlers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PointOfSale.Handlers.ProductHandlers\PointOfSale.Handlers.ProductHandlers.csproj">
-      <Project>{6faecb24-5201-4fac-92cd-2ae220ded98d}</Project>
-      <Name>PointOfSale.Handlers.ProductHandlers</Name>
-    </ProjectReference>
     <ProjectReference Include="..\PointOfSale.Messages\PointOfSale.Messages.csproj">
       <Project>{eface6a2-0b05-4e06-9fb6-53a4e2b3beaf}</Project>
       <Name>PointOfSale.Messages</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PointOfSale.Services\PointOfSale.Services.csproj">
-      <Project>{0e9fd458-7fe1-4917-9717-88376a3896f7}</Project>
-      <Name>PointOfSale.Services</Name>
-    </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="install_service.bat">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="uninstall_service.bat">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

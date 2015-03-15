@@ -1362,11 +1362,12 @@ namespace NsqSharp
 
                 try
                 {
+                    message.MaxAttempts = _config.MaxAttempts;
                     handler.HandleMessage(message);
                 }
                 catch (Exception ex)
                 {
-                    log(LogLevel.Error, string.Format("Handler returned error for msg {0} - {1}", message.IdHexString, ex));
+                    log(LogLevel.Error, string.Format("Handler returned error for msg {0} - {1}", message.Id, ex));
                     if (!message.IsAutoResponseDisabled())
                         message.Requeue();
                     continue;
@@ -1389,7 +1390,7 @@ namespace NsqSharp
             if (_config.MaxAttempts > 0 && message.Attempts > _config.MaxAttempts)
             {
                 log(LogLevel.Warning, string.Format("msg {0} attempted {1} times, giving up",
-                    message.IdHexString, message.Attempts));
+                    message.Id, message.Attempts));
 
                 try
                 {
@@ -1398,7 +1399,7 @@ namespace NsqSharp
                 catch (Exception ex)
                 {
                     log(LogLevel.Error, string.Format("LogFailedMessage returned error for msg {0} - {1}",
-                        message.IdHexString, ex));
+                        message.Id, ex));
                 }
 
                 return true;

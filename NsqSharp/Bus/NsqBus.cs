@@ -5,10 +5,10 @@ using System.Linq;
 using System.Threading;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.Providers;
+using NsqSharp.Bus.Logging;
 using NsqSharp.Bus.Utils;
 using NsqSharp.Core;
 using NsqSharp.Utils;
-using NsqSharp.Utils.Loggers;
 
 namespace NsqSharp.Bus
 {
@@ -173,7 +173,7 @@ namespace NsqSharp.Bus
                 foreach (var item in topicChannelHandler.Value)
                 {
                     var consumer = new Consumer(item.Topic, item.Channel, _nsqLogger, item.Config);
-                    var distributor = new MessageDistributor(this, _dependencyInjectionContainer, item);
+                    var distributor = new MessageDistributor(this, _dependencyInjectionContainer, _nsqLogger, item);
                     consumer.AddConcurrentHandlers(distributor, item.InstanceCount);
 
                     // TODO: max_in_flight vs item.InstanceCount

@@ -576,7 +576,7 @@ namespace NsqSharp.Core
                                 break;
                             }
                             msg.Delegate = msgDelegate;
-                            msg.NSQDAddress = ToString();
+                            msg.NsqdAddress = ToString();
 
                             Interlocked.Decrement(ref _rdyCount);
                             Interlocked.Increment(ref _messagesInFlight);
@@ -653,7 +653,7 @@ namespace NsqSharp.Core
 
                         if (resp.success)
                         {
-                            log(LogLevel.Debug, string.Format("FIN {0}", resp.msg.IdHexString));
+                            log(LogLevel.Debug, string.Format("FIN {0}", resp.msg.Id));
                             _delegate.OnMessageFinished(this, resp.msg);
                             if (resp.backoff)
                             {
@@ -662,7 +662,7 @@ namespace NsqSharp.Core
                         }
                         else
                         {
-                            log(LogLevel.Debug, string.Format("REQ {0}", resp.msg.IdHexString));
+                            log(LogLevel.Debug, string.Format("REQ {0}", resp.msg.Id));
                             _delegate.OnMessageRequeued(this, resp.msg);
                             if (resp.backoff)
                             {

@@ -13,7 +13,7 @@ namespace NsqSharp.Core
     /// Message is the fundamental data type containing
     /// the id, body, and metadata
     /// </summary>
-    [DebuggerDisplay("Id={IdHexString}, Attempts={Attempts}, TS={TimeStamp}, NSQD={NSQDAddress}")]
+    [DebuggerDisplay("Id={Id}, Attempts={Attempts}, TS={Timestamp}, NSQD={NsqdAddress}")]
     public class Message
     {
         /// <summary>The number of bytes for a Message.ID</summary>
@@ -22,16 +22,18 @@ namespace NsqSharp.Core
         private static readonly DateTime _epoch = new DateTime(1970, 1, 1);
 
         /// <summary>ID</summary>
-        public byte[] ID { get; internal set; }
+        internal byte[] ID { get; set; }
         /// <summary>Body</summary>
         public byte[] Body { get; internal set; }
         /// <summary>Timestamp</summary>
         public DateTime Timestamp { get; internal set; }
         /// <summary>Attempts</summary>
-        public UInt16 Attempts { get; internal set; }
+        public int Attempts { get; internal set; }
+        /// <summary>Max Attempts</summary>
+        public int MaxAttempts { get; internal set; }
 
         /// <summary>NSQDAddress</summary>
-        public string NSQDAddress { get; internal set; }
+        public string NsqdAddress { get; internal set; }
 
         /// <summary>Delegate</summary>
         internal IMessageDelegate Delegate { get; set; }
@@ -170,7 +172,7 @@ namespace NsqSharp.Core
             {
                 ulong ns = (ulong)(Timestamp - _epoch).Ticks * 100;
                 Binary.BigEndian.PutUint64(writer, ns);
-                Binary.BigEndian.PutUint16(writer, Attempts);
+                Binary.BigEndian.PutUint16(writer, (ushort)Attempts);
                 total = 10;
 
                 writer.Write(ID);
@@ -210,7 +212,7 @@ namespace NsqSharp.Core
         /// <summary>
         /// The 16-byte message ID as a hex string.
         /// </summary>
-        public string IdHexString
+        public string Id
         {
             get
             {

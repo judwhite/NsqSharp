@@ -41,6 +41,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Audit\MessageInformation.cs" />
     <Compile Include="Customers\Events\CustomerIdFoundEvent.cs" />
     <Compile Include="Customers\Commands\GetCustomersCommand.cs" />
     <Compile Include="Invoices\Commands\GetInvoicesCommand.cs" />

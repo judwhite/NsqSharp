@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PointOfSale.Handlers.Custom
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PointOfSale.Handlers.ProductHandlers", "Examples\NsqSharp.Bus\PointOfSale\PointOfSale.Handlers.ProductHandlers\PointOfSale.Handlers.ProductHandlers.csproj", "{6FAECB24-5201-4FAC-92CD-2AE220DED98D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PointOfSale.Handlers.Audit", "Examples\NsqSharp.Bus\PointOfSale\PointOfSale.Handlers.Audit\PointOfSale.Handlers.Audit.csproj", "{FE0A4331-9FA1-44F0-B5ED-51EE4C66015C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,10 @@ Global
 		{6FAECB24-5201-4FAC-92CD-2AE220DED98D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FAECB24-5201-4FAC-92CD-2AE220DED98D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6FAECB24-5201-4FAC-92CD-2AE220DED98D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE0A4331-9FA1-44F0-B5ED-51EE4C66015C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE0A4331-9FA1-44F0-B5ED-51EE4C66015C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE0A4331-9FA1-44F0-B5ED-51EE4C66015C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE0A4331-9FA1-44F0-B5ED-51EE4C66015C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -117,5 +123,6 @@ Global
 		{19199A45-7607-4361-8BCE-209B69C1B27C} = {8E6E3D9F-3F25-4E95-B228-4F270A1760B1}
 		{254397C5-8034-4ADE-A30F-EC80FF86FD39} = {8E6E3D9F-3F25-4E95-B228-4F270A1760B1}
 		{6FAECB24-5201-4FAC-92CD-2AE220DED98D} = {8E6E3D9F-3F25-4E95-B228-4F270A1760B1}
+		{FE0A4331-9FA1-44F0-B5ED-51EE4C66015C} = {8E6E3D9F-3F25-4E95-B228-4F270A1760B1}
 	EndGlobalSection
 EndGlobal

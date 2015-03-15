@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using PointOfSale.Messages.Audit;
 using PointOfSale.Messages.Customers.Commands;
 using PointOfSale.Messages.Customers.Events;
 using PointOfSale.Messages.Invoices.Commands;
@@ -30,6 +31,9 @@ namespace PointOfSale.Messages
             Add<GetProductsCommand>("pos.products.cmd.get-all");
             Add<ProductIdFoundEvent>("pos.products.evnt.productid-found");
 
+            // Audit
+            Add<MessageInformation>("pos.message.audit");
+
             Validate();
         }
 
@@ -38,12 +42,12 @@ namespace PointOfSale.Messages
             return _typeTopics[messageType];
         }
 
-        private void Add<T>(string topicName)
+        protected void Add<T>(string topicName)
         {
             _typeTopics.Add(typeof(T), topicName);
         }
 
-        private void Validate()
+        protected void Validate()
         {
             // Check for duplicate topic names
             var dupes = _typeTopics

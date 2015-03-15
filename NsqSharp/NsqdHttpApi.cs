@@ -344,9 +344,8 @@ namespace NsqSharp
             webRequest.Method = method;
             webRequest.Timeout = timeoutMilliseconds;
             webRequest.Accept = "text/html,application/vnd.nsq; version=1.0";
-            webRequest.UserAgent = string.Format("{0}/{1} {2} {3}\\{4}", ClientInfo.ClientName, ClientInfo.Version,
-                Environment.MachineName, Environment.UserDomainName, Environment.UserName);
-
+            webRequest.UserAgent = string.Format("{0}/{1}", ClientInfo.ClientName, ClientInfo.Version);
+            
             if (method == "POST" && body != null && body.Length != 0)
             {
                 webRequest.ContentType = "application/x-www-form-urlencoded";
