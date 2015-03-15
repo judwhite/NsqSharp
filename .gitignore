@@ -6,4 +6,5 @@
 *.fpr
 bin/
 obj/
+build/
 nsq-0.3.2-bin/*.dat

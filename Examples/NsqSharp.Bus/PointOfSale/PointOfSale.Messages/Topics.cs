@@ -28,8 +28,8 @@ namespace PointOfSale.Messages
             Add<InvoiceIdFoundEvent>("pos.invoice.evnt.invoiceid-found");
 
             // Products
-            Add<GetProductsCommand>("pos.products.cmd.get-all");
-            Add<ProductIdFoundEvent>("pos.products.evnt.productid-found");
+            Add<GetProductsCommand>("pos.product.cmd.get-all");
+            Add<ProductIdFoundEvent>("pos.product.evnt.productid-found");
 
             // Audit
             Add<MessageInformation>("pos.message.audit");

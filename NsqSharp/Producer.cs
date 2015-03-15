@@ -335,6 +335,14 @@ namespace NsqSharp
         private void sendCommandAsync(Command cmd, Chan<ProducerTransaction> doneChan, params object[] args)
         {
             Interlocked.Increment(ref _concurrentProducers);
+
+            var t = new ProducerTransaction
+            {
+                _cmd = cmd,
+                _doneChan = doneChan,
+                Args = args,
+            };
+
             try
             {
                 if (_state != (int)State.Connected)
@@ -342,17 +350,15 @@ namespace NsqSharp
                     Connect();
                 }
 
-                var t = new ProducerTransaction
-                        {
-                            _cmd = cmd,
-                            _doneChan = doneChan,
-                            Args = args,
-                        };
-
                 Select
                     .CaseSend(_transactionChan, t, () => { })
                     .CaseReceive(_exitChan, m => { throw new ErrStopped(); })
                     .NoDefault();
+            }
+            catch (Exception ex)
+            {
+                t.Error = ex;
+                doneChan.Send(t);
             }
             finally
             {
@@ -398,7 +404,7 @@ namespace NsqSharp
 
                 _closeChan = new Chan<int>();
                 _wg.Add(1);
-                GoFunc.Run(router);
+                GoFunc.Run(router, string.Format("Producer:router P{0}", _id));
             }
         }
 
@@ -419,7 +425,7 @@ namespace NsqSharp
                 // block the caller from making progress
                 _wg.Wait();
                 _state = (int)State.Init;
-            });
+            }, string.Format("Producer:close P{0}", _id));
         }
 
         private void router()

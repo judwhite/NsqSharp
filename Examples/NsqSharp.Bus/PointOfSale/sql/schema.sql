@@ -10,8 +10,8 @@ create table dbo.TransportAudit
   NsqdAddress nvarchar(256) not null,
   Body nvarchar(max),
   PublishTimestamp datetime not null,
-  HandlerStart datetime not null,
-  HandlerFinish datetime,
+  HandlerStarted datetime not null,
+  HandlerFinished datetime,
   DequeueTime time(3),
   ProcessTime time(3),
   Success bit,
@@ -30,8 +30,8 @@ create index IX_TransportAudit_Channel on dbo.TransportAudit (Channel)
 create index IX_TransportAudit_MessageId on dbo.TransportAudit (MessageId)
 create index IX_TransportAudit_NsqdAddress on dbo.TransportAudit (NsqdAddress)
 create index IX_TransportAudit_PublishTimestamp on dbo.TransportAudit (PublishTimestamp)
-create index IX_TransportAudit_HandlerStart on dbo.TransportAudit (HandlerStart)
-create index IX_TransportAudit_HandlerFinish on dbo.TransportAudit (HandlerFinish)
+create index IX_TransportAudit_HandlerStarted on dbo.TransportAudit (HandlerStarted)
+create index IX_TransportAudit_HandlerFinished on dbo.TransportAudit (HandlerFinished)
 create index IX_TransportAudit_DequeueTime on dbo.TransportAudit (DequeueTime)
 create index IX_TransportAudit_ProcessTime on dbo.TransportAudit (ProcessTime)
 create index IX_TransportAudit_Success on dbo.TransportAudit (Success)
@@ -49,8 +49,8 @@ create procedure dbo.spTransportAudit_InsertUpdate
   @NsqdAddress nvarchar(256),
   @Body nvarchar(max),
   @PublishTimestamp datetime,
-  @HandlerStart datetime,
-  @HandlerFinish datetime,
+  @HandlerStarted datetime,
+  @HandlerFinished datetime,
   @Success bit,
   @FailedAction nvarchar(20),
   @FailedReason nvarchar(20),
@@ -62,9 +62,7 @@ as
   declare @DequeueTime time(3)
   declare @ProcessTime time(3)
 
-  select 1000*60*60*24
-
-  set @TimeInQueueMilliseconds = datediff(millisecond, @PublishTimestamp, @HandlerStart)
+  set @TimeInQueueMilliseconds = datediff(millisecond, @PublishTimestamp, @HandlerStarted)
   if @TimeInQueueMilliseconds > 86400000
   begin
     set @DequeueTime = cast('24:00:00' as time(3))
@@ -74,9 +72,9 @@ as
     set @DequeueTime = dateadd(millisecond, @TimeInQueueMilliseconds, cast('00:00:00' as time(3)))
   end
 
-  if @HandlerFinish is not null
+  if @HandlerFinished is not null
   begin
-    set @ProcessingMilliseconds = datediff(millisecond, @HandlerStart, @HandlerFinish)
+    set @ProcessingMilliseconds = datediff(millisecond, @HandlerStarted, @HandlerFinished)
     if @ProcessingMilliseconds > 86400000
     begin
       set @ProcessTime = cast('24:00:00' as time(3))
@@ -103,8 +101,8 @@ as
       NsqdAddress,
       Body,
       PublishTimestamp,
-      HandlerStart,
-      HandlerFinish,
+      HandlerStarted,
+      HandlerFinished,
       DequeueTime,
       ProcessTime,
 	  Success,
@@ -124,8 +122,8 @@ as
       @NsqdAddress,
       @Body,
       @PublishTimestamp,
-      @HandlerStart,
-      @HandlerFinish,
+      @HandlerStarted,
+      @HandlerFinished,
       @DequeueTime,
       @ProcessTime,
 	  @Success,
@@ -135,7 +133,7 @@ as
 	)
   when matched then
     update set
-	  t.HandlerFinish = isnull(@HandlerFinish, t.HandlerFinish),
+	  t.HandlerFinished = isnull(@HandlerFinished, t.HandlerFinished),
 	  t.DequeueTime = isnull(@DequeueTime, t.DequeueTime),
 	  t.ProcessTime = isnull(@ProcessTime, t.ProcessTime),
 	  t.Success = isnull(@Success, t.Success),

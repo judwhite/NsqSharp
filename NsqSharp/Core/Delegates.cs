@@ -17,6 +17,8 @@ namespace NsqSharp.Core
         Warning = 2,
         /// <summary>Error</summary>
         Error = 3,
+        /// <summary>Critical</summary>
+        Critical = 4,
     }
 
     /// <summary>
@@ -32,6 +34,8 @@ namespace NsqSharp.Core
         public const string WarningPrefix = "WRN";
         /// <summary>LogLevelErrorPrefix</summary>
         public const string ErrorPrefix = "ERR";
+        /// <summary>LogLevelCriticalPrefix</summary>
+        public const string CriticalPrefix = "FAT";
 
         /// <summary>LogPrefix Resolution</summary>
         internal static string Prefix(LogLevel lvl)
@@ -51,6 +55,9 @@ namespace NsqSharp.Core
                     break;
                 case LogLevel.Error:
                     prefix = ErrorPrefix;
+                    break;
+                case LogLevel.Critical:
+                    prefix = CriticalPrefix;
                     break;
             }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NsqSharp.Bus.Configuration.Providers;
-using PointOfSale.Common;
+using PointOfSale.Common.Nsq;
 
 namespace PointOfSale.Application.Harness
 {

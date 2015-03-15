@@ -4,7 +4,7 @@ using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration.Providers;
 using NsqSharp.Core;
 
-namespace PointOfSale.Common
+namespace PointOfSale.Common.Nsq
 {
     public abstract class ChannelProviderBase : IHandlerTypeToChannelProvider
     {

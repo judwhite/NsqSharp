@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Xml.Linq;
+using PointOfSale.Common.Config;
+using PointOfSale.Common.Utils;
 using PointOfSale.Services.Invoices.Models;
 
 namespace PointOfSale.Services.Invoices
@@ -11,20 +13,24 @@ namespace PointOfSale.Services.Invoices
     {
         private readonly string _invoiceEndpoint;
         private readonly string _invoiceDetailEndpoint;
+        private readonly INemesis _nemesis;
 
-        public InvoiceService(string invoiceEndpoint, string invoiceDetailsEndpoint)
+        public InvoiceService(IServiceEndpoints serviceEndpoints, INemesis nemesis)
         {
-            if (string.IsNullOrEmpty(invoiceEndpoint))
-                throw new ArgumentNullException("invoiceEndpoint");
-            if (string.IsNullOrEmpty(invoiceDetailsEndpoint))
-                throw new ArgumentNullException("invoiceDetailsEndpoint");
+            if (serviceEndpoints == null)
+                throw new ArgumentNullException("serviceEndpoints");
+            if (nemesis == null)
+                throw new ArgumentNullException("nemesis");
 
-            _invoiceEndpoint = invoiceEndpoint;
-            _invoiceDetailEndpoint = invoiceDetailsEndpoint;
+            _invoiceEndpoint = serviceEndpoints.InvoiceEndpoint;
+            _invoiceDetailEndpoint = serviceEndpoints.InvoiceDetailsEndpoint;
+            _nemesis = nemesis;
         }
 
         public Collection<int> GetInvoiceIds()
         {
+            _nemesis.Invoke();
+
             var webClient = new WebClient();
             string response = webClient.DownloadString(_invoiceEndpoint);
 
@@ -35,6 +41,8 @@ namespace PointOfSale.Services.Invoices
 
         public InvoiceSummary GetInvoiceSummary(int invoiceId)
         {
+            _nemesis.Invoke();
+
             var webClient = new WebClient();
             string response = webClient.DownloadString(string.Format("{0}/{1}", _invoiceEndpoint, invoiceId));
 
@@ -50,6 +58,8 @@ namespace PointOfSale.Services.Invoices
 
         public Collection<InvoiceDetail> GetInvoiceDetails(int invoiceId)
         {
+            _nemesis.Invoke();
+
             var webClient = new WebClient();
             string response = webClient.DownloadString(string.Format("{0}/{1}", _invoiceDetailEndpoint, invoiceId));
 

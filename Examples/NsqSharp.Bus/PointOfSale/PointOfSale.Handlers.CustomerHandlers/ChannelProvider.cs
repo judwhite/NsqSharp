@@ -1,4 +1,4 @@
-﻿using PointOfSale.Common;
+﻿using PointOfSale.Common.Nsq;
 using PointOfSale.Handlers.CustomerHandlers.Handlers;
 using PointOfSale.Messages.Customers.Commands;
 using PointOfSale.Messages.Customers.Events;

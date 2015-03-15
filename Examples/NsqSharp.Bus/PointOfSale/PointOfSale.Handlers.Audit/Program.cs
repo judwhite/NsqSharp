@@ -1,4 +1,4 @@
-﻿using PointOfSale.Common;
+﻿using PointOfSale.Common.Nsq;
 
 namespace PointOfSale.Handlers.Audit
 {

@@ -80,10 +80,6 @@
       <Project>{eface6a2-0b05-4e06-9fb6-53a4e2b3beaf}</Project>
       <Name>PointOfSale.Messages</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PointOfSale.Services\PointOfSale.Services.csproj">
-      <Project>{0e9fd458-7fe1-4917-9717-88376a3896f7}</Project>
-      <Name>PointOfSale.Services</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

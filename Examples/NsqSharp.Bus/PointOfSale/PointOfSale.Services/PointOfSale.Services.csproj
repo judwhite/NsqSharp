@@ -44,7 +44,7 @@
   <ItemGroup>
     <Compile Include="Customers\CustomerService.cs" />
     <Compile Include="Customers\ICustomerService.cs" />
-    <Compile Include="CoreRegistry.cs" />
+    <Compile Include="ServicesRegistry.cs" />
     <Compile Include="Customers\Models\Customer.cs" />
     <Compile Include="Invoices\IInvoiceService.cs" />
     <Compile Include="Invoices\InvoiceService.cs" />
@@ -55,7 +55,12 @@
     <Compile Include="Products\ProductService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\PointOfSale.Common\PointOfSale.Common.csproj">
+      <Project>{75654883-d9c6-498f-9af5-ac1201769890}</Project>
+      <Name>PointOfSale.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

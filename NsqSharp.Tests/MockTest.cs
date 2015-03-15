@@ -161,7 +161,7 @@ namespace NsqSharp.Tests
             this.script = script;
             exitChan = new Chan<int>();
             got = new List<byte[]>();
-            GoFunc.Run(listen);
+            GoFunc.Run(listen, "mockNSQD:listen");
         }
 
         private void listen()
@@ -183,7 +183,7 @@ namespace NsqSharp.Tests
                 {
                     break;
                 }
-                GoFunc.Run(() => handle(conn));
+                GoFunc.Run(() => handle(conn), "mockNSQD:handle");
             }
 
             log.Printf("TCP: closing {0}", tcpListener.LocalEndpoint);
@@ -222,7 +222,7 @@ namespace NsqSharp.Tests
                                        return;
                                    }
                                }
-                           });
+                           }, "mockNSQD:ReadBytes");
 
                 int rdyCount = 0;
                 bool doLoop = true;

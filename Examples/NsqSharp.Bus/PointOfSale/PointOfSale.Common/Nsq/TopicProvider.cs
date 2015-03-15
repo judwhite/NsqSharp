@@ -2,7 +2,7 @@
 using NsqSharp.Bus.Configuration.Providers;
 using PointOfSale.Messages;
 
-namespace PointOfSale.Common
+namespace PointOfSale.Common.Nsq
 {
     public class TopicProvider : IMessageTypeToTopicProvider
     {

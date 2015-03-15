@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Xml.Linq;
+using PointOfSale.Common.Config;
+using PointOfSale.Common.Utils;
 using PointOfSale.Services.Customers.Models;
 
 namespace PointOfSale.Services.Customers
@@ -10,17 +12,23 @@ namespace PointOfSale.Services.Customers
     public class CustomerService : ICustomerService
     {
         private readonly string _endpoint;
+        private readonly INemesis _nemesis;
 
-        public CustomerService(string endpoint)
+        public CustomerService(IServiceEndpoints serviceEndpoints, INemesis nemesis)
         {
-            if (endpoint == null)
-                throw new ArgumentNullException("endpoint");
+            if (serviceEndpoints == null)
+                throw new ArgumentNullException("serviceEndpoints");
+            if (nemesis == null)
+                throw new ArgumentNullException("nemesis");
 
-            _endpoint = endpoint;
+            _endpoint = serviceEndpoints.CustomerEndpoint;
+            _nemesis = nemesis;
         }
 
         public Collection<int> GetCustomerIds()
         {
+            _nemesis.Invoke();
+
             var webClient = new WebClient();
             string response = webClient.DownloadString(_endpoint);
 
@@ -31,6 +39,8 @@ namespace PointOfSale.Services.Customers
 
         public Customer GetCustomer(int customerId)
         {
+            _nemesis.Invoke();
+
             var webClient = new WebClient();
             string response = webClient.DownloadString(string.Format("{0}/{1}", _endpoint, customerId));
 

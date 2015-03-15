@@ -38,6 +38,9 @@ namespace NsqSharp.Utils.Loggers
                 case LogLevel.Error:
                     _traceSource.TraceEvent(TraceEventType.Error, 0, message);
                     break;
+                case LogLevel.Critical:
+                    _traceSource.TraceEvent(TraceEventType.Critical, 0, message);
+                    break;
             }
         }
     }

@@ -4,8 +4,9 @@ using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.BuiltIn;
 using NsqSharp.Bus.Configuration.Providers;
+using PointOfSale.Common.IoC;
 
-namespace PointOfSale.Common
+namespace PointOfSale.Common.Nsq
 {
     public static class PointOfSaleBus
     {
@@ -28,7 +29,13 @@ namespace PointOfSale.Common
                 channelProvider,
                 defaultThreadsPerHandler: 8,
                 defaultNsqlookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
-                busStateChangedHandler: busStateChangedHandler
+                busStateChangedHandler: busStateChangedHandler,
+                defaultConsumerNsqConfig: 
+                    new NsqSharp.Config 
+                    { 
+                        //MaxRequeueDelay = TimeSpan.FromSeconds(0.1),
+                        //MaxBackoffDuration = TimeSpan.FromSeconds(0.2)
+                    }
             );
 
             BusService.Start(config);

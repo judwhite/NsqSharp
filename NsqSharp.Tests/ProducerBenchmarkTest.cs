@@ -60,15 +60,20 @@ namespace NsqSharp.Tests
             for (int j = 0; j < parallel; j++)
             {
                 wg.Add(1);
+                //int localj = j;
                 GoFunc.Run(() =>
                 {
                     startCh.Receive();
                     for (int i = 0; i < benchmarkNum / parallel; i++)
                     {
+                        //if (i%10 == 0)
+                        //{
+                        //    Debug.WriteLine(string.Format("{0}: {1}/{2}", localj, i, benchmarkNum/parallel));
+                        //}
                         p.Publish("test", body);
                     }
                     wg.Done();
-                });
+                }, "ProducerBenchmarkTcpTest: sendLoop");
             }
 
             var stopwatch = Stopwatch.StartNew();
@@ -100,7 +105,7 @@ namespace NsqSharp.Tests
                         NsqdHttpApi.Publish("127.0.0.1:4151", "test", body);
                     }
                     wg.Done();
-                });
+                }, "ProducerBenchmarkHttpTest: sendLoop");
             }
 
             var stopwatch = Stopwatch.StartNew();

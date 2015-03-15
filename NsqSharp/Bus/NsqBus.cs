@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.Providers;
-using NsqSharp.Bus.Logging;
 using NsqSharp.Bus.Utils;
 using NsqSharp.Core;
 using NsqSharp.Utils;
@@ -210,7 +209,7 @@ namespace NsqSharp.Bus
                         {
                             consumer.Stop(blockUntilStopCompletes: true);
                             wg.Done();
-                        });
+                        }, "NsqBus consumer shutdown");
                     }
                 }
             }

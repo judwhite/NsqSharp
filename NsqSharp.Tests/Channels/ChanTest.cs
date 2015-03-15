@@ -446,7 +446,7 @@ namespace NsqSharp.Tests.Channels
                 }
 
                 wg.Done();
-            });
+            }, "bufferChannelsTest:receiveLoop");
 
             GoFunc.Run(() =>
             {
@@ -459,7 +459,7 @@ namespace NsqSharp.Tests.Channels
 
                 c.Close();
                 wg.Done();
-            });
+            }, "bufferedChannelsTest:sendLoop");
 
             wg.Wait();
 
@@ -487,7 +487,7 @@ namespace NsqSharp.Tests.Channels
 
                 c.Close();
                 wg.Done();
-            });
+            }, "bufferedChannelsTest:sendLoop");
 
             wg.Wait();
 
@@ -535,7 +535,7 @@ namespace NsqSharp.Tests.Channels
                 }
 
                 wg.Done();
-            });
+            }, "bufferChannelsTest:receiveLoop");
 
             for (int i = 0; i < 10; i++)
             {
@@ -578,7 +578,7 @@ namespace NsqSharp.Tests.Channels
                 }
 
                 wg.Done();
-            });
+            }, "bufferChannelsTest:receiveLoop");
 
             for (int i = 0; i < 10; i++)
             {

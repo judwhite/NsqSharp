@@ -51,7 +51,7 @@ namespace NsqSharp.Utils
                 {
                     // handling timeout below, don't bring down the whole app with an unhandled thread exception
                 }
-            });
+            }, "Net:DialTimeout");
 
             IConn conn = null;
 
@@ -62,6 +62,8 @@ namespace NsqSharp.Utils
                     throw new TimeoutException(string.Format("timeout {0} exceed when dialing {1}", timeout, address));
                 })
                 .NoDefault();
+
+            timeoutChan.Close();
 
             return conn;
         }

@@ -1,17 +1,15 @@
 ﻿using System.Diagnostics;
 using System.Text;
-using NsqSharp.Bus.Logging;
 using NsqSharp.Bus;
+using NsqSharp.Bus.Logging;
 using PointOfSale.Messages.Audit;
 
-namespace PointOfSale.Common
+namespace PointOfSale.Common.Nsq
 {
     public class MessageAuditor : IMessageAuditor
     {
         public void OnReceived(IBus bus, IMessageInformation info)
         {
-            //Trace.WriteLine(string.Format("message id {0} received {1}", info.Message.Id, TryGetString(info.Message.Body)));
-
             if (info.MessageType != typeof(MessageInformation))
             {
                 bus.Send(Convert(info));
@@ -20,8 +18,6 @@ namespace PointOfSale.Common
 
         public void OnSucceeded(IBus bus, IMessageInformation info)
         {
-            //Trace.WriteLine(string.Format("message id {0} succeeded", info.Message.Id));
-
             if (info.MessageType != typeof(MessageInformation))
             {
                 bus.Send(Convert(info));
@@ -30,22 +26,26 @@ namespace PointOfSale.Common
 
         public void OnFailed(IBus bus, IFailedMessageInformation failedInfo)
         {
-            string logEntry = string.Format("id: {0} action:{1} reason:{2} topic:{3} channel:{4} msg:{5} ex:{6}",
-                 failedInfo.Message.Id, failedInfo.FailedAction, failedInfo.FailedReason, failedInfo.Topic, failedInfo.Channel,
-                 Encoding.UTF8.GetString(failedInfo.Message.Body), failedInfo.FailedException);
-
-            if (failedInfo.FailedAction == FailedMessageQueueAction.Requeue)
-            {
-                Trace.TraceWarning(logEntry);
-            }
-            else
-            {
-                Trace.TraceError(logEntry);
-            }
-
             if (failedInfo.MessageType != typeof(MessageInformation))
             {
                 bus.Send(Convert(failedInfo));
+            }
+            else
+            {
+                // failed audit
+
+                string logEntry = string.Format("id: {0} action:{1} reason:{2} topic:{3} channel:{4} msg:{5} ex:{6}",
+                     failedInfo.Message.Id, failedInfo.FailedAction, failedInfo.FailedReason, failedInfo.Topic, failedInfo.Channel,
+                     Encoding.UTF8.GetString(failedInfo.Message.Body), failedInfo.FailedException);
+
+                if (failedInfo.FailedAction == FailedMessageQueueAction.Requeue)
+                {
+                    Trace.TraceWarning(logEntry);
+                }
+                else
+                {
+                    Trace.TraceError(logEntry);
+                }
             }
         }
 

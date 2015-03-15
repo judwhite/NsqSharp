@@ -192,8 +192,8 @@ namespace NsqSharp.Core
 
             _wg.Add(2);
             _readLoopRunning = 1;
-            GoFunc.Run(readLoop);
-            GoFunc.Run(writeLoop);
+            GoFunc.Run(readLoop, "Conn:readLoop");
+            GoFunc.Run(writeLoop, "Conn:writeLoop");
             return resp;
         }
 
@@ -733,9 +733,9 @@ namespace NsqSharp.Core
                 _conn.CloseRead();
 
                 _wg.Add(1);
-                GoFunc.Run(cleanup);
+                GoFunc.Run(cleanup, "Conn:cleanup");
 
-                GoFunc.Run(waitForCleanup);
+                GoFunc.Run(waitForCleanup, "Conn:waitForCleanup");
             });
         }
 

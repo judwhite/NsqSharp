@@ -217,7 +217,7 @@ namespace NsqSharp
 
             _wg.Add(1);
 
-            GoFunc.Run(rdyLoop);
+            GoFunc.Run(rdyLoop, string.Format("rdyLoop: {0}/{1}", _topic, _channel));
         }
 
         /// <summary>
@@ -373,7 +373,7 @@ namespace NsqSharp
             {
                 queryLookupd();
                 _wg.Add(1);
-                GoFunc.Run(lookupdLoop);
+                GoFunc.Run(lookupdLoop, string.Format("lookupdLoop: {0}/{1}", _topic, _channel));
             }
         }
 
@@ -1015,7 +1015,7 @@ namespace NsqSharp
                         }
                         break;
                     }
-                });
+                }, string.Format("onConnClose:reconnect: {0}/{1}", _topic, _channel));
             }
         }
 
@@ -1337,7 +1337,8 @@ namespace NsqSharp
             Interlocked.Add(ref _runningHandlers, concurrency);
             for (int i = 0; i < concurrency; i++)
             {
-                GoFunc.Run(() => handlerLoop(handler));
+                GoFunc.Run(() => handlerLoop(handler),
+                    string.Format("handlerLoop({0}/{1}): {2}/{3}", i + 1, concurrency, _topic, _channel));
             }
         }
 

@@ -3,7 +3,7 @@ using System.Threading;
 using StructureMap;
 using StructureMap.Graph;
 
-namespace PointOfSale.Common
+namespace PointOfSale.Common.IoC
 {
     public static class ObjectFactory
     {
@@ -17,13 +17,11 @@ namespace PointOfSale.Common
 
         private static Container CreateDefaultContainer()
         {
-            return new Container(x => 
-                x.Scan(s =>
-                {
-                    s.AssembliesFromApplicationBaseDirectory();
-                    s.LookForRegistries();
-                }
-            ));
+            return new Container(x => x.Scan(s =>
+                                             {
+                                                 s.AssembliesFromApplicationBaseDirectory();
+                                                 s.LookForRegistries();
+                                             }));
         }
     }
 }

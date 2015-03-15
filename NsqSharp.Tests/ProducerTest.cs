@@ -249,7 +249,7 @@ namespace NsqSharp.Tests
             _connDelegate = connDelegate;
             _closeCh = new Chan<bool>();
             _pubCh = new Chan<bool>();
-            GoFunc.Run(router);
+            GoFunc.Run(router, "ProducerTest:router");
         }
 
         public override string ToString()

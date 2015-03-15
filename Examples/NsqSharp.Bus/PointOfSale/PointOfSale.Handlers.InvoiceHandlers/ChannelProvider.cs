@@ -1,4 +1,4 @@
-﻿using PointOfSale.Common;
+﻿using PointOfSale.Common.Nsq;
 using PointOfSale.Handlers.InvoiceHandlers.Handlers;
 using PointOfSale.Messages.Invoices.Commands;
 using PointOfSale.Messages.Invoices.Events;

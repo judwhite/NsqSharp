@@ -30,7 +30,7 @@ namespace NsqSharp.Utils
                     _timerChan.Send(DateTime.Now);
                     _timerChan.Close();
                 }
-            });
+            }, string.Format("timer started:{0} duration:{1}", DateTime.Now, duration));
         }
 
         /// <summary>

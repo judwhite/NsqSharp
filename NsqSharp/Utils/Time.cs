@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using NsqSharp.Utils.Channels;
 
 namespace NsqSharp.Utils
@@ -39,10 +40,14 @@ namespace NsqSharp.Utils
 
             var timeoutChan = new Chan<bool>();
 
+            var started = DateTime.Now;
+
             System.Threading.Timer localTimer = null;
             System.Threading.Timer t = new System.Threading.Timer(
                 delegate
                 {
+                    string threadName = string.Format("Time.After started:{0} duration:{1}", started, timeout);
+                    Thread.CurrentThread.Name = threadName;
                     try
                     {
                         if (localTimer != null)
@@ -55,13 +60,13 @@ namespace NsqSharp.Utils
                             }
                         }
                     }
-                    catch (Exception) { }
+                    catch { }
 
                     try
                     {
                         timeoutChan.Send(default(bool));
                     }
-                    catch (Exception) { }
+                    catch { }
 
                 }, null, timeout, TimeSpan.FromMilliseconds(-1));
 
@@ -95,10 +100,10 @@ namespace NsqSharp.Utils
                        {
                            bool ok;
                            timer.C.ReceiveOk(out ok);
-                           
+
                            if (ok)
                                f();
-                       });
+                       }, string.Format("Time.AfterFunc started:{0} duration:{1}", DateTime.Now, duration));
 
             return timer;
         }

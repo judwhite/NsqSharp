@@ -28,6 +28,7 @@ namespace NsqSharp.Utils.Channels
 
         private bool _isReadyToSend;
         private bool _isClosed;
+        private bool _isDrained;
 
         private readonly int _bufferSize;
         private readonly Queue<T> _buffer;
@@ -158,8 +159,6 @@ namespace NsqSharp.Utils.Channels
         /// whether the channel was closed or not.</returns>
         public T ReceiveOk(out bool ok)
         {
-            ok = false;
-
             T data;
             lock (_receiveLocker)
             {
@@ -172,8 +171,9 @@ namespace NsqSharp.Utils.Channels
                     }
                 }
 
-                if (_isClosed)
+                if (_isDrained)
                 {
+                    ok = false;
                     return default(T);
                 }
 
@@ -181,16 +181,22 @@ namespace NsqSharp.Utils.Channels
 
                 PumpListenForReceive();
 
-                _sent.WaitOne();
+                int waitForSendTimeout = _isClosed ? 30 : -1;
+
+                _sent.WaitOne(waitForSendTimeout);
+
                 lock (_bufferLocker)
                 {
                     if (_buffer.Count == 0 && _isClosed)
                     {
+                        ok = false;
                         data = default(T);
                         _isReadyToSend = false;
+                        _isDrained = true;
                     }
                     else
                     {
+                        ok = true;
                         data = Dequeue();
                         _isReadyToSend = (_buffer.Count > 0);
                     }
@@ -198,8 +204,6 @@ namespace NsqSharp.Utils.Channels
                 _receiveComplete.Set();
             }
 
-            // TODO: Race condition, but can't lock _isClosedLocker in this method. Fix.
-            ok = !_isClosed;
             return data;
         }
 

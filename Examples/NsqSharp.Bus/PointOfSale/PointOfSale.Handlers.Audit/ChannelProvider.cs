@@ -1,4 +1,4 @@
-﻿using PointOfSale.Common;
+﻿using PointOfSale.Common.Nsq;
 using PointOfSale.Handlers.Audit.Handlers;
 using PointOfSale.Messages.Audit;
 

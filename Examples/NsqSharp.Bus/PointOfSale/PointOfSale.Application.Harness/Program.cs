@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
-using PointOfSale.Common;
+using PointOfSale.Common.Nsq;
 using PointOfSale.Messages.Customers.Commands;
 using PointOfSale.Messages.Invoices.Commands;
 using PointOfSale.Messages.Products.Commands;

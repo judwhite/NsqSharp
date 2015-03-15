@@ -288,7 +288,7 @@ namespace NsqSharp.Bus.Configuration
                             }
 
                             wg.Done();
-                        });
+                        }, "BusConfiguration pre-create topics/channels");
                     }
                 }
             }

@@ -43,15 +43,21 @@
       <HintPath>..\..\..\..\packages\structuremap.3.1.4.143\lib\net40\StructureMap.Net4.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PointOfSaleBus.cs" />
-    <Compile Include="ChannelProviderBase.cs" />
-    <Compile Include="MessageAuditor.cs" />
-    <Compile Include="ObjectFactory.cs" />
+    <Compile Include="Config\AppSettings.cs" />
+    <Compile Include="IoC\CommonRegistry.cs" />
+    <Compile Include="Config\ConnectionStrings.cs" />
+    <Compile Include="Nsq\PointOfSaleBus.cs" />
+    <Compile Include="Nsq\ChannelProviderBase.cs" />
+    <Compile Include="Nsq\MessageAuditor.cs" />
+    <Compile Include="IoC\ObjectFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TopicProvider.cs" />
+    <Compile Include="Config\ServiceEndpoints.cs" />
+    <Compile Include="Nsq\TopicProvider.cs" />
+    <Compile Include="Utils\Nemesis.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\NsqSharp\NsqSharp.csproj">
@@ -64,6 +70,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="appSettings.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="connectionStrings.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="diagnostics.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -71,6 +83,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

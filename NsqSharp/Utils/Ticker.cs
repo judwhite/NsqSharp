@@ -31,7 +31,7 @@ namespace NsqSharp.Utils
                         _tickerChan.Send(DateTime.Now);
                     }
                 }
-            });
+            }, string.Format("Ticker started:{0} duration:{1}", DateTime.Now, duration));
         }
 
         /// <summary>

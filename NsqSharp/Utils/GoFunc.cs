@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading;
+using NsqSharp.Core;
+using NsqSharp.Utils.Loggers;
 
 namespace NsqSharp.Utils
 {
@@ -12,12 +14,27 @@ namespace NsqSharp.Utils
         /// Run a new "goroutine".
         /// </summary>
         /// <param name="action">The method to execute.</param>
-        public static void Run(Action action)
+        /// <param name="threadName">The name to assign to the thread (optional).</param>
+        public static void Run(Action action, string threadName = null)
         {
             if (action == null)
                 throw new ArgumentNullException("action");
 
-            var t = new Thread(() => action());
+            var t = new Thread(() =>
+                               {
+                                   try
+                                   {
+                                       action();
+                                   }
+                                   catch (Exception ex)
+                                   {
+                                       var logger = new TraceLogger();
+                                       logger.Output(LogLevel.Critical, string.Format("{0} - {1}", threadName, ex));
+                                       throw;
+                                   }
+                               }
+                );
+            t.Name = threadName;
             t.IsBackground = true;
             t.Start();
         }
