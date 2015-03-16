@@ -2,13 +2,13 @@
 
 namespace PointOfSale.Handlers.CustomerHandlers
 {
-    public class CoreRegistry : Registry
+    public class CustomerHandlersRegistry : Registry
     {
-        public CoreRegistry()
+        public CustomerHandlersRegistry()
         {
             Scan(s =>
             {
-                s.AssemblyContainingType<CoreRegistry>();
+                s.AssemblyContainingType<CustomerHandlersRegistry>();
                 s.WithDefaultConventions();
             });
         }

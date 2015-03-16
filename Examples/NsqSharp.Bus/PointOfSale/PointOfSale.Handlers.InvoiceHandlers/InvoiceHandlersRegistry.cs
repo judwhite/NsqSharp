@@ -2,13 +2,13 @@
 
 namespace PointOfSale.Handlers.InvoiceHandlers
 {
-    public class CoreRegistry : Registry
+    public class InvoiceHandlersRegistry : Registry
     {
-        public CoreRegistry()
+        public InvoiceHandlersRegistry()
         {
             Scan(s =>
             {
-                s.AssemblyContainingType<CoreRegistry>();
+                s.AssemblyContainingType<InvoiceHandlersRegistry>();
                 s.WithDefaultConventions();
             });
         }

@@ -74,6 +74,7 @@ namespace NsqSharp.Tests.Channels
                                        cgen.Send(i);
                                    }
                                }
+                               // ReSharper disable once FunctionNeverReturns
                            });
 
             var filter = new Action<Chan<int>, Chan<int>, int>((cin, cout, prime) =>
@@ -86,11 +87,13 @@ namespace NsqSharp.Tests.Channels
                                                                            cout.Send(i);
                                                                        }
                                                                    }
+                                                                   // ReSharper disable once FunctionNeverReturns
                                                                });
 
             var ch = new Chan<int>();
 
-            var threadGenerate = new Thread(() => generate(ch));
+            Chan<int> generateCh = ch;
+            var threadGenerate = new Thread(() => generate(generateCh));
             threadGenerate.IsBackground = true;
             threadGenerate.Start();
 
@@ -492,6 +495,7 @@ namespace NsqSharp.Tests.Channels
             wg.Wait();
 
             bool doLoop = true;
+            // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
             while (doLoop)
             {
                 Select
@@ -590,6 +594,41 @@ namespace NsqSharp.Tests.Channels
             wg.Wait();
 
             Assert.AreEqual(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, list.ToArray());
+        }
+
+        [Test]
+        public void ClosedChannelsWithDataShouldNotReportClosedUntilDrained()
+        {
+            for (int i = 0; i < 10000; i++)
+            {
+                var chan = new Chan<int>();
+
+                var wait = new AutoResetEvent(initialState: false);
+
+                GoFunc.Run(() =>
+                           {
+                               chan.Send(1);
+                               chan.Close();
+
+                           }, "send");
+
+                bool ok = false, ok2 = false;
+                int actual = -1, actual2 = -1;
+
+                GoFunc.Run(() =>
+                           {
+                               actual = chan.ReceiveOk(out ok);
+                               actual2 = chan.ReceiveOk(out ok2);
+                               wait.Set();
+                           }, "receive");
+
+                wait.WaitOne();
+
+                Assert.AreEqual(true, ok, string.Format("ok iteration {0}", i));
+                Assert.AreEqual(1, actual, string.Format("actual iteration {0}", i));
+                Assert.AreEqual(false, ok2, string.Format("ok2 iteration {0}", i));
+                Assert.AreEqual(default(int), actual2, string.Format("actual2 iteration {0}", i));
+            }
         }
     }
 }

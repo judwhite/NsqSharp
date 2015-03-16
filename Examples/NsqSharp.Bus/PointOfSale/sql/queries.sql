@@ -1,6 +1,8 @@
 /*
 
+select * from dbo.TransportAudit
 select * from dbo.TransportAudit where success=1
+select * from dbo.TransportAudit where channel = 'get-invoice-summary'
 select max(attempt) from dbo.TransportAudit where success=0
 select distinct failedaction from dbo.TransportAudit 
 select * from dbo.transportaudit where failedaction = 'finish'

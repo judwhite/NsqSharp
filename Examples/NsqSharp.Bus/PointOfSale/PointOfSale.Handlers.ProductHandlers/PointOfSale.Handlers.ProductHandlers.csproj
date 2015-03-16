@@ -45,7 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChannelProvider.cs" />
-    <Compile Include="CoreRegistry.cs" />
+    <Compile Include="ProductHandlersRegistry.cs" />
     <Compile Include="Handlers\GetProductDetailsHandler.cs" />
     <Compile Include="Handlers\GetProductsHandler.cs" />
     <Compile Include="Program.cs" />

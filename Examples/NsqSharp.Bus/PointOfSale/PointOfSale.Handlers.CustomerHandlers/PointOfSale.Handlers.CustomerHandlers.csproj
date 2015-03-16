@@ -51,7 +51,7 @@
     <Compile Include="ChannelProvider.cs" />
     <Compile Include="Handlers\GetCustomerDetailsHandler.cs" />
     <Compile Include="Handlers\GetCustomersHandler.cs" />
-    <Compile Include="CoreRegistry.cs" />
+    <Compile Include="CustomerHandlersRegistry.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

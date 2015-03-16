@@ -45,7 +45,7 @@
     <Compile Include="ChannelProvider.cs" />
     <Compile Include="Handlers\GetInvoiceDetailsHandler.cs" />
     <Compile Include="Handlers\GetInvoicesHandler.cs" />
-    <Compile Include="CoreRegistry.cs" />
+    <Compile Include="InvoiceHandlersRegistry.cs" />
     <Compile Include="Handlers\GetInvoiceSummaryHandler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
