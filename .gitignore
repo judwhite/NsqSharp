@@ -4,6 +4,8 @@
 *.sln.DotSettings
 *.sln.DotSettings.user
 *.fpr
+*.nupkg
+lib/
 bin/
 obj/
 build/
