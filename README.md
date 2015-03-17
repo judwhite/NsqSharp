@@ -1,7 +1,7 @@
 NsqSharp
 ========
 
-[![Build Status](https://travis-ci.org/judwhite/NsqSharp.svg?branch=master)](https://travis-ci.org/judwhite/NsqSharp)&nbsp;&nbsp;[![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
+[![Build Status](https://travis-ci.org/judwhite/NsqSharp.svg?branch=master)](https://travis-ci.org/judwhite/NsqSharp)&nbsp;&nbsp;[![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)&nbsp;&nbsp;[![nuget](https://img.shields.io/nuget/v/NsqSharp.svg)](https://www.nuget.org/packages/NsqSharp)
 
 A .NET client library for [NSQ](https://github.com/bitly/nsq), a realtime distributed messaging platform.
 
