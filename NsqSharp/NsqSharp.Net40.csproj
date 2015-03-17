@@ -75,10 +75,10 @@
     <Compile Include="Core\Delegates.cs" />
     <Compile Include="Core\Errors.cs" />
     <Compile Include="Core\ILogger.cs" />
-    <Compile Include="Core\Message.cs" />
     <Compile Include="Core\Protocol.cs" />
     <Compile Include="Core\State.cs" />
     <Compile Include="Core\Version.cs" />
+    <Compile Include="Message.cs" />
     <Compile Include="NsqdHttpApi.cs" />
     <Compile Include="Utils\Attributes\DefaultAttribute.cs" />
     <Compile Include="Utils\Attributes\MaxAttribute.cs" />

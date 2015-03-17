@@ -381,7 +381,7 @@ namespace NsqSharp.Core
             {
                 ci.output_buffer_timeout = (int)_config.OutputBufferTimeout.TotalMilliseconds;
             }
-            ci.msg_timeout = (int)_config.MsgTimeout.TotalMilliseconds;
+            ci.msg_timeout = (int)_config.MessageTimeout.TotalMilliseconds;
 
             try
             {

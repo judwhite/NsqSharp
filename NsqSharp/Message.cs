@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
-using NsqSharp.Utils;
 using System.Text;
+using System.Threading;
+using NsqSharp.Core;
+using NsqSharp.Utils;
 
-namespace NsqSharp.Core
+namespace NsqSharp
 {
     // https://github.com/bitly/go-nsq/blob/master/message.go
 
@@ -43,11 +44,10 @@ namespace NsqSharp.Core
         private string _idHexString;
 
         /// <summary>
-        /// Creates a Message, initializes some metadata,
-        /// and returns a pointer
+        /// Initializes a new instance of the <see cref="Message"/> class.
         /// </summary>
-        /// <param name="id">The message ID</param>
-        /// <param name="body">The message body</param>
+        /// <param name="id">The message ID.</param>
+        /// <param name="body">The message body.</param>
         public Message(byte[] id, byte[] body)
         {
             if (id == null)
@@ -63,12 +63,12 @@ namespace NsqSharp.Core
         }
 
         /// <summary>
-        /// DisableAutoResponse disables the automatic response that
-        /// would normally be sent when a handler.HandleMessage
-        /// returns (FIN/REQ based on the error value returned).
+        /// <para>Disables the automatic response that
+        /// would normally be sent when <see cref="IHandler.HandleMessage"/>
+        /// returns or throw.</para>
         ///
-        /// This is useful if you want to batch, buffer, or asynchronously
-        /// respond to messages.
+        /// <para>This is useful if you want to batch, buffer, or asynchronously
+        /// respond to messages.</para>
         /// </summary>
         public void DisableAutoResponse()
         {
@@ -78,25 +78,25 @@ namespace NsqSharp.Core
         }
 
         /// <summary>
-        /// IsAutoResponseDisabled indicates whether or not this message
-        /// will be responded to automatically
+        /// Indicates whether or not this message
+        /// will be responded to automatically.
         /// </summary>
-        public bool IsAutoResponseDisabled()
+        public bool IsAutoResponseDisabled
         {
-            return (_autoResponseDisabled == 1);
+            get { return (_autoResponseDisabled == 1); }
         }
 
         /// <summary>
-        /// HasResponded indicates whether or not this message has been responded to
+        /// Indicates whether or not this message has been responded to.
         /// </summary>
-        public bool HasResponded()
+        public bool HasResponded
         {
-            return (_responded == 1);
+            get { return (_responded == 1); }
         }
 
         /// <summary>
         /// Finish sends a FIN command to the nsqd which
-        /// sent this message
+        /// sent this message.
         /// </summary>
         public void Finish()
         {
@@ -108,12 +108,12 @@ namespace NsqSharp.Core
         }
 
         /// <summary>
-        /// Touch sends a TOUCH command to the nsqd which
-        /// sent this message
+        /// Touch sends a TOUCH command to the nsqd which sent this message, resetting the default timeout.
+        /// The default timeout is 60s; see <see cref="Config.MessageTimeout"/>.
         /// </summary>
         public void Touch()
         {
-            if (HasResponded())
+            if (HasResponded)
             {
                 return;
             }
@@ -121,12 +121,12 @@ namespace NsqSharp.Core
         }
 
         /// <summary>
-        /// Requeue sends a REQ command to the nsqd which
-        /// sent this message, using the supplied delay.
+        /// <para>Sends a REQ command to the nsqd which
+        /// sent this message, using the supplied delay.</para>
         ///
-        /// A delay of <c>null</c> will automatically calculate
+        /// <para>A delay of <c>null</c> will automatically calculate
         /// based on the number of attempts and the
-        /// configured default_requeue_delay
+        /// configured <see cref="Config.DefaultRequeueDelay"/>.</para>
         /// </summary>
         public void Requeue(TimeSpan? delay = null)
         {
@@ -134,11 +134,10 @@ namespace NsqSharp.Core
         }
 
         /// <summary>
-        /// RequeueWithoutBackoff sends a REQ command to the nsqd which
-        /// sent this message, using the supplied delay.
+        /// <para>Sends a REQ command to the nsqd which
+        /// sent this message, using the supplied delay.</para>
         ///
-        /// Notably, using this method to respond does not trigger a backoff
-        /// event on the configured Delegate.
+        /// <para>Using this method to respond does not trigger a backoff event.</para>
         /// </summary>
         public void RequeueWithoutBackoff(TimeSpan? delay)
         {
@@ -155,11 +154,11 @@ namespace NsqSharp.Core
         }
 
         /// <summary>
-        /// WriteTo implements the WriterTo interface and serializes
-        /// the message into the supplied producer.
+        /// <para>WriteTo implements the WriterTo interface and serializes
+        /// the message into the supplied producer.</para>
         ///
-        /// It is suggested that the target Writer is buffered to
-        /// avoid performing many system calls.
+        /// <para>It is suggested that the target Writer is buffered to
+        /// avoid performing many system calls.</para>
         /// </summary>
         public Int64 WriteTo(Stream w)
         {
@@ -186,14 +185,16 @@ namespace NsqSharp.Core
         }
 
         /// <summary>
-        /// DecodeMessage deseralizes data (as []byte) and creates a new Message
+        /// Deseralizes <paramref name="data"/> and creates a new <see cref="Message"/>.
         /// </summary>
-        public static Message DecodeMessage(byte[] b)
+        /// <param name="data">The fully encoded message.</param>
+        /// <returns>The decoded message.</returns>
+        public static Message DecodeMessage(byte[] data)
         {
-            if (b == null)
+            if (data == null)
                 throw new ArgumentNullException("b");
 
-            using (var memoryStream = new MemoryStream(b))
+            using (var memoryStream = new MemoryStream(data))
             using (var binaryReader = new BinaryReader(memoryStream))
             {
                 ulong timestamp = Binary.BigEndian.UInt64(binaryReader);
@@ -203,14 +204,14 @@ namespace NsqSharp.Core
 
                 byte[] id = binaryReader.ReadBytes(MsgIdLength);
 
-                byte[] body = binaryReader.ReadBytes(b.Length - MsgIdLength - 10);
+                byte[] body = binaryReader.ReadBytes(data.Length - MsgIdLength - 10);
 
                 return new Message(id, body) { Timestamp = _epoch + timeOffset, Attempts = attempts };
             }
         }
 
         /// <summary>
-        /// The 16-byte message ID as a hex string.
+        /// The message ID as a hex string.
         /// </summary>
         public string Id
         {

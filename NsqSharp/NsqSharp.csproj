@@ -73,7 +73,7 @@
     <Compile Include="Core\Conn.cs" />
     <Compile Include="Core\Delegates.cs" />
     <Compile Include="Core\Errors.cs" />
-    <Compile Include="Core\Message.cs" />
+    <Compile Include="Message.cs" />
     <Compile Include="Core\Protocol.cs" />
     <Compile Include="Core\State.cs" />
     <Compile Include="Core\Version.cs" />

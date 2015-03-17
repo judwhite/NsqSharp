@@ -14,7 +14,7 @@ namespace NsqSharp
     /// <summary>
     /// IConn interface
     /// </summary>
-    public interface IConn
+    internal interface IConn
     {
         /// <summary>
         /// SetLogger assigns the logger to use as well as a level.

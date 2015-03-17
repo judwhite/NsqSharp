@@ -154,7 +154,7 @@ namespace NsqSharp
         public TimeSpan MaxBackoffDuration { get; set; }
         /// <summary>The server-side message timeout for messages delivered to this client</summary>
         [Opt("msg_timeout"), Min(0)]
-        public TimeSpan MsgTimeout { get; set; }
+        public TimeSpan MessageTimeout { get; set; }
 
         /// <summary>Secret for nsqd authentication (requires nsqd 0.2.29+)</summary>
         [Opt("auth_secret")]

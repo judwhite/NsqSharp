@@ -1368,12 +1368,12 @@ namespace NsqSharp
                 catch (Exception ex)
                 {
                     log(LogLevel.Error, string.Format("Handler returned error for msg {0} - {1}", message.Id, ex));
-                    if (!message.IsAutoResponseDisabled())
+                    if (!message.IsAutoResponseDisabled)
                         message.Requeue();
                     continue;
                 }
 
-                if (!message.IsAutoResponseDisabled())
+                if (!message.IsAutoResponseDisabled)
                     message.Finish();
             }
 

@@ -122,7 +122,7 @@ namespace NsqSharp.Tests
             Assert.AreEqual(TimeSpan.FromMilliseconds(250), c.OutputBufferTimeout, "output_buffer_timeout");
             Assert.AreEqual(1, c.MaxInFlight, "max_in_flight");
             Assert.AreEqual(TimeSpan.FromMinutes(2), c.MaxBackoffDuration, "max_backoff_duration");
-            Assert.AreEqual(TimeSpan.Zero, c.MsgTimeout, "msg_timeout");
+            Assert.AreEqual(TimeSpan.Zero, c.MessageTimeout, "msg_timeout");
             Assert.IsNull(c.AuthSecret, "auth_secret");
         }
 
@@ -179,7 +179,7 @@ namespace NsqSharp.Tests
             Assert.AreEqual(TimeSpan.MinValue, c.OutputBufferTimeout, "output_buffer_timeout");
             Assert.AreEqual(0, c.MaxInFlight, "max_in_flight");
             Assert.AreEqual(TimeSpan.Zero, c.MaxBackoffDuration, "max_backoff_duration");
-            Assert.AreEqual(TimeSpan.Zero, c.MsgTimeout, "msg_timeout");
+            Assert.AreEqual(TimeSpan.Zero, c.MessageTimeout, "msg_timeout");
             Assert.AreEqual(null, c.AuthSecret, "auth_secret");
         }
 
@@ -237,7 +237,7 @@ namespace NsqSharp.Tests
             Assert.AreEqual(TimeSpan.MaxValue, c.OutputBufferTimeout, "output_buffer_timeout");
             Assert.AreEqual(int.MaxValue, c.MaxInFlight, "max_in_flight");
             Assert.AreEqual(TimeSpan.FromMinutes(60), c.MaxBackoffDuration, "max_backoff_duration");
-            Assert.AreEqual(TimeSpan.MaxValue, c.MsgTimeout, "msg_timeout");
+            Assert.AreEqual(TimeSpan.MaxValue, c.MessageTimeout, "msg_timeout");
             Assert.AreEqual("!@#@#$#%", c.AuthSecret, "auth_secret");
         }
 
@@ -355,7 +355,7 @@ namespace NsqSharp.Tests
             Assert.AreEqual(TimeSpan.FromMilliseconds(250), c2.OutputBufferTimeout, "output_buffer_timeout");
             Assert.AreEqual(1, c2.MaxInFlight, "max_in_flight");
             Assert.AreEqual(TimeSpan.FromMinutes(2), c2.MaxBackoffDuration, "max_backoff_duration");
-            Assert.AreEqual(TimeSpan.Zero, c2.MsgTimeout, "msg_timeout");
+            Assert.AreEqual(TimeSpan.Zero, c2.MessageTimeout, "msg_timeout");
             Assert.IsNull(c2.AuthSecret, "auth_secret");
         }
 

@@ -236,7 +236,7 @@ namespace NsqSharp.Tests
         }
     }
 
-    public class MockProducerConn : IConn
+    public class MockProducerConn
     {
         private static readonly byte[] PUB_BYTES = Encoding.UTF8.GetBytes("PUB");
         private static readonly byte[] OK_RESP = mockNSQD.framedResponse((int)FrameType.Response, Encoding.UTF8.GetBytes("OK"));
