@@ -16,69 +16,69 @@ using Timer = NsqSharp.Utils.Timer;
 namespace NsqSharp
 {
     /// <summary>
-    /// IHandler is the message processing interface for <see cref="Consumer" />
-    ///
-    /// Implement this interface for handlers that return whether or not message
-    /// processing completed successfully.
-    /// 
-    /// When the return value is nil Consumer will automatically handle FINishing.
-    ///
-    /// When the returned value is non-nil Consumer will automatically handle REQueing.
+    /// <para>Message processing interface for <see cref="Consumer" />.</para>
+    /// <para>When the <see cref="HandleMessage"/> method returns the Consumer will automatically handle FINishing.</para>
+    /// <para>When an exception is thrown the Consumer will automatically handle REQueing.</para>
+    /// <seealso cref="Consumer.AddHandler"/>
     /// </summary>
     public interface IHandler
     {
         /// <summary>
-        /// Handles messages.
+        /// Handles a message.
         /// </summary>
         /// <param name="message">The message.</param>
         void HandleMessage(Message message);
 
         /// <summary>
-        /// Called when a message is deemed "failed" (i.e. the number of attempts
-        /// exceeded the Consumer specified MaxAttemptCount)
+        /// Called when a <see cref="Message"/> has exceeded the Consumer specified <see cref="Config.MaxAttempts"/>.
         /// </summary>
         /// <param name="message">The failed message.</param>
         void LogFailedMessage(Message message);
     }
 
     /// <summary>
-    /// DiscoveryFilter is an interface accepted by `SetBehaviorDelegate()`
-    /// for filtering the nsqds returned from discovery via nsqlookupd
+    /// <see cref="IDiscoveryFilter" /> is an interface accepted by <see cref="Consumer.SetBehaviorDelegate"/>
+    /// for filtering the NSQD addresses returned from discovery via nsqlookupd.
     /// </summary>
     public interface IDiscoveryFilter
     {
         /// <summary>
         /// Filters a list of NSQD addresses.
         /// </summary>
-        Collection<string> Filter(IEnumerable<string> nsqds);
+        /// <param name="nsqds">NSQD addresses returned by nsqlookupd.</param>
+        /// <returns>The filtered list of NSQD addresses to use.</returns>
+        IEnumerable<string> Filter(IEnumerable<string> nsqds);
     }
 
     /// <summary>
-    /// ConsumerStats represents a snapshot of the state of a Consumer's connections and the messages
-    /// it has seen
+    /// <see cref="ConsumerStats" /> represents a snapshot of the state of a <see cref="Consumer"/>'s
+    /// connections and the messages it has seen.
     /// </summary>
     public class ConsumerStats
     {
-        /// <summary>Messages Received</summary>
-        public long MessagesReceived { get; set; }
-        /// <summary>Messages Finished</summary>
-        public long MessagesFinished { get; set; }
-        /// <summary>Messages Requeued</summary>
-        public long MessagesRequeued { get; set; }
-        /// <summary>Connections</summary>
-        public int Connections { get; set; }
+        /// <summary>Messages Received.</summary>
+        public long MessagesReceived { get; internal set; }
+        /// <summary>Messages Finished.</summary>
+        public long MessagesFinished { get; internal set; }
+        /// <summary>Messages Requeued.</summary>
+        public long MessagesRequeued { get; internal set; }
+        /// <summary>Connections.</summary>
+        public int Connections { get; internal set; }
     }
 
     /// <summary>
-    /// Consumer is a high-level type to consume from NSQ.
+    /// <para>Consumer is a high-level type to consume from NSQ.</para>
     ///
-    /// A Consumer instance is supplied a Handler that will be executed
-    /// concurrently via goroutines to handle processing the stream of messages
-    /// consumed from the specified topic/channel. See: Handler/HandlerFunc
-    /// for details on implementing the interface to create handlers.
+    /// <para>A Consumer instance is supplied a <see cref="IHandler"/> that will be executed
+    /// concurrently to handle processing the stream of messages
+    /// consumed from the specified topic/channel.</para>
     ///
-    /// If configured, it will poll nsqlookupd instances and handle connection (and
-    /// reconnection) to any discovered nsqds.
+    /// <para>If configured, it will poll nsqlookupd instances and handle connection (and
+    /// reconnection) to any discovered nsqds.</para>
+    /// <seealso cref="AddHandler"/>
+    /// <seealso cref="ConnectToNsqd"/>
+    /// <seealso cref="ConnectToNsqLookupd"/>
+    /// <seealso cref="Stop()"/>
     /// </summary>
     public class Consumer
     {
@@ -137,7 +137,7 @@ namespace NsqSharp
         private readonly Chan<int> _stopChan;
         private readonly Chan<int> _exitChan;
 
-        /// <summary>Creates a new instance of Consumer for the specified topic/channel</summary>
+        /// <summary>Creates a new instance of Consumer for the specified topic/channel.</summary>
         /// <param name="topic">The topic.</param>
         /// <param name="channel">The channel.</param>
         public Consumer(string topic, string channel)
@@ -145,7 +145,7 @@ namespace NsqSharp
         {
         }
 
-        /// <summary>Creates a new instance of Consumer for the specified topic/channel</summary>
+        /// <summary>Creates a new instance of Consumer for the specified topic/channel.</summary>
         /// <param name="topic">The topic.</param>
         /// <param name="channel">The channel.</param>
         /// <param name="logger">The logger.</param>
@@ -154,7 +154,7 @@ namespace NsqSharp
         {
         }
 
-        /// <summary>Creates a new instance of Consumer for the specified topic/channel</summary>
+        /// <summary>Creates a new instance of Consumer for the specified topic/channel.</summary>
         /// <param name="topic">The topic.</param>
         /// <param name="channel">The channel.</param>
         /// <param name="config">The config. After config is passed in the values
@@ -164,7 +164,7 @@ namespace NsqSharp
         {
         }
 
-        /// <summary>Creates a new instance of Consumer for the specified topic/channel</summary>
+        /// <summary>Creates a new instance of Consumer for the specified topic/channel.</summary>
         /// <param name="topic">The topic.</param>
         /// <param name="channel">The channel.</param>
         /// <param name="logger">The logger.</param>
@@ -228,8 +228,8 @@ namespace NsqSharp
             get { return _stopChan; }
         }
 
-        /// <summary>Stats retrieves the current connection and message statistics for a Consumer</summary>
-        public ConsumerStats Stats()
+        /// <summary>Retrieves the current connection and message statistics for a Consumer.</summary>
+        public ConsumerStats GetStats()
         {
             return new ConsumerStats
             {
@@ -254,18 +254,14 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// SetBehaviorDelegate takes a type implementing one or more
-        /// of the following interfaces that modify the behavior
-        /// of the `Consumer`:
-        ///
-        ///    DiscoveryFilter
-        ///
+        /// <see cref="SetBehaviorDelegate" /> takes an <see cref="IDiscoveryFilter"/>
+        /// that modifies the behavior of the <see cref="Consumer" />.
         /// </summary>
-        /// <param name="cb">The callback</param>
-        public void SetBehaviorDelegate(IDiscoveryFilter cb)
+        /// <param name="discoveryFilter">The discovery filter.</param>
+        public void SetBehaviorDelegate(IDiscoveryFilter discoveryFilter)
         {
             // TODO: can go-nsq take a DiscoveryFilter instead of interface{} ?
-            _behaviorDelegate = cb;
+            _behaviorDelegate = discoveryFilter;
         }
 
         /// <summary>
@@ -283,23 +279,26 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// IsStarved indicates whether any connections for this consumer are blocked on processing
-        /// before being able to receive more messages (ie. RDY count of 0 and not exiting)
+        /// Indicates whether any connections for this consumer are blocked on processing
+        /// before being able to receive more messages (ie. RDY count of 0 and not exiting).
         /// </summary>
-        public bool IsStarved()
+        public bool IsStarved
         {
-            foreach (var conn in conns())
+            get
             {
-                // TODO: if in backoff, would IsStarved return true? what's the impact?
-                // TODO: go-nsq PR, use conn.LastRDY() which does the atomic load for us
-                long threshold = (long)(conn.LastRDY * 0.85);
-                long inFlight = conn._messagesInFlight;
-                if (inFlight >= threshold && inFlight > 0 && !conn.IsClosing)
+                foreach (var conn in conns())
                 {
-                    return true;
+                    // TODO: if in backoff, would IsStarved return true? what's the impact?
+                    // TODO: go-nsq PR, use conn.LastRDY() which does the atomic load for us
+                    long threshold = (long)(conn.LastRDY * 0.85);
+                    long inFlight = conn._messagesInFlight;
+                    if (inFlight >= threshold && inFlight > 0 && !conn.IsClosing)
+                    {
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
         }
 
         private int getMaxInFlight()
@@ -308,12 +307,12 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// ChangeMaxInFlight sets a new maximum number of messages this comsumer instance
-        /// will allow in-flight, and updates all existing connections as appropriate.
+        /// <para>Sets a new maximum number of messages this comsumer instance
+        /// will allow in-flight, and updates all existing connections as appropriate.</para>
         ///
-        /// For example, ChangeMaxInFlight(0) would pause message flow
+        /// <para>For example, ChangeMaxInFlight(0) would pause message flow.</para>
         ///
-        /// If already connected, it updates the reader RDY state for each connection.
+        /// <para>If already connected, it updates the reader RDY state for each connection.</para>para>
         /// </summary>
         public void ChangeMaxInFlight(int maxInFlight)
         {
@@ -329,24 +328,38 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// ConnectToNSQLookupd adds an nsqlookupd address to the list for this Consumer instance.
+        /// <para>Adds nsqlookupd addresses to the list for this Consumer instance.</para>
         ///
-        /// If it is the first to be added, it initiates an HTTP request to discover nsqd
-        /// producers for the configured topic.
+        /// <para>If it is the first to be added, it initiates an HTTP request to discover nsqd
+        /// producers for the configured topic.</para>
         ///
-        /// A goroutine is spawned to handle continual polling.
+        /// <para>A new thread is spawned to handle continual polling.</para>
         /// </summary>
-        public void ConnectToNSQLookupd(string addr)
+        /// <param name="addresses">The nsqlookupd addresses to add.</param>
+        public void ConnectToNsqLookupd(params string[] addresses)
         {
-            if (string.IsNullOrEmpty(addr))
-                throw new ArgumentNullException("addr");
+            if (addresses == null)
+                throw new ArgumentNullException("addresses");
+            if (addresses.Length == 0)
+                throw new ArgumentException("addresses.Length = 0", "addresses");
+
+            foreach (string address in addresses)
+            {
+                connectToNsqLookupd(address);
+            }
+        }
+
+        private void connectToNsqLookupd(string address)
+        {
+            if (string.IsNullOrEmpty(address))
+                throw new ArgumentNullException("address");
 
             if (_stopFlag == 1)
                 throw new Exception("consumer stopped");
             if (_runningHandlers == 0)
                 throw new Exception("no handlers");
 
-            validatedLookupAddr(addr);
+            validatedLookupAddr(address);
 
             _connectedFlag = 1;
 
@@ -356,11 +369,11 @@ namespace NsqSharp
             {
                 foreach (var x in _lookupdHTTPAddrs)
                 {
-                    if (x == addr)
+                    if (x == address)
                         return;
                 }
 
-                _lookupdHTTPAddrs.Add(addr);
+                _lookupdHTTPAddrs.Add(address);
                 numLookupd = _lookupdHTTPAddrs.Count;
             }
             finally
@@ -377,33 +390,17 @@ namespace NsqSharp
             }
         }
 
-        /// <summary>
-        /// ConnectToNSQLookupd adds multiple nsqlookupd address to the list for this Consumer instance.
-        ///
-        /// If adding the first address it initiates an HTTP request to discover nsqd
-        /// producers for the configured topic.
-        ///
-        /// A goroutine is spawned to handle continual polling.
-        /// </summary>
-        public void ConnectToNSQLookupds(IEnumerable<string> addresses)
+        private void validatedLookupAddr(string address)
         {
-            if (addresses == null)
-                throw new ArgumentNullException("addresses");
+            if (string.IsNullOrEmpty(address))
+                throw new ArgumentNullException("address");
 
-            foreach (var addr in addresses)
-            {
-                ConnectToNSQLookupd(addr);
-            }
-        }
-
-        private void validatedLookupAddr(string addr)
-        {
-            if (addr.Contains("/"))
+            if (address.Contains("/"))
             {
                 // TODO: verify this is the kind of validation we want
-                new Uri(addr, UriKind.Absolute);
+                new Uri(address, UriKind.Absolute);
             }
-            if (!addr.Contains(":"))
+            if (!address.Contains(":"))
                 throw new Exception("missing port");
         }
 
@@ -432,6 +429,7 @@ namespace NsqSharp
                         .CaseReceive(_exitChan, o => doLoop = false)
                         .NoDefault(defer: true))
             {
+                // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
                 while (doLoop)
                 {
                     select.Execute();
@@ -530,16 +528,20 @@ namespace NsqSharp
                 }
             }
 
-            if (_behaviorDelegate != null)
+            var behaviorDelegate = _behaviorDelegate;
+            if (behaviorDelegate != null)
             {
-                nsqAddrs = _behaviorDelegate.Filter(nsqAddrs);
+                nsqAddrs = new Collection<string>(behaviorDelegate.Filter(nsqAddrs).ToList());
             }
+
+            if (_stopFlag == 1)
+                return;
 
             foreach (var addr in nsqAddrs)
             {
                 try
                 {
-                    ConnectToNSQD(addr);
+                    ConnectToNsqd(addr);
                 }
                 catch (Exception ex)
                 {
@@ -549,30 +551,25 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// ConnectToNSQD takes multiple nsqd addresses to connect directly to.
+        /// <para>Adds nsqd addresses to directly connect to for this Consumer instance.</para>
         ///
-        /// It is recommended to use <see cref="ConnectToNSQLookupd"/> so that topics are discovered
-        /// automatically.  This method is useful when you want to connect to local instance.
+        /// <para>It is recommended to use <see cref="ConnectToNsqLookupd"/> so that topics are discovered
+        /// automatically. This method is useful when you want to connect to a single, local, instance.</para>
         /// </summary>
-        public void ConnectToNSQDs(IEnumerable<string> addresses)
+        public void ConnectToNsqd(params string[] addresses)
         {
             if (addresses == null)
                 throw new ArgumentNullException("addresses");
+            if (addresses.Length == 0)
+                throw new ArgumentException("addresses.Length = 0", "addresses");
 
-            foreach (var addr in addresses)
+            foreach (string address in addresses)
             {
-                ConnectToNSQD(addr);
+                connectToNsqd(address);
             }
         }
 
-        /// <summary>
-        /// ConnectToNSQD takes a nsqd address to connect directly to.
-        ///
-        /// It is recommended to use <see cref="ConnectToNSQLookupd"/> so that topics are discovered
-        /// automatically.  This method is useful when you want to connect to a single, local,
-        /// instance.
-        /// </summary>
-        public void ConnectToNSQD(string addr)
+        private void connectToNsqd(string addr)
         {
             if (string.IsNullOrEmpty(addr))
                 throw new ArgumentNullException("addr");
@@ -679,18 +676,17 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// DisconnectFromNSQD closes the connection to and removes the specified
-        /// `nsqd` address from the list
+        /// Closes the connection to and removes the specified <paramref name="nsqdAddress" /> from the list
         /// </summary>
-        public void DisconnectFromNSQD(string addr)
+        public void DisconnectFromNsqd(string nsqdAddress)
         {
-            if (string.IsNullOrEmpty(addr))
-                throw new ArgumentNullException("addr");
+            if (string.IsNullOrEmpty(nsqdAddress))
+                throw new ArgumentNullException("nsqdAddress");
 
             _mtx.EnterWriteLock();
             try
             {
-                int idx = _nsqdTCPAddrs.IndexOf(addr);
+                int idx = _nsqdTCPAddrs.IndexOf(nsqdAddress);
                 if (idx == -1)
                     throw new ErrNotConnected();
 
@@ -698,14 +694,14 @@ namespace NsqSharp
 
                 // TODO: PR go-nsq remove from connections/pendingConnections
                 Conn pendingConn, conn;
-                if (_connections.TryGetValue(addr, out conn))
+                if (_connections.TryGetValue(nsqdAddress, out conn))
                 {
-                    _connections.Remove(addr);
+                    _connections.Remove(nsqdAddress);
                     conn.Close();
                 }
-                else if (_pendingConnections.TryGetValue(addr, out pendingConn))
+                else if (_pendingConnections.TryGetValue(nsqdAddress, out pendingConn))
                 {
-                    _pendingConnections.Remove(addr);
+                    _pendingConnections.Remove(nsqdAddress);
                     pendingConn.Close();
                 }
             }
@@ -716,25 +712,25 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// DisconnectFromNSQLookupd removes the specified `nsqlookupd` address
+        /// Removes the specified <paramref name="nsqlookupdAddress"/>
         /// from the list used for periodic discovery.
         /// </summary>
-        public void DisconnectFromNSQLookupd(string addr)
+        public void DisconnectFromNsqLookupd(string nsqlookupdAddress)
         {
-            if (string.IsNullOrEmpty(addr))
-                throw new ArgumentNullException("addr");
+            if (string.IsNullOrEmpty(nsqlookupdAddress))
+                throw new ArgumentNullException("nsqlookupdAddress");
 
             _mtx.EnterWriteLock();
             try
             {
-                if (!_lookupdHTTPAddrs.Contains(addr))
+                if (!_lookupdHTTPAddrs.Contains(nsqlookupdAddress))
                     throw new ErrNotConnected();
 
                 if (_lookupdHTTPAddrs.Count == 1)
                     throw new Exception(string.Format(
-                        "cannot disconnect from only remaining nsqlookupd HTTP address {0}", addr));
+                        "cannot disconnect from only remaining nsqlookupd HTTP address {0}", nsqlookupdAddress));
 
-                _lookupdHTTPAddrs.Remove(addr);
+                _lookupdHTTPAddrs.Remove(nsqlookupdAddress);
             }
             finally
             {
@@ -1005,7 +1001,7 @@ namespace NsqSharp
                         }
                         try
                         {
-                            ConnectToNSQD(connAddr);
+                            ConnectToNsqd(connAddr);
                         }
                         catch (Exception ex)
                         {
@@ -1234,10 +1230,10 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// <see cref="Stop(bool)"/> will initiate a graceful stop of the <see cref="Consumer" /> (permanent)
+        /// <see cref="Stop(bool)"/> will initiate a graceful stop of the <see cref="Consumer" /> (permanent).
         /// </summary>
         /// <param name="blockUntilStopCompletes"><c>true</c> to block until the graceful shutdown completes
-        /// (default = <c>false</c>)</param>
+        /// (default = <c>false</c>).</param>
         public void Stop(bool blockUntilStopCompletes)
         {
             Stop();
@@ -1247,9 +1243,9 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// <see cref="Stop()"/> will initiate a graceful stop of the <see cref="Consumer" /> (permanent)
+        /// <para><see cref="Stop()"/> will initiate a graceful stop of the <see cref="Consumer" /> (permanent).</para>
         ///
-        /// NOTE: receive on <see cref="StopChan"/> to block until this process completes
+        /// <para>NOTE: receive on <see cref="StopChan"/> to block until this process completes.</para>
         /// </summary>
         public void Stop()
         {
@@ -1298,19 +1294,22 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// AddHandler sets the Handler for messages received by this Consumer. This can be called
-        /// multiple times to add additional handlers. Handler will have a 1:1 ratio to message handling goroutines.
+        /// <para>Sets the <see cref="IHandler" /> instance to handle for messages received
+        /// by this <see cref="Consumer"/>.</para>
         ///
-        /// This panics if called after connecting to NSQD or NSQ Lookupd
-        ///
-        /// (see IHandler or HandlerFunc for details on implementing this interface)
+        /// <para>This method throws if called after connecting to nsqd or nsqlookupd.</para>
         /// </summary>
-        public void AddHandler(IHandler handler)
+        /// <param name="handler">The handler for the topic/channel of this Consumer instance.</param>
+        /// <param name="threads">The number of threads used to handle incoming messages for this
+        /// <see cref="Consumer" /> (default = 1).</param>
+        public void AddHandler(IHandler handler, int threads = 1)
         {
             if (handler == null)
                 throw new ArgumentNullException("handler");
+            if (threads <= 0)
+                throw new ArgumentOutOfRangeException("threads", threads, "threads must be > 0");
 
-            AddConcurrentHandlers(handler, 1);
+            addConcurrentHandlers(handler, threads);
         }
 
         /// <summary>
@@ -1322,7 +1321,7 @@ namespace NsqSharp
         ///
         /// (see Handler or HandlerFunc for details on implementing this interface)
         /// </summary>
-        public void AddConcurrentHandlers(IHandler handler, int concurrency)
+        private void addConcurrentHandlers(IHandler handler, int concurrency)
         {
             if (handler == null)
                 throw new ArgumentNullException("handler");

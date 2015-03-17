@@ -6,7 +6,7 @@ namespace NsqSharp.Utils
     /// <summary>
     /// TlsConfig. Minimal implementation of http://golang.org/pkg/crypto/tls/#Config
     /// </summary>
-    public class TlsConfig
+    internal class TlsConfig
     {
         /// <summary>
         /// Initializes a new instance of the TlsConfig class.

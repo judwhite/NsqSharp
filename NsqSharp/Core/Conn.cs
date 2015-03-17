@@ -358,10 +358,10 @@ namespace NsqSharp.Core
             ci.user_agent = _config.UserAgent;
             ci.short_id = _config.ClientID; // deprecated
             ci.long_id = _config.Hostname;  // deprecated
-            ci.tls_v1 = _config.TlsV1;
-            ci.deflate = _config.Deflate;
-            ci.deflate_level = _config.DeflateLevel;
-            ci.snappy = _config.Snappy;
+            ci.tls_v1 = false; //_config.TlsV1; // TODO: TLS
+            ci.deflate = false; //_config.Deflate; // TODO: Deflate
+            ci.deflate_level = 6; //_config.DeflateLevel; // TODO: Deflate
+            ci.snappy = false; //_config.Snappy; // TODO: Snappy
             ci.feature_negotiation = true;
             if (_config.HeartbeatInterval <= TimeSpan.Zero)
             {
@@ -418,6 +418,7 @@ namespace NsqSharp.Core
 
                 _maxRdyCount = resp.MaxRdyCount;
 
+                // TODO: TLS
                 /*if resp.TLSv1 {
                     c.log(LogLevelInfo, "upgrading to TLS")
                     err := c.upgradeTLS(c.config.TlsConfig)
@@ -426,6 +427,7 @@ namespace NsqSharp.Core
                     }
                 }*/
 
+                // TODO: Deflate
                 /*if resp.Deflate {
                     c.log(LogLevelInfo, "upgrading to Deflate")
                     err := c.upgradeDeflate(c.config.DeflateLevel)
@@ -434,6 +436,7 @@ namespace NsqSharp.Core
                     }
                 }*/
 
+                // TODO: Snappy
                 /*if resp.Snappy {
                     c.log(LogLevelInfo, "upgrading to Snappy")
                     err := c.upgradeSnappy()

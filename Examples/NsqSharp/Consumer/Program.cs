@@ -52,9 +52,9 @@ namespace ConsumerExample
             // .\nsqd -lookupd-tcp-address=127.0.0.1:4160
 
             if (!string.IsNullOrEmpty(cfg.NsqdTcpAddress))
-                consumer.ConnectToNSQD(cfg.NsqdTcpAddress);
+                consumer.ConnectToNsqd(cfg.NsqdTcpAddress);
             else
-                consumer.ConnectToNSQLookupd(cfg.NsqlookupdHttpAddress);
+                consumer.ConnectToNsqLookupd(cfg.NsqlookupdHttpAddress);
 
             var stopwatch = Stopwatch.StartNew();
             _wait.WaitOne(); // wait for the # we want to receive or Ctrl+C
@@ -64,7 +64,7 @@ namespace ConsumerExample
 
             streamWriter.Flush();
 
-            var stats = consumer.Stats();
+            var stats = consumer.GetStats();
 
             Console.WriteLine(string.Format("{0:#,0} message received in {1:hh\\:mm\\:ss\\.fff}; Avg: {2:#,0} msgs/s",
                 stats.MessagesReceived, stopwatch.Elapsed, stats.MessagesReceived / stopwatch.Elapsed.TotalSeconds));

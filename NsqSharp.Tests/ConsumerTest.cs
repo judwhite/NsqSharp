@@ -5,7 +5,6 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using NsqSharp.Core;
-using NsqSharp.Utils;
 using NsqSharp.Utils.Extensions;
 using NUnit.Framework;
 
@@ -20,7 +19,8 @@ namespace NsqSharp.Tests
             consumerTest(configSetter: null);
         }
 
-        [Test, Ignore("TLS not implemented")]
+        // TODO: TLS
+        /*[Test, Ignore("TLS not implemented")]
         public void TestConsumerTLS()
         {
             consumerTest(c =>
@@ -28,27 +28,30 @@ namespace NsqSharp.Tests
                              c.TlsV1 = true;
                              c.TlsConfig = new TlsConfig { InsecureSkipVerify = true };
                          });
-        }
+        }*/
 
-        [Test, Ignore("Deflate not implemented")]
+        // TODO: Deflate
+        /*[Test, Ignore("Deflate not implemented")]
         public void TestConsumerDeflate()
         {
             consumerTest(c =>
                          {
                              c.Deflate = true;
                          });
-        }
+        }*/
 
-        [Test, Ignore("Snappy not implemented")]
+        // TODO: Snappy
+        /*[Test, Ignore("Snappy not implemented")]
         public void TestConsumerSnappy()
         {
             consumerTest(c =>
                          {
                              c.Snappy = true;
                          });
-        }
+        }*/
 
-        [Test, Ignore("TLS/Deflate not implemented")]
+        // TODO: TLS/Deflate
+        /*[Test, Ignore("TLS/Deflate not implemented")]
         public void TestConsumerTLSDeflate()
         {
             consumerTest(c =>
@@ -57,9 +60,10 @@ namespace NsqSharp.Tests
                 c.TlsConfig = new TlsConfig { InsecureSkipVerify = true };
                 c.Deflate = true;
             });
-        }
+        }*/
 
-        [Test, Ignore("TLS/Snappy not implemented")]
+        // TODO: TLS/Snappy
+        /*[Test, Ignore("TLS/Snappy not implemented")]
         public void TestConsumerTLSSnappy()
         {
             consumerTest(c =>
@@ -68,9 +72,10 @@ namespace NsqSharp.Tests
                 c.TlsConfig = new TlsConfig { InsecureSkipVerify = true };
                 c.Snappy = true;
             });
-        }
+        }*/
 
-        [Test, Ignore("TLS Client Cert not implemented")]
+        // TODO: TLS
+        /*[Test, Ignore("TLS Client Cert not implemented")]
         public void TestConsumerTLSClientCert()
         {
             //cert, _ := tls.LoadX509KeyPair("./test/client.pem", "./test/client.key") // TODO
@@ -83,9 +88,10 @@ namespace NsqSharp.Tests
                     InsecureSkipVerify = true
                 };
             });
-        }
+        }*/
 
-        [Test, Ignore("TLS Client Cert not implemented")]
+        // TODO: TLS
+        /*[Test, Ignore("TLS Client Cert not implemented")]
         public void TestConsumerTLSClientCertViaSet()
         {
             consumerTest(c =>
@@ -95,7 +101,7 @@ namespace NsqSharp.Tests
                 c.Set("tls_key", "./test/client.key");
                 c.Set("tls_insecure_skip_verify", true);
             });
-        }
+        }*/
 
         private void consumerTest(Action<Config> configSetter)
         {
@@ -109,12 +115,16 @@ namespace NsqSharp.Tests
                 configSetter(config);
             }
             var topicName = "rdr_test";
-            if (config.Deflate)
+            
+            // TODO: Deflate, Snappy, TLS
+            /*if (config.Deflate)
                 topicName = topicName + "_deflate";
             else if (config.Snappy)
                 topicName = topicName + "_snappy";
+            
             if (config.TlsV1)
-                topicName = topicName + "_tls";
+                topicName = topicName + "_tls";*/
+            
             topicName = topicName + DateTime.Now.Unix();
             var q = new Consumer(topicName, "ch", config);
             // q.SetLogger(nullLogger, LogLevelInfo)
@@ -128,9 +138,9 @@ namespace NsqSharp.Tests
             h.messagesSent = 4;
 
             const string addr = "127.0.0.1:4150";
-            q.ConnectToNSQD(addr);
+            q.ConnectToNsqd(addr);
 
-            var stats = q.Stats();
+            var stats = q.GetStats();
             Assert.AreNotEqual(0, stats.Connections, "stats report 0 connections (should be > 0)");
 
             // NOTE: changed to just return without throwing; throwing Exceptions is a little more disruptive in .NET
@@ -138,19 +148,19 @@ namespace NsqSharp.Tests
             //Assert.Throws<ErrAlreadyConnected>(() => q.ConnectToNSQD(addr),
             //    "should not be able to connect to the same NSQ twice");
 
-            Assert.Throws<ErrNotConnected>(() => q.DisconnectFromNSQD("1.2.3.4:4150"),
+            Assert.Throws<ErrNotConnected>(() => q.DisconnectFromNsqd("1.2.3.4:4150"),
                 "should not be able to disconnect from an unknown nsqd");
 
-            Assert.Throws<TimeoutException>(() => q.ConnectToNSQD("1.2.3.4:4150"),
+            Assert.Throws<TimeoutException>(() => q.ConnectToNsqd("1.2.3.4:4150"),
                 "should not be able to connect to non-existent nsqd");
 
             // should be able to disconnect from an nsqd
-            q.DisconnectFromNSQD("1.2.3.4:4150");
-            q.DisconnectFromNSQD("127.0.0.1:4150");
+            q.DisconnectFromNsqd("1.2.3.4:4150");
+            q.DisconnectFromNsqd("127.0.0.1:4150");
 
             q.StopChan.Receive();
 
-            stats = q.Stats();
+            stats = q.GetStats();
 
             Assert.AreEqual(h.messagesReceived + h.messagesFailed, stats.MessagesReceived, "stats report messages received");
             Assert.AreEqual(8, h.messagesReceived, "messages received");

@@ -227,7 +227,7 @@ namespace NsqSharp.Tests
             var h = new ConsumerHandler { q = q };
             q.AddHandler(h);
 
-            q.ConnectToNSQD("127.0.0.1:4150");
+            q.ConnectToNsqd("127.0.0.1:4150");
             q.StopChan.Receive();
 
             Assert.AreEqual(msgCount, h.messagesGood, "should have handled a diff number of messages");

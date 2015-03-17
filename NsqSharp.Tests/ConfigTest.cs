@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Security.Authentication;
 using NsqSharp.Core;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Attributes;
@@ -20,7 +19,8 @@ namespace NsqSharp.Tests
             Assert.Throws<Exception>(() => c.Set("not a real config value", new object()),
                 "No error when setting an invalid value");
 
-            Assert.Throws<Exception>(() => c.Set("tls_v1", "lol"),
+            // TODO: TLS
+            /*Assert.Throws<Exception>(() => c.Set("tls_v1", "lol"),
                 "No error when setting `tls_v1` to an invalid value");
 
             c.Set("tls_v1", true);
@@ -34,7 +34,7 @@ namespace NsqSharp.Tests
 #endif
 
             Assert.Throws<Exception>(() => c.Set("tls-min-version", "tls1.3"),
-                "No error when setting `tls-min-version` to an invalid value");
+                "No error when setting `tls-min-version` to an invalid value");*/
         }
 
         [Test]
@@ -49,21 +49,20 @@ namespace NsqSharp.Tests
         {
             var c = new Config();
 
-            Assert.Throws<Exception>(() => c.Set("deflate_level", 100));
+            Assert.Throws<Exception>(() => c.Set("max_backoff_duration", "24h"));
 
             // property wasn't set, state should still be ok
             c.Validate();
 
-            c.DeflateLevel = 100;
-            Assert.AreEqual(100, c.DeflateLevel);
-
+            c.MaxBackoffDuration = TimeSpan.FromHours(24);
+            Assert.AreEqual(TimeSpan.FromHours(24), c.MaxBackoffDuration);
             Assert.Throws<Exception>(c.Validate);
 
-            c.DeflateLevel = 1;
+            c.MaxBackoffDuration = TimeSpan.FromSeconds(60);
             c.Validate();
 
-            c.DeflateLevel = 0;
-            Assert.AreEqual(0, c.DeflateLevel);
+            c.MaxBackoffDuration = TimeSpan.FromHours(24);
+            Assert.AreEqual(TimeSpan.FromHours(24), c.MaxBackoffDuration);
             Assert.Throws<Exception>(c.Validate);
         }
 
@@ -114,11 +113,11 @@ namespace NsqSharp.Tests
             Assert.AreEqual(string.Format("{0}/{1}", ClientInfo.ClientName, ClientInfo.Version), c.UserAgent, "user_agent");
             Assert.AreEqual(TimeSpan.FromSeconds(30), c.HeartbeatInterval, "heartbeat_interval");
             Assert.AreEqual(0, c.SampleRate, "sample_rate");
-            Assert.AreEqual(false, c.TlsV1, "tls_v1");
-            Assert.IsNull(c.TlsConfig, "tls_config");
-            Assert.AreEqual(false, c.Deflate, "deflate");
-            Assert.AreEqual(6, c.DeflateLevel, "deflate_level");
-            Assert.AreEqual(false, c.Snappy, "snappy");
+            //Assert.AreEqual(false, c.TlsV1, "tls_v1"); // TODO: TLS
+            //Assert.IsNull(c.TlsConfig, "tls_config"); // TODO: TLS
+            //Assert.AreEqual(false, c.Deflate, "deflate"); // TODO: Deflate
+            //Assert.AreEqual(6, c.DeflateLevel, "deflate_level"); // TODO: Deflate
+            //Assert.AreEqual(false, c.Snappy, "snappy"); // TODO: Snappy
             Assert.AreEqual(16384, c.OutputBufferSize, "output_buffer_size");
             Assert.AreEqual(TimeSpan.FromMilliseconds(250), c.OutputBufferTimeout, "output_buffer_timeout");
             Assert.AreEqual(1, c.MaxInFlight, "max_in_flight");
@@ -145,11 +144,11 @@ namespace NsqSharp.Tests
             c.Set("user_agent", null);
             c.Set("heartbeat_interval", TimeSpan.MinValue);
             c.Set("sample_rate", 0);
-            c.Set("tls_v1", false);
-            c.Set("tls_config", null);
-            c.Set("deflate", false);
-            c.Set("deflate_level", 1);
-            c.Set("snappy", false);
+            //c.Set("tls_v1", false); // TODO: TLS
+            //c.Set("tls_config", null); // TODO: TLS
+            //c.Set("deflate", false); // TODO: Deflate
+            //c.Set("deflate_level", 1); // TODO: Deflate
+            //c.Set("snappy", false); // TODO: Snappy
             c.Set("output_buffer_size", Int64.MinValue);
             c.Set("output_buffer_timeout", TimeSpan.MinValue);
             c.Set("max_in_flight", 0);
@@ -171,11 +170,11 @@ namespace NsqSharp.Tests
             Assert.AreEqual(null, c.UserAgent, "user_agent");
             Assert.AreEqual(TimeSpan.MinValue, c.HeartbeatInterval, "heartbeat_interval");
             Assert.AreEqual(0, c.SampleRate, "sample_rate");
-            Assert.AreEqual(false, c.TlsV1, "tls_v1");
-            Assert.AreEqual(null, c.TlsConfig, "tls_config");
-            Assert.AreEqual(false, c.Deflate, "deflate");
-            Assert.AreEqual(1, c.DeflateLevel, "deflate_level");
-            Assert.AreEqual(false, c.Snappy, "snappy");
+            //Assert.AreEqual(false, c.TlsV1, "tls_v1"); // TODO: TLS
+            //Assert.AreEqual(null, c.TlsConfig, "tls_config"); // TODO: TLS
+            //Assert.AreEqual(false, c.Deflate, "deflate"); // TODO: Deflate
+            //Assert.AreEqual(1, c.DeflateLevel, "deflate_level"); // TODO: Deflate
+            //Assert.AreEqual(false, c.Snappy, "snappy"); // TODO: Snappy
             Assert.AreEqual(Int64.MinValue, c.OutputBufferSize, "output_buffer_size");
             Assert.AreEqual(TimeSpan.MinValue, c.OutputBufferTimeout, "output_buffer_timeout");
             Assert.AreEqual(0, c.MaxInFlight, "max_in_flight");
@@ -188,7 +187,7 @@ namespace NsqSharp.Tests
         public void TestMaxValues()
         {
             var c = new Config();
-            var tlsConfig = new TlsConfig();
+            //var tlsConfig = new TlsConfig(); // TODO: TLS
             c.Set("read_timeout", TimeSpan.FromMinutes(5));
             c.Set("write_timeout", TimeSpan.FromMinutes(5));
             c.Set("lookupd_poll_interval", TimeSpan.FromMinutes(5));
@@ -203,11 +202,11 @@ namespace NsqSharp.Tests
             c.Set("user_agent", "user-agent/1.0");
             c.Set("heartbeat_interval", TimeSpan.MaxValue);
             c.Set("sample_rate", 99);
-            c.Set("tls_v1", true);
-            c.Set("tls_config", tlsConfig);
-            c.Set("deflate", true);
-            c.Set("deflate_level", 9);
-            c.Set("snappy", true);
+            //c.Set("tls_v1", true); // TODO: TLS
+            //c.Set("tls_config", tlsConfig); // TODO: TLS
+            //c.Set("deflate", true); // TODO: Deflate
+            //c.Set("deflate_level", 9); // TODO: Deflate
+            //c.Set("snappy", true); // TODO: Snappy
             c.Set("output_buffer_size", Int64.MaxValue);
             c.Set("output_buffer_timeout", TimeSpan.MaxValue);
             c.Set("max_in_flight", int.MaxValue);
@@ -229,11 +228,11 @@ namespace NsqSharp.Tests
             Assert.AreEqual("user-agent/1.0", c.UserAgent, "user_agent");
             Assert.AreEqual(TimeSpan.MaxValue, c.HeartbeatInterval, "heartbeat_interval");
             Assert.AreEqual(99, c.SampleRate, "sample_rate");
-            Assert.AreEqual(true, c.TlsV1, "tls_v1");
-            Assert.AreEqual(tlsConfig, c.TlsConfig, "tls_config");
-            Assert.AreEqual(true, c.Deflate, "deflate");
-            Assert.AreEqual(9, c.DeflateLevel, "deflate_level");
-            Assert.AreEqual(true, c.Snappy, "snappy");
+            //Assert.AreEqual(true, c.TlsV1, "tls_v1"); // TODO: TLS
+            //Assert.AreEqual(tlsConfig, c.TlsConfig, "tls_config"); // TODO: TLS
+            //Assert.AreEqual(true, c.Deflate, "deflate"); // TODO: Deflate
+            //Assert.AreEqual(9, c.DeflateLevel, "deflate_level"); // TODO: Deflate
+            //Assert.AreEqual(true, c.Snappy, "snappy"); // TODO: Snappy
             Assert.AreEqual(Int64.MaxValue, c.OutputBufferSize, "output_buffer_size");
             Assert.AreEqual(TimeSpan.MaxValue, c.OutputBufferTimeout, "output_buffer_timeout");
             Assert.AreEqual(int.MaxValue, c.MaxInFlight, "max_in_flight");
@@ -347,11 +346,11 @@ namespace NsqSharp.Tests
             Assert.AreEqual(string.Format("{0}/{1}", ClientInfo.ClientName, ClientInfo.Version), c2.UserAgent, "user_agent");
             Assert.AreEqual(TimeSpan.FromSeconds(2), c2.HeartbeatInterval, "heartbeat_interval");
             Assert.AreEqual(0, c2.SampleRate, "sample_rate");
-            Assert.AreEqual(false, c2.TlsV1, "tls_v1");
-            Assert.IsNull(c2.TlsConfig, "tls_config");
-            Assert.AreEqual(false, c2.Deflate, "deflate");
-            Assert.AreEqual(6, c2.DeflateLevel, "deflate_level");
-            Assert.AreEqual(false, c2.Snappy, "snappy");
+            //Assert.AreEqual(false, c2.TlsV1, "tls_v1"); // TODO: TLS
+            //Assert.IsNull(c2.TlsConfig, "tls_config"); // TODO: TLS
+            //Assert.AreEqual(false, c2.Deflate, "deflate"); // TODO: Deflate
+            //Assert.AreEqual(6, c2.DeflateLevel, "deflate_level"); // TODO: Deflate
+            //Assert.AreEqual(false, c2.Snappy, "snappy"); // TODO: Snappy
             Assert.AreEqual(16384, c2.OutputBufferSize, "output_buffer_size");
             Assert.AreEqual(TimeSpan.FromMilliseconds(250), c2.OutputBufferTimeout, "output_buffer_timeout");
             Assert.AreEqual(1, c2.MaxInFlight, "max_in_flight");
@@ -360,7 +359,8 @@ namespace NsqSharp.Tests
             Assert.IsNull(c2.AuthSecret, "auth_secret");
         }
 
-        [Test]
+        // TODO: TLS
+        /*[Test]
         public void TestTls()
         {
             // TODO: Test more TLS
@@ -386,6 +386,6 @@ namespace NsqSharp.Tests
 #endif
 
             Assert.Throws<Exception>(() => c.Set("tls_min_version", "ssl2.0"));
-        }
+        }*/
     }
 }

@@ -173,7 +173,7 @@ namespace NsqSharp.Bus
                 {
                     var consumer = new Consumer(item.Topic, item.Channel, _nsqLogger, item.Config);
                     var distributor = new MessageDistributor(this, _dependencyInjectionContainer, _nsqLogger, item);
-                    consumer.AddConcurrentHandlers(distributor, item.InstanceCount);
+                    consumer.AddHandler(distributor, item.InstanceCount);
 
                     // TODO: max_in_flight vs item.InstanceCount
                     if (item.Config.MaxInFlight < item.InstanceCount)
@@ -183,7 +183,7 @@ namespace NsqSharp.Bus
 
                     item.Consumer = consumer;
 
-                    consumer.ConnectToNSQLookupds(item.NsqLookupdHttpAddresses);
+                    consumer.ConnectToNsqLookupd(item.NsqLookupdHttpAddresses);
                 }
             }
 

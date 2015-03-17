@@ -60,7 +60,7 @@ namespace NsqSharp.Tests
             config.BackoffMultiplier = Time.Duration(10 * Time.Millisecond);
             var q = new Consumer(topicName, "ch", new ConsoleLogger(LogLevel.Debug), config);
             q.AddHandler(new testHandler());
-            q.ConnectToNSQD(n.tcpAddr);
+            q.ConnectToNsqd(n.tcpAddr);
 
             n.exitChan.Receive();
 

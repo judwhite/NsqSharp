@@ -107,27 +107,30 @@ namespace NsqSharp
         // tls_key - String path to file containing private key for certificate
         // tls_min_version - String indicating the minimum version of tls acceptable ('ssl3.0', 'tls1.0', 'tls1.1', 'tls1.2')
 
+        // TODO: TLS
         /// <summary>Enable TLS negotiation</summary>
         [Opt("tls_v1")]
-        public bool TlsV1 { get; set; }
+        private bool TlsV1 { get; set; }
 
         /// <summary>TLS configuration</summary>
         [Opt("tls_config")]
-        public TlsConfig TlsConfig { get; set; }
+        private TlsConfig TlsConfig { get; set; }
 
         // Compression Settings
 
+        // TODO: Deflate
         /// <summary>Use Deflate compression</summary>
         [Opt("deflate")]
-        public bool Deflate { get; set; }
+        private bool Deflate { get; set; }
 
         /// <summary>Deflate compression level (1-9, default: 6)</summary>
         [Opt("deflate_level"), Min(1), Max(9), Default(6)]
-        public int DeflateLevel { get; set; }
+        private int DeflateLevel { get; set; }
 
+        // TODO: Snappy
         /// <summary>Use Snappy compression</summary>
         [Opt("snappy")]
-        public bool Snappy { get; set; }
+        private bool Snappy { get; set; }
 
         /// <summary>Size of the buffer (in bytes) used by nsqd for buffering writes to this connection</summary>
         [Opt("output_buffer_size"), Default(16384)]
