@@ -1,53 +1,95 @@
 NsqSharp
 ========
 
-[![Build Status](https://travis-ci.org/judwhite/NsqSharp.svg?branch=master)](https://travis-ci.org/judwhite/NsqSharp) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
+[![Build Status](https://travis-ci.org/judwhite/NsqSharp.svg?branch=master)](https://travis-ci.org/judwhite/NsqSharp)&nbsp;&nbsp;[![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 
 A .NET client library for [NSQ](https://github.com/bitly/nsq), a realtime distributed messaging platform.
 
-## Work in Progress
+## Quick Start
 
-The public API has not reached stability. Future commits may change the API slightly.
+Download [`nsqd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqd.exe) and [`nsqlookupd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqlookupd.exe) from the [nsq-0.3.2-bin](https://github.com/judwhite/NsqSharp/tree/master/nsq-0.3.2-bin) folder. Alternatively you can build these files from source from https://github.com/bitly/nsq.
 
-Pull requests and issues are very welcome and appreciated.
+From two separate command lines, run:
+```
+nsqlookupd
+
+nsqd -lookupd-tcp-address=127.0.0.1:4160
+```
 
 ## Examples
+
+More examples are in the [Examples/NsqSharp](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp) and [Examples/NsqSharp.Bus](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp.Bus) folder.
 
 #### Producer
 
 ```C#
-var w = new Producer("127.0.0.1:4150");
-w.Publish("string-topic-name", "Hello!");
-w.Publish("bytes-topic-name", new byte[] { 1, 2, 3, 4 });
+using System;
+using NsqSharp;
 
-// ...
+class Program
+{
+    static void Main()  
+    {
+        var producer = new Producer("127.0.0.1:4150");
+        producer.Publish("test-topic-name", "Hello!");
+    
+        Console.WriteLine("Enter your message (blank line to quit):");
+        string line = Console.ReadLine();
+        while (!string.IsNullOrEmpty(line))
+        {
+            producer.Publish("test-topic-name", line);
+            line = Console.ReadLine();
+        }
 
-w.Stop();
+        producer.Stop();
+    }
+}
 ```
 
 #### Consumer
 
 ```C#
-// Create a new Consumer for each topic/channel
-var r = new Consumer("string-topic-name", "channel-name");
-r.AddHandler(/* instance of IHandler */);
-r.ConnectToNsqd("127.0.0.1:4150"); // or r.ConnectToNsqLookupd("127.0.0.1:4161");
+using System;
+using System.Text;
+using NsqSharp;
 
-// ...
+class Program
+{
+    static void Main()  
+    {
+        // Create a new Consumer for each topic/channel
+        var consumer = new Consumer("test-topic-name", "channel-name");
+        consumer.AddHandler(new MessageHandler());
+        consumer.ConnectToNsqLookupd("127.0.0.1:4161");
+    
+        Console.WriteLine("Listening for messages. If this is the first execution, it could take up " +
+                          "to 60s for topic producers to be discovered.");
+        Console.WriteLine("Press enter to stop...");
+        Console.ReadLine();
 
-r.Stop();
+        consumer.Stop();
+    }
+}
+
+public class MessageHandler : IHandler
+{
+    /// <summary>Handles a message.</summary>
+    public void HandleMessage(Message message)
+    {
+        string msg = Encoding.UTF8.GetString(message.Body);
+        Console.WriteLine(msg);
+    }
+
+    /// <summary>
+    /// Called when a message has exceeded the specified <see cref="Config.MaxAttempts"/>.
+    /// </summary>
+    /// <param name="message">The failed message.</param>
+    public void LogFailedMessage(Message message)
+    {
+        // Log failed messages
+    }
+}
 ```
-
-More examples in the [Examples/NsqSharp](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp) folder.
-
-### NsqSharp Project Goals
-- Structurally similar to the official [go-nsq](https://github.com/bitly/go-nsq) client.
-- Up to date with the latest stable release of go-nsq.
-- Provide similar behavior and semantics as the official package.
-
-### Pull Requests
-
-When submitting a pull request please keep in mind we're trying to stay as close to [go-nsq](https://github.com/bitly/go-nsq) as possible. This sometimes means writing C# which looks more like Go and follows their file layout. Code in the NsqSharp.Bus namespace should follow C# conventions and more or less look like other code in this namespace.
 
 ## NsqSharp.Bus
 
@@ -63,8 +105,19 @@ The example highlights:
 
 NsqSharp has no 3rd party dependencies. StructureMap 2/3 and Newtonsoft.Json are supported through convenience classes which use reflection for the initial wire-up. Other containers and serializers can be used by implementing `IObjectBuilder` and `IMessageSerializer` wrappers in your code.
 
-The [nsq-0.3.2-bin](https://github.com/judwhite/NsqSharp/tree/master/nsq-0.3.2-bin) folder contains Windows compiled versions of NSQ tools for convenience. The `nsqd` and `nsqlookupd` processes have been modified to run as either console applications or Windows Services; batch files exist to install/uninstall the services. [This repository](https://github.com/judwhite/nsq/tree/master/apps) contains the modified source for running as a Windows Service. Please encourage the NSQ team to support Windows Services in the official repository :)
+The [nsq-0.3.2-bin](https://github.com/judwhite/NsqSharp/tree/master/nsq-0.3.2-bin) folder contains Windows compiled versions of NSQ tools for convenience. The `nsqd` and `nsqlookupd` processes have been modified to run as either console applications or Windows Services; batch files exist to install/uninstall the services. [This repository](https://github.com/judwhite/nsq/tree/master/apps) contains the modified source for running as a Windows Service. If you'd like, you can encourage the NSQ team to support Windows Services in the official repository.
 
-## License
+### NsqSharp Project Goals
+- Structurally similar to the official [go-nsq](https://github.com/bitly/go-nsq) client.
+- Up to date with the latest stable release of go-nsq.
+- Provide similar behavior and semantics as the official package.
+
+### Pull Requests
+
+Pull requests and issues are very welcome and appreciated.
+
+When submitting a pull request please keep in mind we're trying to stay as close to [go-nsq](https://github.com/bitly/go-nsq) as possible. This sometimes means writing C# which looks more like Go and follows their file layout. Code in the NsqSharp.Bus namespace should follow C# conventions and more or less look like other code in this namespace.
+
+### License
 
 This project is open source and released under the [MIT license.](LICENSE)
