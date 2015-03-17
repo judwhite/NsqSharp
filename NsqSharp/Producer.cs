@@ -45,11 +45,14 @@ namespace NsqSharp
     }
 
     /// <summary>
-    /// Producer is a high-level type to publish to NSQ.
+    /// <para>Producer is a high-level type to publish to NSQ.</para>
     ///
-    /// A Producer instance is 1:1 with a destination `nsqd`
+    /// <para>A Producer instance is 1:1 with a destination nsqd
     /// and will lazily connect to that instance (and re-connect)
-    /// when Publish commands are executed.
+    /// when Publish commands are executed.</para>
+    /// <seealso cref="Publish(string, string)"/>
+    /// <seealso cref="Publish(string, byte[])"/>
+    /// <seealso cref="Stop"/>
     /// </summary>
     public partial class Producer
     {
@@ -82,7 +85,7 @@ namespace NsqSharp
     /// to retrieve metadata about the command after the
     /// response is received.
     /// </summary>
-    public class ProducerTransaction
+    internal class ProducerTransaction
     {
         internal Command _cmd;
         internal Chan<ProducerTransaction> _doneChan;
@@ -109,42 +112,42 @@ namespace NsqSharp
         /// <summary>
         /// Initializes a new instance of the Producer class.
         /// </summary>
-        /// <param name="addr">The address.</param>
-        public Producer(string addr)
-            : this(addr, new Config())
+        /// <param name="nsqdAddress">The nsqd address.</param>
+        public Producer(string nsqdAddress)
+            : this(nsqdAddress, new Config())
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the Producer class.
         /// </summary>
-        /// <param name="addr">The address.</param>
+        /// <param name="nsqdAddress">The nsqd address.</param>
+        /// <param name="config">The config. After Config is passed in the values are
+        /// no longer mutable (they are copied).</param>
+        public Producer(string nsqdAddress, Config config)
+            : this(nsqdAddress, new ConsoleLogger(LogLevel.Info), config, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the Producer class.
+        /// </summary>
+        /// <param name="nsqdAddress">The nsqd address.</param>
+        /// <param name="logger">The logger.</param>
+        public Producer(string nsqdAddress, ILogger logger)
+            : this(nsqdAddress, logger, new Config(), null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the Producer class.
+        /// </summary>
+        /// <param name="nsqdAddress">The nsqd address.</param>
+        /// <param name="logger">The logger.</param>
         /// <param name="config">The config. After Config is passed into NewProducer the values are
         /// no longer mutable (they are copied).</param>
-        public Producer(string addr, Config config)
-            : this(addr, new ConsoleLogger(LogLevel.Info), config, null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the Producer class.
-        /// </summary>
-        /// <param name="addr">The address.</param>
-        /// <param name="logger">The logger.</param>
-        public Producer(string addr, ILogger logger)
-            : this(addr, logger, new Config(), null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the Producer class.
-        /// </summary>
-        /// <param name="addr">The address.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="config">The config. After Config is passed into NewProducer the values are
-        /// no longer mutable (they are copied).</param>
-        public Producer(string addr, ILogger logger, Config config)
-            : this(addr, logger, config, null)
+        public Producer(string nsqdAddress, ILogger logger, Config config)
+            : this(nsqdAddress, logger, config, null)
         {
         }
 
@@ -177,20 +180,8 @@ namespace NsqSharp
             _connFactory = connFactory;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the Producer class.
-        /// </summary>
-        /// <param name="addr">The address.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="config">The config. After Config is passed into NewProducer the values are
-        /// no longer mutable (they are copied).</param>
-        /// <param name="connFactory">The method to create a new connection (used for mocking)</param>
-        public static Producer Create(string addr, ILogger logger, Config config, Func<Producer, IConn> connFactory)
-        {
-            return new Producer(addr, logger, config, connFactory);
-        }
-
-        /// <summary>
+        // TODO: This code really isn't useful.
+        /*/// <summary>
         /// Ping causes the Producer to connect to it's configured nsqd (if not already
         /// connected) and send a `Nop` command, returning any error that might occur.
         ///
@@ -204,21 +195,21 @@ namespace NsqSharp
 
             // TODO: PR: go-nsq, what does writing NO_OP prove above just Connect? nsqd does not respond to NO_OP
             _conn.WriteCommand(Command.Nop());
-        }
+        }*/
 
         /// <summary>
-        /// String returns the address of the Producer
+        /// String returns the address of the Producer.
         /// </summary>
-        /// <returns>The address of the Producer</returns>
+        /// <returns>The address of the Producer.</returns>
         public override string ToString()
         {
             return _addr;
         }
 
         /// <summary>
-        /// Stop initiates a graceful stop of the Producer (permanent)
+        /// <para>Stop initiates a graceful stop of the Producer (permanent).</para>
         ///
-        /// NOTE: this blocks until completion
+        /// <para>NOTE: this blocks until completion</para>
         /// </summary>
         public void Stop()
         {
@@ -281,8 +272,8 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// Publish synchronously publishes a message body to the specified topic, returning
-        /// an error if publish failed
+        /// Publish synchronously publishes a message body to the specified topic, throwing
+        /// an exception if publish failed.
         /// </summary>
         public void Publish(string topic, byte[] body)
         {
@@ -290,8 +281,8 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// Publish synchronously publishes a string to the specified topic, returning
-        /// an error if publish failed
+        /// Publish synchronously publishes a string to the specified topic, throwing
+        /// an exception if publish failed.
         /// </summary>
         public void Publish(string topic, string value)
         {
@@ -299,8 +290,8 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// MultiPublish synchronously publishes a slice of message bodies to the specified topic, returning
-        /// the an error if publish failed
+        /// MultiPublish synchronously publishes a collection of message bodies to the specified topic, throwing
+        /// an exception if publish failed.
         /// </summary>
         public void MultiPublish(string topic, ICollection<byte[]> body)
         {
@@ -367,7 +358,8 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// Connect to NSQD
+        /// Connects to nsqd. Calling this method is optional; otherwise, Connect will
+        /// be lazy invoked when Publish is called.
         /// </summary>
         public void Connect()
         {

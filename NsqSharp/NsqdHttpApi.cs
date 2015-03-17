@@ -10,17 +10,17 @@ using NsqSharp.Utils;
 namespace NsqSharp
 {
     /// <summary>
-    /// NSQD HTTP API
+    /// HTTP API for interacting with nsqd. See http://nsq.io/components/nsqd.html#pub.
     /// </summary>
     public static class NsqdHttpApi
     {
         /// <summary>
         /// Publishes a message.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <param name="message">The message.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string Publish(string nsqdHttpAddress, string topic, string message)
         {
             CheckArguments(nsqdHttpAddress, topic);
@@ -33,10 +33,10 @@ namespace NsqSharp
         /// <summary>
         /// Publishes a message.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <param name="message">The message.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string Publish(string nsqdHttpAddress, string topic, byte[] message)
         {
             CheckArguments(nsqdHttpAddress, topic);
@@ -50,10 +50,10 @@ namespace NsqSharp
         /// Publishes multiple messages. More efficient than calling Publish several times for the same message type.
         /// See http://nsq.io/components/nsqd.html#mpub.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <param name="messages">The messages.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string PublishMultiple(string nsqdHttpAddress, string topic, IEnumerable<string> messages)
         {
             CheckArguments(nsqdHttpAddress, topic);
@@ -69,10 +69,10 @@ namespace NsqSharp
         /// Publishes multiple messages. More efficient than calling Publish several times for the same message type.
         /// See http://nsq.io/components/nsqd.html#mpub.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <param name="messages">The messages.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string PublishMultiple(string nsqdHttpAddress, string topic, IEnumerable<byte[]> messages)
         {
             CheckArguments(nsqdHttpAddress, topic);
@@ -104,9 +104,9 @@ namespace NsqSharp
         /// <summary>
         /// Create a topic. Topic creation happens automatically on publish, use this method to pre-create a topic.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string CreateTopic(string nsqdHttpAddress, string topic)
         {
             CheckArguments(nsqdHttpAddress, topic);
@@ -118,9 +118,9 @@ namespace NsqSharp
         /// <summary>
         /// Delete a topic.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string DeleteTopic(string nsqdHttpAddress, string topic)
         {
             CheckArguments(nsqdHttpAddress, topic);
@@ -132,10 +132,10 @@ namespace NsqSharp
         /// <summary>
         /// Create a channel. Channel creation happens automatically on subscribe, use this method to pre-create a channel.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <param name="channel">The channel.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string CreateChannel(string nsqdHttpAddress, string topic, string channel)
         {
             CheckArguments(nsqdHttpAddress, topic, channel);
@@ -147,10 +147,10 @@ namespace NsqSharp
         /// <summary>
         /// Delete a channel.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <param name="channel">The channel.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string DeleteChannel(string nsqdHttpAddress, string topic, string channel)
         {
             CheckArguments(nsqdHttpAddress, topic, channel);
@@ -162,9 +162,9 @@ namespace NsqSharp
         /// <summary>
         /// Empty a topic.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string EmptyTopic(string nsqdHttpAddress, string topic)
         {
             CheckArguments(nsqdHttpAddress, topic);
@@ -176,10 +176,10 @@ namespace NsqSharp
         /// <summary>
         /// Empty a channel.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <param name="channel">The channel.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string EmptyChannel(string nsqdHttpAddress, string topic, string channel)
         {
             CheckArguments(nsqdHttpAddress, topic, channel);
@@ -191,9 +191,9 @@ namespace NsqSharp
         /// <summary>
         /// Pause a topic.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string PauseTopic(string nsqdHttpAddress, string topic)
         {
             CheckArguments(nsqdHttpAddress, topic);
@@ -205,9 +205,9 @@ namespace NsqSharp
         /// <summary>
         /// Unpause a topic.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string UnpauseTopic(string nsqdHttpAddress, string topic)
         {
             CheckArguments(nsqdHttpAddress, topic);
@@ -219,10 +219,10 @@ namespace NsqSharp
         /// <summary>
         /// Pause a channel.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <param name="channel">The channel.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string PauseChannel(string nsqdHttpAddress, string topic, string channel)
         {
             CheckArguments(nsqdHttpAddress, topic, channel);
@@ -234,10 +234,10 @@ namespace NsqSharp
         /// <summary>
         /// Unpause a channel.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <param name="channel">The channel.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string UnpauseChannel(string nsqdHttpAddress, string topic, string channel)
         {
             CheckArguments(nsqdHttpAddress, topic, channel);
@@ -249,8 +249,8 @@ namespace NsqSharp
         /// <summary>
         /// Returns internal instrumented statistics.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string Stats(string nsqdHttpAddress)
         {
             if (string.IsNullOrEmpty(nsqdHttpAddress))
@@ -262,8 +262,8 @@ namespace NsqSharp
         /// <summary>
         /// Returns version information.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string Info(string nsqdHttpAddress)
         {
             if (string.IsNullOrEmpty(nsqdHttpAddress))
@@ -276,8 +276,8 @@ namespace NsqSharp
         /// Monitoring endpoint, should return OK. It returns a 500 if it is not healthy. At the moment, the only unhealthy
         /// state would be if it failed to write messages to disk when overflow occurred.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The NSQD HTTP address.</param>
-        /// <returns>The response from the NSQD HTTP server.</returns>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
+        /// <returns>The response from the nsqd HTTP server.</returns>
         public static string Ping(string nsqdHttpAddress)
         {
             if (string.IsNullOrEmpty(nsqdHttpAddress))

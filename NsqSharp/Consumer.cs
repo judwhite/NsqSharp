@@ -38,15 +38,15 @@ namespace NsqSharp
 
     /// <summary>
     /// <see cref="IDiscoveryFilter" /> is an interface accepted by <see cref="Consumer.SetBehaviorDelegate"/>
-    /// for filtering the NSQD addresses returned from discovery via nsqlookupd.
+    /// for filtering the nsqd addresses returned from discovery via nsqlookupd.
     /// </summary>
     public interface IDiscoveryFilter
     {
         /// <summary>
-        /// Filters a list of NSQD addresses.
+        /// Filters a list of nsqd addresses.
         /// </summary>
-        /// <param name="nsqds">NSQD addresses returned by nsqlookupd.</param>
-        /// <returns>The filtered list of NSQD addresses to use.</returns>
+        /// <param name="nsqds">nsqd addresses returned by nsqlookupd.</param>
+        /// <returns>The filtered list of nsqd addresses to use.</returns>
         IEnumerable<string> Filter(IEnumerable<string> nsqds);
     }
 
@@ -80,7 +80,7 @@ namespace NsqSharp
     /// <seealso cref="ConnectToNsqLookupd"/>
     /// <seealso cref="Stop()"/>
     /// </summary>
-    public class Consumer
+    public class Consumer : IConnDelegate
     {
         private static readonly byte[] CLOSE_WAIT_BYTES = Encoding.UTF8.GetBytes("CLOSE_WAIT");
 
@@ -586,7 +586,7 @@ namespace NsqSharp
 
             _connectedFlag = 1;
 
-            var conn = new Conn(addr, _config, new ConsumerConnDelegate { r = this });
+            var conn = new Conn(addr, _config, this);
             // TODO: Check log format
             conn.SetLogger(_logger, string.Format("C{0} [{1}/{2}] ({{0}})", _id, _topic, _channel));
 
@@ -1317,7 +1317,7 @@ namespace NsqSharp
         /// takes a second argument which indicates the number of goroutines to spawn for
         /// message handling.
         ///
-        /// This panics if called after connecting to NSQD or NSQ Lookupd
+        /// This panics if called after connecting to nsqd or nsqlookupd
         ///
         /// (see Handler or HandlerFunc for details on implementing this interface)
         /// </summary>
@@ -1422,5 +1422,16 @@ namespace NsqSharp
             // TODO: proper width formatting
             _logger.Output(lvl, string.Format("C{0} [{1}/{2}] {3}", _id, _topic, _channel, msg));
         }
+
+        void IConnDelegate.OnResponse(Conn c, byte[] data) { onConnResponse(c, data); }
+        void IConnDelegate.OnError(Conn c, byte[] data) { onConnError(c, data); }
+        void IConnDelegate.OnMessage(Conn c, Message m) { onConnMessage(c, m); }
+        void IConnDelegate.OnMessageFinished(Conn c, Message m) { onConnMessageFinished(c, m); }
+        void IConnDelegate.OnMessageRequeued(Conn c, Message m) { onConnMessageRequeued(c, m); }
+        void IConnDelegate.OnBackoff(Conn c) { onConnBackoff(c); }
+        void IConnDelegate.OnResume(Conn c) { onConnResume(c); }
+        void IConnDelegate.OnIOError(Conn c, Exception err) { onConnIOError(c, err); }
+        void IConnDelegate.OnHeartbeat(Conn c) { onConnHeartbeat(c); }
+        void IConnDelegate.OnClose(Conn c) { onConnClose(c); }
     }
 }

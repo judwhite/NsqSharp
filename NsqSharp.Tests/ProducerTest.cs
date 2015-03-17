@@ -29,7 +29,8 @@ namespace NsqSharp.Tests
             Assert.Throws<ErrStopped>(() => w.Publish("write test", "fail test"));
         }
 
-        [Test]
+        // TODO: Is Ping really useful?
+        /*[Test]
         public void TestProducerPing()
         {
             var config = new Config();
@@ -40,7 +41,7 @@ namespace NsqSharp.Tests
             w.Stop();
 
             Assert.Throws<ErrStopped>(w.Ping, "should not be able to ping after Stop()");
-        }
+        }*/
 
         [Test]
         public void TestProducerPublish()

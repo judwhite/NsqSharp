@@ -32,7 +32,7 @@ namespace NsqSharp.Core
         /// <summary>Max Attempts</summary>
         public int MaxAttempts { get; internal set; }
 
-        /// <summary>NSQDAddress</summary>
+        /// <summary>NsqdAddress</summary>
         public string NsqdAddress { get; internal set; }
 
         /// <summary>Delegate</summary>

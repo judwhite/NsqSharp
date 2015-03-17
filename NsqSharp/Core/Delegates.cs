@@ -24,7 +24,7 @@ namespace NsqSharp.Core
     /// <summary>
     /// Logging constants
     /// </summary>
-    public static class Log
+    internal static class Log
     {
         /// <summary>LogLevelDebugPrefix</summary>
         public const string DebugPrefix = "DBG";
@@ -165,21 +165,5 @@ namespace NsqSharp.Core
         /// closes, after all cleanup
         /// </summary>
         void OnClose(Conn c);
-    }
-
-    internal class ConsumerConnDelegate : IConnDelegate
-    {
-        public Consumer r { get; set; }
-
-        public void OnResponse(Conn c, byte[] data) { r.onConnResponse(c, data); }
-        public void OnError(Conn c, byte[] data) { r.onConnError(c, data); }
-        public void OnMessage(Conn c, Message m) { r.onConnMessage(c, m); }
-        public void OnMessageFinished(Conn c, Message m) { r.onConnMessageFinished(c, m); }
-        public void OnMessageRequeued(Conn c, Message m) { r.onConnMessageRequeued(c, m); }
-        public void OnBackoff(Conn c) { r.onConnBackoff(c); }
-        public void OnResume(Conn c) { r.onConnResume(c); }
-        public void OnIOError(Conn c, Exception err) { r.onConnIOError(c, err); }
-        public void OnHeartbeat(Conn c) { r.onConnHeartbeat(c); }
-        public void OnClose(Conn c) { r.onConnClose(c); }
     }
 }
