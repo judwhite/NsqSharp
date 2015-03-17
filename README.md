@@ -7,7 +7,7 @@ A .NET client library for [NSQ](https://github.com/bitly/nsq), a realtime distri
 
 ## Quick Start
 
-Download [`nsqd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqd.exe) and [`nsqlookupd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqlookupd.exe) from the [nsq-0.3.2-bin](https://github.com/judwhite/NsqSharp/tree/master/nsq-0.3.2-bin) folder. Alternatively you can build these files from source from https://github.com/bitly/nsq.
+Download [`nsqd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqd.exe) and [`nsqlookupd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqlookupd.exe) from the [nsq-0.3.2-bin](https://github.com/judwhite/NsqSharp/tree/master/nsq-0.3.2-bin) folder. Alternatively you can build these files from source https://github.com/bitly/nsq.
 
 From two separate command lines run:
 ```
@@ -19,6 +19,8 @@ nsqd -lookupd-tcp-address=127.0.0.1:4160
 For an under 30-minute intro to NSQ as a messaging platform watch [Spray Some NSQ On It](https://www.youtube.com/watch?v=CL_SUzXIUuI) by [@mreiferson](https://github.com/mreiferson).
 
 ## Examples
+
+`PM> Install-Package NsqSharp`
 
 More examples are in the [Examples/NsqSharp](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp) and [Examples/NsqSharp.Bus](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp.Bus) folder.
 
