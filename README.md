@@ -9,7 +9,7 @@ A .NET client library for [NSQ](https://github.com/bitly/nsq), a realtime distri
 
 Download [`nsqd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqd.exe) and [`nsqlookupd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqlookupd.exe) from the [nsq-0.3.2-bin](https://github.com/judwhite/NsqSharp/tree/master/nsq-0.3.2-bin) folder. Alternatively you can build these files from source from https://github.com/bitly/nsq.
 
-From two separate command lines, run:
+From two separate command lines run:
 ```
 nsqlookupd
 
