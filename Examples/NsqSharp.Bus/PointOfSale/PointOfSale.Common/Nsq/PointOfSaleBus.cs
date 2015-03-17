@@ -30,6 +30,7 @@ namespace PointOfSale.Common.Nsq
                 defaultThreadsPerHandler: 8,
                 defaultNsqlookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
                 busStateChangedHandler: busStateChangedHandler,
+                preCreateTopicsAndChannels: true,
                 defaultConsumerNsqConfig: 
                     new NsqSharp.Config 
                     { 

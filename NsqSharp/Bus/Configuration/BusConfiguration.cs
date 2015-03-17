@@ -29,6 +29,7 @@ namespace NsqSharp.Bus.Configuration
         private readonly string[] _defaultNsqdHttpEndpoints;
         private readonly IBusStateChangedHandler _busStateChangedHandler;
         private readonly ILogger _nsqLogger;
+        private readonly bool _preCreateTopicsAndChannels;
 
         private NsqBus _bus;
 
@@ -49,6 +50,9 @@ namespace NsqSharp.Bus.Configuration
         /// <param name="busStateChangedHandler">Handle bus start and stop events (optional).</param>
         /// <param name="nsqLogger">The <see cref="ILogger"/> used by NsqSharp when communicating with nsqd/nsqlookupd.
         /// (default = <see cref="TraceLogger"/>).</param>
+        /// <param name="preCreateTopicsAndChannels">Set to <c>true</c> to pre-create all registered topics and channels
+        /// on the local nsqd instance listening on 127.0.0.1:4151; useful for self-contained clusters (default =
+        /// <c>false</c>).</param>
         public BusConfiguration(
             IObjectBuilder dependencyInjectionContainer,
             IMessageSerializer defaultMessageSerializer,
@@ -59,7 +63,8 @@ namespace NsqSharp.Bus.Configuration
             int defaultThreadsPerHandler,
             Config defaultConsumerNsqConfig = null,
             IBusStateChangedHandler busStateChangedHandler = null,
-            ILogger nsqLogger = null
+            ILogger nsqLogger = null,
+            bool preCreateTopicsAndChannels = false
         )
         {
             if (dependencyInjectionContainer == null)
@@ -93,6 +98,7 @@ namespace NsqSharp.Bus.Configuration
             _defaultNsqdHttpEndpoints = new[] { "127.0.0.1:4151" };
             _busStateChangedHandler = busStateChangedHandler;
             _nsqLogger = nsqLogger ?? new TraceLogger();
+            _preCreateTopicsAndChannels = preCreateTopicsAndChannels;
 
             var handlerTypes = _handlerTypeToChannelProvider.GetHandlerTypes();
             AddMessageHandlers(handlerTypes);
@@ -260,40 +266,41 @@ namespace NsqSharp.Bus.Configuration
 
         internal void StartBus()
         {
-            // Pre-create topics/channels
-            // TODO: make this configurable
-
-            var wg = new WaitGroup();
-            foreach (var tch in GetHandledTopics())
+            if (_preCreateTopicsAndChannels)
             {
-                foreach (var nsqdHttpAddress in _defaultNsqdHttpEndpoints)
+                var wg = new WaitGroup();
+                foreach (var tch in GetHandledTopics())
                 {
-                    foreach (var channel in tch.Channels)
+                    foreach (var nsqdHttpAddress in _defaultNsqdHttpEndpoints)
                     {
-                        string localNsqdHttpAddress = nsqdHttpAddress;
-                        string localTopic = tch.Topic;
-                        string localChannel = channel;
-
-                        wg.Add(1);
-                        GoFunc.Run(() =>
+                        foreach (var channel in tch.Channels)
                         {
-                            try
-                            {
-                                NsqdHttpApi.CreateTopic(localNsqdHttpAddress, localTopic);
-                                NsqdHttpApi.CreateChannel(localNsqdHttpAddress, localTopic, localChannel);
-                            }
-                            catch (Exception)
-                            {
-                                // TODO: Log
-                            }
+                            string localNsqdHttpAddress = nsqdHttpAddress;
+                            string localTopic = tch.Topic;
+                            string localChannel = channel;
 
-                            wg.Done();
-                        }, "BusConfiguration pre-create topics/channels");
+                            wg.Add(1);
+                            GoFunc.Run(() =>
+                            {
+                                try
+                                {
+                                    NsqdHttpApi.CreateTopic(localNsqdHttpAddress, localTopic);
+                                    NsqdHttpApi.CreateChannel(localNsqdHttpAddress, localTopic, localChannel);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _nsqLogger.Output(LogLevel.Error, 
+                                        string.Format("error creating topic/channel on {0} - {1}", localNsqdHttpAddress, ex));
+                                }
+
+                                wg.Done();
+                            }, "BusConfiguration pre-create topics/channels");
+                        }
                     }
                 }
-            }
 
-            wg.Wait();
+                wg.Wait();
+            }
 
             if (_busStateChangedHandler != null)
                 _busStateChangedHandler.OnBusStarting(this);
