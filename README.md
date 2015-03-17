@@ -62,8 +62,8 @@ class Program
         consumer.AddHandler(new MessageHandler());
         consumer.ConnectToNsqLookupd("127.0.0.1:4161");
     
-        Console.WriteLine("Listening for messages. If this is the first execution, it could "
-                          "take up to 60s for topic producers to be discovered.");
+        Console.WriteLine("Listening for messages. If this is the first execution, it " +
+                          "could take up to 60s for topic producers to be discovered.");
         Console.WriteLine("Press enter to stop...");
         Console.ReadLine();
 
