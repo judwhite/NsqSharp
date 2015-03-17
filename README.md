@@ -16,6 +16,8 @@ nsqlookupd
 nsqd -lookupd-tcp-address=127.0.0.1:4160
 ```
 
+For an under 30-minute intro to NSQ as a messaging platform watch [Spray Some NSQ On It](https://www.youtube.com/watch?v=CL_SUzXIUuI) by [@mreiferson](https://github.com/mreiferson).
+
 ## Examples
 
 More examples are in the [Examples/NsqSharp](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp) and [Examples/NsqSharp.Bus](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp.Bus) folder.
