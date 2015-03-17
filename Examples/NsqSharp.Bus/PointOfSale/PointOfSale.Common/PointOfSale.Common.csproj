@@ -58,6 +58,7 @@
     <Compile Include="Config\ServiceEndpoints.cs" />
     <Compile Include="Nsq\TopicProvider.cs" />
     <Compile Include="Utils\Nemesis.cs" />
+    <Compile Include="Utils\RestClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\NsqSharp\NsqSharp.csproj">

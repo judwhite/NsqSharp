@@ -37,11 +37,15 @@ namespace PointOfSale.Application.Harness
                 if (config.IsConsoleMode)
                 {
                     Task.Factory.StartNew(() =>
-                                          {
-                                              bus.Send<GetCustomersCommand>();
-                                              bus.Send<GetInvoicesCommand>();
-                                              bus.Send<GetProductsCommand>();
-                                          });
+                    {
+                        // uncomment to send lots of messages
+                        //for (int i = 0; i < 1000; i++)
+                        {
+                            bus.Send<GetCustomersCommand>();
+                            bus.Send<GetInvoicesCommand>();
+                            bus.Send<GetProductsCommand>();
+                        }
+                    });
                 }
             }
         }

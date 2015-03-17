@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net;
 using System.Xml.Linq;
 using PointOfSale.Common.Config;
 using PointOfSale.Common.Utils;
@@ -12,25 +11,22 @@ namespace PointOfSale.Services.Customers
     public class CustomerService : ICustomerService
     {
         private readonly string _endpoint;
-        private readonly INemesis _nemesis;
+        private readonly IRestClient _restClient;
 
-        public CustomerService(IServiceEndpoints serviceEndpoints, INemesis nemesis)
+        public CustomerService(IServiceEndpoints serviceEndpoints, IRestClient restClient)
         {
             if (serviceEndpoints == null)
                 throw new ArgumentNullException("serviceEndpoints");
-            if (nemesis == null)
-                throw new ArgumentNullException("nemesis");
+            if (restClient == null)
+                throw new ArgumentNullException("restClient");
 
             _endpoint = serviceEndpoints.CustomerEndpoint;
-            _nemesis = nemesis;
+            _restClient = restClient;
         }
 
         public Collection<int> GetCustomerIds()
         {
-            _nemesis.Invoke();
-
-            var webClient = new WebClient();
-            string response = webClient.DownloadString(_endpoint);
+            string response = _restClient.Get(_endpoint);
 
             var customerIds = XDocument.Parse(response).Root.Elements("CUSTOMER").Select(p => (int)p).ToList();
 
@@ -39,10 +35,7 @@ namespace PointOfSale.Services.Customers
 
         public Customer GetCustomer(int customerId)
         {
-            _nemesis.Invoke();
-
-            var webClient = new WebClient();
-            string response = webClient.DownloadString(string.Format("{0}/{1}", _endpoint, customerId));
+            string response = _restClient.Get(string.Format("{0}/{1}", _endpoint, customerId));
 
             var xml = XDocument.Parse(response).Root;
 

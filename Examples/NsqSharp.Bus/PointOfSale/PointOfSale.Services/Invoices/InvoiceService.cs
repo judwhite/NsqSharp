@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net;
 using System.Xml.Linq;
 using PointOfSale.Common.Config;
 using PointOfSale.Common.Utils;
@@ -13,26 +12,23 @@ namespace PointOfSale.Services.Invoices
     {
         private readonly string _invoiceEndpoint;
         private readonly string _invoiceDetailEndpoint;
-        private readonly INemesis _nemesis;
+        private readonly IRestClient _restClient;
 
-        public InvoiceService(IServiceEndpoints serviceEndpoints, INemesis nemesis)
+        public InvoiceService(IServiceEndpoints serviceEndpoints, IRestClient restClient)
         {
             if (serviceEndpoints == null)
                 throw new ArgumentNullException("serviceEndpoints");
-            if (nemesis == null)
-                throw new ArgumentNullException("nemesis");
+            if (restClient == null)
+                throw new ArgumentNullException("restClient");
 
             _invoiceEndpoint = serviceEndpoints.InvoiceEndpoint;
             _invoiceDetailEndpoint = serviceEndpoints.InvoiceDetailsEndpoint;
-            _nemesis = nemesis;
+            _restClient = restClient;
         }
 
         public Collection<int> GetInvoiceIds()
         {
-            _nemesis.Invoke();
-
-            var webClient = new WebClient();
-            string response = webClient.DownloadString(_invoiceEndpoint);
+            string response = _restClient.Get(_invoiceEndpoint);
 
             var invoiceIds = XDocument.Parse(response).Root.Elements("INVOICE").Select(p => (int)p).ToList();
 
@@ -41,10 +37,7 @@ namespace PointOfSale.Services.Invoices
 
         public InvoiceSummary GetInvoiceSummary(int invoiceId)
         {
-            _nemesis.Invoke();
-
-            var webClient = new WebClient();
-            string response = webClient.DownloadString(string.Format("{0}/{1}", _invoiceEndpoint, invoiceId));
+            string response = _restClient.Get(string.Format("{0}/{1}", _invoiceEndpoint, invoiceId));
 
             var xml = XDocument.Parse(response).Root;
 
@@ -58,10 +51,7 @@ namespace PointOfSale.Services.Invoices
 
         public Collection<InvoiceDetail> GetInvoiceDetails(int invoiceId)
         {
-            _nemesis.Invoke();
-
-            var webClient = new WebClient();
-            string response = webClient.DownloadString(string.Format("{0}/{1}", _invoiceDetailEndpoint, invoiceId));
+            string response = _restClient.Get(string.Format("{0}/{1}", _invoiceDetailEndpoint, invoiceId));
 
             var xml = XDocument.Parse(response).Root;
 

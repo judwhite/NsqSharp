@@ -1,4 +1,5 @@
 ﻿using PointOfSale.Common.Config;
+using PointOfSale.Common.Utils;
 using StructureMap.Configuration.DSL;
 using StructureMap.Graph;
 using StructureMap.Pipeline;
@@ -15,9 +16,10 @@ namespace PointOfSale.Common.IoC
                 s.WithDefaultConventions();
             });
 
-            For<IAppSettings>(Lifecycles.Singleton).Use(new AppSettings());
-            For<IConnectionStrings>(Lifecycles.Singleton).Use(new ConnectionStrings());
-            For<IServiceEndpoints>(Lifecycles.Singleton).Use(new ServiceEndpoints());
+            For<IAppSettings>(Lifecycles.Singleton).Use<AppSettings>();
+            For<IConnectionStrings>(Lifecycles.Singleton).Use<ConnectionStrings>();
+            For<IServiceEndpoints>(Lifecycles.Singleton).Use<ServiceEndpoints>();
+            For<IRestClient>(Lifecycles.Singleton).Use<RestClient>();
         }
     }
 }

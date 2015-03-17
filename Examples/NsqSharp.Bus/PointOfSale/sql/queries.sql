@@ -10,17 +10,18 @@ select * from dbo.transportaudit where exception is not null and exception not l
 select * from dbo.transportaudit order by handlerstarted desc
 
 select distinct failedaction from dbo.transportaudit
-select *, getutcdate() from dbo.TransportAudit where handlerfinish is null
+select *, getutcdate() from dbo.TransportAudit where handlerfinished is null
 delete from dbo.TransportAudit
 
 declare @start datetime
 declare @end datetime
-select @start = min(publishtimestamp) from dbo.TransportAudit
-select @end = max(handlerfinish) from dbo.TransportAudit
+select @start = dateadd(minute, -5, getutcdate()) -- look at past 5 minutes
+select @start = min(publishtimestamp) from dbo.TransportAudit where handlerstarted >= @start
+select @end = max(handlerfinished) from dbo.TransportAudit where handlerstarted >= @start
 declare @duration time(3) = cast((@end - @start) as time)
 declare @total_seconds int = datepart(second, @duration) + 60 * datepart(minute, @duration) + 3600 * datepart(hour, @duration)
 declare @count int
-select @count = count(*) from dbo.TransportAudit
+select @count = count(*) from dbo.TransportAudit where handlerstarted >= @start
 select @count as Count, @duration as Duration, @count/convert(real, @total_seconds) as [Processed Per Second]
 
 select * from dbo.TransportAudit order by messageid
