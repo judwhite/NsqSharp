@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using NsqSharp.Core;
 
 namespace NsqSharp.Bus.Logging
 {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using NsqSharp.Core;
 
 namespace NsqSharp.Bus
 {

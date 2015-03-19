@@ -43,5 +43,13 @@ namespace NsqSharp.Utils.Loggers
                     break;
             }
         }
+
+        /// <summary>
+        /// Flushes the output stream.
+        /// </summary>
+        public void Flush()
+        {
+            _traceSource.Flush();
+        }
     }
 }

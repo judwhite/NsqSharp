@@ -79,6 +79,7 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
         /// <typeparam name="T">The instance type.</typeparam>
         /// <param name="instance">The instance to inject.</param>
         public void Inject<T>(T instance)
+            where T : class
         {
             _injectType.Invoke(_container, new object[] { typeof(T), instance });
         }

@@ -224,6 +224,7 @@ namespace NsqSharp
                 _exitChan.Close();
                 close();
                 _wg.Wait();
+                _logger.Flush();
                 Thread.Sleep(500);
             }
         }

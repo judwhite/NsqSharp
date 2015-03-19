@@ -1414,6 +1414,7 @@ namespace NsqSharp
                 _exitChan.Close();
                 _wg.Wait();
                 _stopChan.Close();
+                _logger.Flush();
             });
         }
 

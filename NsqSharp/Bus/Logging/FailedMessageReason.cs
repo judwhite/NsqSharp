@@ -1,6 +1,4 @@
-﻿using NsqSharp.Core;
-
-namespace NsqSharp.Bus.Logging
+﻿namespace NsqSharp.Bus.Logging
 {
     /// <summary>
     /// The category of mesage failure.

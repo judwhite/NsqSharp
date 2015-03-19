@@ -4,7 +4,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using NsqSharp;
-using NsqSharp.Core;
 
 namespace ConsumerExample
 {
@@ -38,8 +37,8 @@ namespace ConsumerExample
             // All messages for a Consumer instance are passed to a single instance of a Handler. If you need to store state
             // related to the current message pass the message to a new instance of another class inside HandleMessage.
 
-            // Call AddConcurrentHandlers to increase the number of concurrent handlers able to receive messages. This
-            // is useful for long running non-I/O blocking handlers.
+            // Call AddHandler with the threads overload to increase the number of concurrent handlers able to receive
+            // messages. This is useful for long running non-I/O blocking handlers.
 
             // create a new consumer for the topic/channel and add a handler
             var consumer = new Consumer(cfg.Topic, cfg.Channel);

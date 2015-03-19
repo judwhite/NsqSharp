@@ -7,5 +7,9 @@ namespace NsqSharp.Tests.Utils
         public void Output(LogLevel logLevel, string message)
         {
         }
+
+        public void Flush()
+        {
+        }
     }
 }
