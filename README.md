@@ -97,11 +97,11 @@ public class MessageHandler : IHandler
 
 ## NsqSharp.Bus
 
-NsqSharp.Bus is an optional IoC-friendly abstraction layer built on top of NsqSharp. The motivation for this library is to provide conveniences for large scale applications and ease migration from other .NET message buses. This library is in the mid-phases of development. It is not required to use NsqSharp.
+The classes in the `NsqSharp.Bus` namespace are meant to provide conveniences for the structure of large scale applications and ease migration from other .NET message buses. The classes in this namespace are not required to use NsqSharp's `Producer` and `Consumer` directly.
 
-A working example is available in the [Examples/NsqSharp.Bus/PointOfSale](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp.Bus/PointOfSale) folder.
+Two working examples are available in [Examples/NsqSharp.Bus](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp.Bus), the simple [PingPong](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp.Bus/PingPong) application and the multi-process [PointOfSale](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp.Bus/PointOfSale) application.
 
-The example highlights:
+These example highlight:
 - [StructureMap](https://github.com/structuremap/structuremap) (any dependency injection container will work)
 - [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json) (any serialization method can be chosen)
 - [NLog](https://github.com/NLog/NLog) (any logger can be used)
