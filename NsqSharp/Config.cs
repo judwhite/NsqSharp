@@ -39,62 +39,80 @@ namespace NsqSharp
         // used to Initialize, Validate
         private readonly List<configHandler> configHandlers;
 
-        /// <summary>Deadline for network reads</summary>
+        /// <summary>Deadline for network reads.
+        /// Range: 100ms-5m Default: 60s</summary>
         [Opt("read_timeout"), Min("100ms"), Max("5m"), Default("60s")]
         public TimeSpan ReadTimeout { get; internal set; }
 
-        /// <summary>Deadline for network writes</summary>
+        /// <summary>Deadline for network writes.
+        /// Range: 100ms-5m Default: 1s</summary>
         [Opt("write_timeout"), Min("100ms"), Max("5m"), Default("1s")]
         public TimeSpan WriteTimeout { get; internal set; }
 
-        /// <summary>Duration between polling lookupd for new producers</summary>
+        /// <summary>Duration between polling lookupd for new producers.
+        /// Range: 5s-5m Default: 60s</summary>
         [Opt("lookupd_poll_interval"), Min("5s"), Max("5m"), Default("60s")]
         public TimeSpan LookupdPollInterval { get; set; }
 
         /// <summary>Fractional jitter to add to the lookupd pool loop. This helps evenly
-        /// distribute requests even if multiple consumers restart at the same time</summary>
+        /// distribute requests even if multiple consumers restart at the same time.
+        /// Range: 0-1 Default: 0.3
+        /// </summary>
         [Opt("lookupd_poll_jitter"), Min(0), Max(1), Default(0.3)]
         public double LookupdPollJitter { get; set; }
 
-        /// <summary>Maximum duration when REQueueing (for doubling of deferred requeue)</summary>
+        /// <summary>Maximum duration when REQueueing (for doubling of deferred requeue).
+        /// Range: 0-60m Default: 15m</summary>
         [Opt("max_requeue_delay"), Min("0"), Max("60m"), Default("15m")]
         public TimeSpan MaxRequeueDelay { get; set; }
 
-        /// <summary>Default requeue delay</summary>
+        /// <summary>Default requeue delay.
+        /// Requeue calculation: <see cref="DefaultRequeueDelay"/> * <see cref="Message.Attempts"/>.
+        /// Range: 0-60m Default: 90s</summary>
         [Opt("default_requeue_delay"), Min("0"), Max("60m"), Default("90s")]
         public TimeSpan DefaultRequeueDelay { get; set; }
 
-        /// <summary>Unit of time for calculating consumer backoff</summary>
+        /// <summary>Unit of time for calculating consumer backoff.
+        /// Backoff calculation: <see cref="BackoffMultiplier"/> * (2 ^ <see cref="Message.Attempts"/>).
+        /// Will not exceed <see cref="MaxBackoffDuration"/>.
+        /// Range: 0-60m Default: 1s</summary>
         [Opt("backoff_multiplier"), Min("0"), Max("60m"), Default("1s")]
         public TimeSpan BackoffMultiplier { get; set; }
 
-        /// <summary>Maximum number of times this consumer will attempt to process a message before giving up</summary>
+        /// <summary>Maximum number of times this consumer will attempt to process a message before giving up.
+        /// Range: 0-65535 Default: 5</summary>
         [Opt("max_attempts"), Min(0), Max(65535), Default(5)]
         public ushort MaxAttempts { get; set; }
 
         /// <summary>Amount of time to wait for a message from a producer when in a state where RDY
-        /// counts are re-distributed (ie. max_in_flight &lt; num_producers)</summary>
+        /// counts are re-distributed (ie. max_in_flight &lt; num_producers).
+        /// Range: 1s-5m Default: 10s</summary>
         [Opt("low_rdy_idle_timeout"), Min("1s"), Max("5m"), Default("10s")]
         public TimeSpan LowRdyIdleTimeout { get; set; }
 
-        /// <summary>client_id identifier sent to nsqd representing this client (defaults: short hostname)</summary>
+        /// <summary>ClientID identifier sent to nsqd representing this client.
+        /// Default: short hostname.</summary>
         [Opt("client_id")]
         public string ClientID { get; set; }
 
-        /// <summary>hostname identifier sent to nsqd representing this client</summary>
+        /// <summary>Hostname identifier sent to nsqd representing this client.</summary>
         [Opt("hostname")]
         public string Hostname { get; set; }
 
-        /// <summary>user_agent identifier sent to nsqd representing this client, in the spirit of HTTP
-        /// (default: [client_library_name]/[version])</summary>
+        /// <summary>UserAgent identifier sent to nsqd representing this client, in the spirit of HTTP
+        /// Default: NsqSharp/[version].</summary>
         [Opt("user_agent")]
         public string UserAgent { get; set; }
 
-        /// <summary>Duration of time between heartbeats. This must be less than ReadTimeout</summary>
+        /// <summary>Duration of time between heartbeats. This must be less than <see cref="ReadTimeout"/>.
+        /// Default: 30s</summary>
         [Opt("heartbeat_interval"), Default("30s")]
         public TimeSpan HeartbeatInterval { get; set; }
 
-        /// <summary>Integer percentage to sample the channel (requires nsqd 0.2.25+)</summary>
+        /// <summary>Receive a percentage of messages to sample the channel (requires nsqd 0.2.25+).
+        /// See: https://github.com/bitly/nsq/pull/223 for discussion.
+        /// Range: 0-99 Default: 0 (disabled, receive all messages)
+        /// </summary>
         [Opt("sample_rate"), Min(0), Max(99)]
         public int SampleRate { get; set; }
 
@@ -132,31 +150,37 @@ namespace NsqSharp
         [Opt("snappy")]
         private bool Snappy { get; set; }
 
-        /// <summary>Size of the buffer (in bytes) used by nsqd for buffering writes to this connection</summary>
+        /// <summary>Size of the buffer (in bytes) used by nsqd for buffering writes to this connection.
+        /// Default: 16384</summary>
         [Opt("output_buffer_size"), Default(16384)]
         public long OutputBufferSize { get; set; }
         /// <summary>
-        /// Timeout used by nsqd before flushing buffered writes (set to 0 to disable).
+        /// <para>Timeout used by nsqd before flushing buffered writes (set to 0 to disable). Default: 250ms</para>
         ///
-        /// WARNING: configuring clients with an extremely low
+        /// <para>WARNING: configuring clients with an extremely low
         /// (&lt; 25ms) output_buffer_timeout has a significant effect
-        /// on nsqd CPU usage (particularly with > 50 clients connected).
+        /// on nsqd CPU usage (particularly with > 50 clients connected).</para>
         /// </summary>
         [Opt("output_buffer_timeout"), Default("250ms")]
         public TimeSpan OutputBufferTimeout { get; set; }
 
-        /// <summary>Maximum number of messages to allow in flight (concurrency knob)</summary>
+        /// <summary>Maximum number of messages to allow in flight (concurrency knob).
+        /// Min: 0 Default: 1
+        /// </summary>
         [Opt("max_in_flight"), Min(0), Default(1)]
         public int MaxInFlight { get; set; }
 
-        /// <summary>Maximum amount of time to backoff when processing fails 0 == no backoff</summary>
+        /// <summary>Maximum amount of time to backoff when processing fails.
+        /// Range: 0-60m Default: 2m</summary>
         [Opt("max_backoff_duration"), Min("0"), Max("60m"), Default("2m")]
         public TimeSpan MaxBackoffDuration { get; set; }
         /// <summary>The server-side message timeout for messages delivered to this client</summary>
         [Opt("msg_timeout"), Min(0)]
         public TimeSpan MessageTimeout { get; set; }
 
-        /// <summary>Secret for nsqd authentication (requires nsqd 0.2.29+)</summary>
+        /// <summary>Secret for nsqd authentication (requires nsqd 0.2.29+).
+        /// See: https://github.com/bitly/nsq/pull/356, https://github.com/jehiah/nsqauth-contrib.
+        /// </summary>
         [Opt("auth_secret")]
         public string AuthSecret { get; set; }
 

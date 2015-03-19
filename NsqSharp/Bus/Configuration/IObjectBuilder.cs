@@ -26,6 +26,7 @@ namespace NsqSharp.Bus.Configuration
         /// </summary>
         /// <typeparam name="T">The instance type.</typeparam>
         /// <param name="instance">The instance to inject.</param>
-        void Inject<T>(T instance);
+        void Inject<T>(T instance)
+            where T : class;
     }
 }
