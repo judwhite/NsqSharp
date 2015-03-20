@@ -49,8 +49,18 @@ namespace NsqSharp.Bus.Utils
 
         public void Start()
         {
-            EventLog.Log = "Application";
-            EventLog.Source = Assembly.GetEntryAssembly().GetName().Name;
+            var entryAssembly = Assembly.GetEntryAssembly();
+
+            if (entryAssembly != null)
+            {
+                EventLog.Log = "Application";
+                EventLog.Source = entryAssembly.GetName().Name;
+            }
+            else
+            {
+                EventLog.Log = "Application";
+                EventLog.Source = "NsqSharp.Bus Unit Tests";                
+            }
 
             _busConfiguration.StartBus();
         }

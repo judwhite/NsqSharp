@@ -174,7 +174,9 @@ namespace NsqSharp
         /// Range: 0-60m Default: 2m</summary>
         [Opt("max_backoff_duration"), Min("0"), Max("60m"), Default("2m")]
         public TimeSpan MaxBackoffDuration { get; set; }
-        /// <summary>The server-side message timeout for messages delivered to this client</summary>
+        /// <summary>The duration the server waits before auto-requeing a message sent to this client.
+        /// Default = Use server settings (server default = 60s).
+        /// </summary>
         [Opt("msg_timeout"), Min(0)]
         public TimeSpan MessageTimeout { get; set; }
 

@@ -28,7 +28,7 @@ namespace PingPong
                 new MessageTypeToTopicProvider(), // mapping between .NET message types and topics
                 new HandlerTypeToChannelProvider(), // mapping between IHandleMessages<T> implementations and channels
                 busStateChangedHandler: new BusStateChangedHandler(), // bus starting/started/stopping/stopped
-                defaultNsqlookupdHttpEndpoints: new[] { "127.0.0.1:4161" }, // nsqlookupd address
+                defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" }, // nsqlookupd address
                 defaultThreadsPerHandler: 1, // threads per handler. tweak based on use case, see handlers in this project.
                 defaultConsumerNsqConfig: new Config
                                           {

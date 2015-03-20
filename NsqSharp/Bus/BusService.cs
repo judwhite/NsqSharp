@@ -45,7 +45,14 @@ namespace NsqSharp.Bus
 
             _service = new WindowsService(busConfiguration);
 
-            if (GetConsoleWindow() == IntPtr.Zero)
+            var entryAssembly = Assembly.GetEntryAssembly();
+
+            if (entryAssembly == null)
+            {
+                // invoked by unit test
+                _service.Start();
+            }
+            else if (GetConsoleWindow() == IntPtr.Zero)
             {
                 ServiceBase.Run(new ServiceBase[] { _service });
             }
@@ -62,6 +69,15 @@ namespace NsqSharp.Bus
             }
         }
 
+        /// <summary>
+        /// Stops the bus. This method should only be invoked in unit tests for teardown.
+        /// </summary>
+        public static void Stop()
+        {
+            if (_service != null)
+                _service.Stop();
+        }
+
         private static bool _isFirstCancelRequest = true;
         private static bool ConsoleCtrlCheck(CtrlType ctrlType)
         {
@@ -71,8 +87,8 @@ namespace NsqSharp.Bus
             if (_isFirstCancelRequest)
             {
                 Trace.WriteLine("Stopping...");
-                _service.Stop();
                 _isFirstCancelRequest = false;
+                _service.Stop();
                 _wait.Set();
                 return true;
             }

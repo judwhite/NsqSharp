@@ -28,7 +28,7 @@ namespace PointOfSale.Common.Nsq
                 topicProvider ?? new TopicProvider(),
                 channelProvider,
                 defaultThreadsPerHandler: 8,
-                defaultNsqlookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
+                defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
                 busStateChangedHandler: busStateChangedHandler,
                 preCreateTopicsAndChannels: true,
                 defaultConsumerNsqConfig: 

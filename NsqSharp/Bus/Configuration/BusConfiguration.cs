@@ -43,7 +43,7 @@ namespace NsqSharp.Bus.Configuration
         /// <param name="messageAuditor">The handler to call when a message fails to process.</param>
         /// <param name="messageTypeToTopicProvider">The message type to topic provider.</param>
         /// <param name="handlerTypeToChannelProvider">The handler type to channel provider.</param>
-        /// <param name="defaultNsqlookupdHttpEndpoints">The default nsqlookupd HTTP endpoints; typically listening
+        /// <param name="defaultNsqLookupdHttpEndpoints">The default nsqlookupd HTTP endpoints; typically listening
         /// on port 4161.</param>
         /// <param name="defaultThreadsPerHandler">The default number of threads per message handler.</param>
         /// <param name="defaultConsumerNsqConfig">The default NSQ Consumer <see cref="Config"/> (optional).</param>
@@ -59,7 +59,7 @@ namespace NsqSharp.Bus.Configuration
             IMessageAuditor messageAuditor,
             IMessageTypeToTopicProvider messageTypeToTopicProvider,
             IHandlerTypeToChannelProvider handlerTypeToChannelProvider,
-            string[] defaultNsqlookupdHttpEndpoints,
+            string[] defaultNsqLookupdHttpEndpoints,
             int defaultThreadsPerHandler,
             Config defaultConsumerNsqConfig = null,
             IBusStateChangedHandler busStateChangedHandler = null,
@@ -77,10 +77,10 @@ namespace NsqSharp.Bus.Configuration
                 throw new ArgumentNullException("messageTypeToTopicProvider");
             if (handlerTypeToChannelProvider == null)
                 throw new ArgumentNullException("handlerTypeToChannelProvider");
-            if (defaultNsqlookupdHttpEndpoints == null)
-                throw new ArgumentNullException("defaultNsqlookupdHttpEndpoints");
-            if (defaultNsqlookupdHttpEndpoints.Length == 0)
-                throw new ArgumentNullException("defaultNsqlookupdHttpEndpoints", "must contain elements");
+            if (defaultNsqLookupdHttpEndpoints == null)
+                throw new ArgumentNullException("defaultNsqLookupdHttpEndpoints");
+            if (defaultNsqLookupdHttpEndpoints.Length == 0)
+                throw new ArgumentNullException("defaultNsqLookupdHttpEndpoints", "must contain elements");
             if (defaultThreadsPerHandler <= 0)
                 throw new ArgumentOutOfRangeException("defaultThreadsPerHandler", "must be > 0");
 
@@ -92,7 +92,7 @@ namespace NsqSharp.Bus.Configuration
             _dependencyInjectionContainer = dependencyInjectionContainer;
             _defaultMessageSerializer = defaultMessageSerializer;
             _messageAuditor = messageAuditor;
-            _defaultNsqlookupdHttpEndpoints = defaultNsqlookupdHttpEndpoints;
+            _defaultNsqlookupdHttpEndpoints = defaultNsqLookupdHttpEndpoints;
             _defaultConsumerNsqConfig = defaultConsumerNsqConfig ?? new Config();
             _defaultThreadsPerHandler = defaultThreadsPerHandler;
             _defaultNsqdHttpEndpoints = new[] { "127.0.0.1:4151" };
@@ -130,7 +130,17 @@ namespace NsqSharp.Bus.Configuration
                             "Topic for message type '{0}' not registered.", messageType.FullName), ex);
                     }
 
-                    string channel = _handlerTypeToChannelProvider.GetChannel(handlerType);
+                    string channel;
+                    try
+                    {
+                        channel = _handlerTypeToChannelProvider.GetChannel(handlerType);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(string.Format(
+                            "Channel for handler type '{0}' not registered.", handlerType.FullName), ex);
+                    }
+
                     AddMessageHandler(handlerType, messageType, topic, channel);
                 }
                 else
@@ -289,7 +299,7 @@ namespace NsqSharp.Bus.Configuration
                                 }
                                 catch (Exception ex)
                                 {
-                                    _nsqLogger.Output(LogLevel.Error, 
+                                    _nsqLogger.Output(LogLevel.Error,
                                         string.Format("error creating topic/channel on {0} - {1}", localNsqdHttpAddress, ex));
                                 }
 

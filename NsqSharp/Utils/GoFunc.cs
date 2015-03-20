@@ -26,6 +26,9 @@ namespace NsqSharp.Utils
                                    {
                                        action();
                                    }
+                                   catch (ThreadAbortException)
+                                   {
+                                   }
                                    catch (Exception ex)
                                    {
                                        var logger = new TraceLogger();

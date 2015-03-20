@@ -109,7 +109,7 @@ namespace NsqSharp
 
         /// <summary>
         /// Touch sends a TOUCH command to the nsqd which sent this message, resetting the default timeout.
-        /// The default timeout is 60s; see <see cref="Config.MessageTimeout"/>.
+        /// The server-default timeout is 60s; see <see cref="Config.MessageTimeout"/>.
         /// </summary>
         public void Touch()
         {

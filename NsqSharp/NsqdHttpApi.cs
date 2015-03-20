@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using NsqSharp.Core;
 using NsqSharp.Utils;
@@ -251,12 +253,19 @@ namespace NsqSharp
         /// </summary>
         /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string Stats(string nsqdHttpAddress)
+        public static NsqdStats Stats(string nsqdHttpAddress)
         {
             if (string.IsNullOrEmpty(nsqdHttpAddress))
                 throw new ArgumentNullException("nsqdHttpAddress");
 
-            return Get(GetEndpoint(nsqdHttpAddress, "/stats?format=json"));
+            string response = Get(GetEndpoint(nsqdHttpAddress, "/stats?format=json"));
+            byte[] respBody = Encoding.UTF8.GetBytes(response);
+
+            var serializer = new DataContractJsonSerializer(typeof(NsqdStatsResponse));
+            using (var memoryStream = new MemoryStream(respBody))
+            {
+                return ((NsqdStatsResponse)serializer.ReadObject(memoryStream)).Data;
+            }
         }
 
         /// <summary>
@@ -345,7 +354,7 @@ namespace NsqSharp
             webRequest.Timeout = timeoutMilliseconds;
             webRequest.Accept = "text/html,application/vnd.nsq; version=1.0";
             webRequest.UserAgent = string.Format("{0}/{1}", ClientInfo.ClientName, ClientInfo.Version);
-            
+
             if (method == "POST" && body != null && body.Length != 0)
             {
                 webRequest.ContentType = "application/x-www-form-urlencoded";
@@ -387,4 +396,189 @@ namespace NsqSharp
             return response;
         }
     }
+
+    /// <summary>
+    /// Statistics information response wrapper for nsqd. See <see cref="NsqdHttpApi.Stats"/>.
+    /// </summary>
+    [DataContract]
+    public class NsqdStatsResponse
+    {
+        /// <summary>HTTP status code.</summary>
+        [DataMember(Name = "status_code")]
+        public string StatusCode { get; set; }
+        /// <summary>HTTP status text.</summary>
+        [DataMember(Name = "status_txt")]
+        public string StatusText { get; set; }
+        /// <summary>Statistics information for nsqd.</summary>
+        [DataMember(Name = "data")]
+        public NsqdStats Data { get; set; }
+    }
+
+    /// <summary>
+    /// Statistics information for nsqd. See <see cref="NsqdHttpApi.Stats"/>.
+    /// </summary>
+    [DataContract]
+    public class NsqdStats
+    {
+        ///<summary>version</summary>
+        [DataMember(Name = "version")]
+        public string Version { get; set; }
+        ///<summary>health</summary>
+        [DataMember(Name = "health")]
+        public string Health { get; set; }
+        ///<summary>topics</summary>
+        [DataMember(Name = "topics")]
+        public NsqdStatsTopic[] Topics { get; set; }
+    }
+
+    /// <summary>
+    /// Topic information for nsqd. See <see cref="NsqdHttpApi.Stats"/>.
+    /// </summary>
+    [DataContract]
+    public class NsqdStatsTopic
+    {
+        ///<summary>topic_name</summary>
+        [DataMember(Name = "topic_name")]
+        public string TopicName { get; set; }
+        ///<summary>channels</summary>
+        [DataMember(Name = "channels")]
+        public NsqdStatsChannel[] Channels { get; set; }
+        ///<summary>depth</summary>
+        [DataMember(Name = "depth")]
+        public int Depth { get; set; }
+        ///<summary>backend_depth</summary>
+        [DataMember(Name = "backend_depth")]
+        public int BackendDepth { get; set; }
+        ///<summary>message_count</summary>
+        [DataMember(Name = "message_count")]
+        public int MessageCount { get; set; }
+        ///<summary>paused</summary>
+        [DataMember(Name = "paused")]
+        public bool Paused { get; set; }
+        // TODO
+        //[DataMember(Name = "e2e_processing_latency")]
+        //public NsqdStatsEndToEndProcessingLatency EndToEndProcessingLatency { get; set; }
+    }
+
+    /// <summary>
+    /// Channel information for nsqd. See <see cref="NsqdHttpApi.Stats"/>.
+    /// </summary>
+    [DataContract]
+    public class NsqdStatsChannel
+    {
+        ///<summary>channel_name</summary>
+        [DataMember(Name = "channel_name")]
+        public string ChannelName { get; set; }
+        ///<summary>depth</summary>
+        [DataMember(Name = "depth")]
+        public int Depth { get; set; }
+        ///<summary>backend_depth</summary>
+        [DataMember(Name = "backend_depth")]
+        public int BackendDepth { get; set; }
+        ///<summary>in_flight_count</summary>
+        [DataMember(Name = "in_flight_count")]
+        public int InFlightCount { get; set; }
+        ///<summary>deferred_count</summary>
+        [DataMember(Name = "deferred_count")]
+        public int DeferredCount { get; set; }
+        ///<summary>message_count</summary>
+        [DataMember(Name = "message_count")]
+        public int MessageCount { get; set; }
+        ///<summary>requeue_count</summary>
+        [DataMember(Name = "requeue_count")]
+        public int RequeueCount { get; set; }
+        ///<summary>timeout_count</summary>
+        [DataMember(Name = "timeout_count")]
+        public int TimeoutCount { get; set; }
+        ///<summary>clients</summary>
+        [DataMember(Name = "clients")]
+        public NsqdStatsClient[] Clients { get; set; }
+        ///<summary>paused</summary>
+        [DataMember(Name = "paused")]
+        public bool Paused { get; set; }
+        // TODO
+        //[DataMember(Name = "e2e_processing_latency")]
+        //public NsqdStatsEndToEndProcessingLatency EndToEndProcessingLatency { get; set; }
+    }
+
+    /// <summary>
+    /// Client information for nsqd. See <see cref="NsqdHttpApi.Stats"/>.
+    /// </summary>
+    [DataContract]
+    public class NsqdStatsClient
+    {
+        ///<summary>name</summary>
+        [DataMember(Name = "name")]
+        public string Name { get; set; }
+        ///<summary>client_id</summary>
+        [DataMember(Name = "client_id")]
+        public string ClientId { get; set; }
+        ///<summary>hostname</summary>
+        [DataMember(Name = "hostname")]
+        public string Hostname { get; set; }
+        ///<summary>version</summary>
+        [DataMember(Name = "version")]
+        public string Version { get; set; }
+        ///<summary>remote_address</summary>
+        [DataMember(Name = "remote_address")]
+        public string RemoteAddress { get; set; }
+        ///<summary>state</summary>
+        [DataMember(Name = "state")]
+        public int State { get; set; }
+        ///<summary>ready_count</summary>
+        [DataMember(Name = "ready_count")]
+        public int ReadyCount { get; set; }
+        ///<summary>in_flight_count</summary>
+        [DataMember(Name = "in_flight_count")]
+        public int InFlightCount { get; set; }
+        ///<summary>message_count</summary>
+        [DataMember(Name = "message_count")]
+        public int MessageCount { get; set; }
+        ///<summary>finish_count</summary>
+        [DataMember(Name = "finish_count")]
+        public int FinishCount { get; set; }
+        ///<summary>requeue_count</summary>
+        [DataMember(Name = "requeue_count")]
+        public int RequeueCount { get; set; }
+        ///<summary>connect_ts</summary>
+        [DataMember(Name = "connect_ts")]
+        public int ConnectTimestamp { get; set; }
+        ///<summary>sample_rate</summary>
+        [DataMember(Name = "sample_rate")]
+        public int SampleRate { get; set; }
+        ///<summary>deflate</summary>
+        [DataMember(Name = "deflate")]
+        public bool Deflate { get; set; }
+        ///<summary>snappy</summary>
+        [DataMember(Name = "snappy")]
+        public bool Snappy { get; set; }
+        ///<summary>user_agent</summary>
+        [DataMember(Name = "user_agent")]
+        public string UserAgent { get; set; }
+        ///<summary>tls</summary>
+        [DataMember(Name = "tls")]
+        public bool Tls { get; set; }
+        ///<summary>tls_cipher_suite</summary>
+        [DataMember(Name = "tls_cipher_suite")]
+        public string TlsCipherSuite { get; set; }
+        ///<summary>tls_version</summary>
+        [DataMember(Name = "tls_version")]
+        public string TlsVersion { get; set; }
+        ///<summary>tls_negotiated_protocol</summary>
+        [DataMember(Name = "tls_negotiated_protocol")]
+        public string TlsNegotiatedProtocol { get; set; }
+        ///<summary>tls_negotiated_protocol_is_mutual</summary>
+        [DataMember(Name = "tls_negotiated_protocol_is_mutual")]
+        public bool TlsNegotiatedProtocolIsMutual { get; set; }
+    }
+
+    // TODO
+    /*[DataContract]
+    public class NsqdStatsEndToEndProcessingLatency
+    {
+        [DataMember(Name = "count")]
+        public int Count { get; set; }
+        [DataMember(Name = "percentiles")]
+        public ? Percentiles { get; set; }
+    }*/
 }
