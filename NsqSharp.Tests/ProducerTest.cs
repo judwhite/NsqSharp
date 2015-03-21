@@ -13,20 +13,31 @@ using NUnit.Framework;
 
 namespace NsqSharp.Tests
 {
+#if !RUN_INTEGRATION_TESTS
     [TestFixture(IgnoreReason = "NSQD Integration Test")]
+#else
+    [TestFixture]
+#endif
     public class ProducerTest
     {
         [Test]
         public void TestProducerConnection()
         {
-            var config = new Config();
-            var w = new Producer("127.0.0.1:4150", new ConsoleLogger(LogLevel.Debug), config);
+            try
+            {
+                var config = new Config();
+                var w = new Producer("127.0.0.1:4150", new ConsoleLogger(LogLevel.Debug), config);
 
-            w.Publish("write_test", "test");
+                w.Publish("write_test", "test");
 
-            w.Stop();
+                w.Stop();
 
-            Assert.Throws<ErrStopped>(() => w.Publish("write test", "fail test"));
+                Assert.Throws<ErrStopped>(() => w.Publish("write test", "fail test"));
+            }
+            finally
+            {
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", "write_test");
+            }
         }
 
         // TODO: Is Ping really useful?
@@ -65,6 +76,7 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
             }
         }
 
@@ -92,6 +104,7 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
             }
         }
 
@@ -189,6 +202,7 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
             }
 
             try
@@ -215,6 +229,7 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
             }
         }
 

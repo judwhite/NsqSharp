@@ -14,7 +14,11 @@ using StructureMap;
 
 namespace NsqSharp.Bus.Tests
 {
+#if !RUN_INTEGRATION_TESTS
     [TestFixture(IgnoreReason = "NSQD Integration Test")]
+#else
+    [TestFixture]
+#endif
     public class TouchTest
     {
         [Test]

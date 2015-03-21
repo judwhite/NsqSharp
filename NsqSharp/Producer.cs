@@ -350,7 +350,7 @@ namespace NsqSharp
             catch (Exception ex)
             {
                 t.Error = ex;
-                doneChan.Send(t);
+                GoFunc.Run(() => doneChan.Send(t));
             }
             finally
             {

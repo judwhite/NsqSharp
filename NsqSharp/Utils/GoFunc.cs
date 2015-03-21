@@ -37,7 +37,10 @@ namespace NsqSharp.Utils
                                    }
                                }
                 );
-            t.Name = threadName;
+
+            if (threadName != null)
+                t.Name = threadName;
+
             t.IsBackground = true;
             t.Start();
         }

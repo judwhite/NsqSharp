@@ -96,7 +96,7 @@ namespace NsqSharp.Tests.Go
         [Test]
         public void AfterNotFired()
         {
-            var c1 = Time.After(TimeSpan.FromMilliseconds(10));
+            var c1 = Time.After(TimeSpan.FromMilliseconds(20));
             var c2 = new Chan<string>();
 
             var t1 = new Thread(() => c2.Send("no-timeout"));

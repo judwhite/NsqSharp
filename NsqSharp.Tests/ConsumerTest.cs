@@ -10,7 +10,11 @@ using NUnit.Framework;
 
 namespace NsqSharp.Tests
 {
+#if !RUN_INTEGRATION_TESTS
     [TestFixture(IgnoreReason = "NSQD Integration Test")]
+#else
+    [TestFixture]
+#endif
     public class ConsumerTest
     {
         [Test]
@@ -115,7 +119,7 @@ namespace NsqSharp.Tests
                 configSetter(config);
             }
             var topicName = "rdr_test";
-            
+
             // TODO: Deflate, Snappy, TLS
             /*if (config.Deflate)
                 topicName = topicName + "_deflate";
@@ -124,48 +128,56 @@ namespace NsqSharp.Tests
             
             if (config.TlsV1)
                 topicName = topicName + "_tls";*/
-            
+
             topicName = topicName + DateTime.Now.Unix();
-            var q = new Consumer(topicName, "ch", config);
-            // q.SetLogger(nullLogger, LogLevelInfo)
 
-            var h = new MyTestHandler { q = q };
-            q.AddHandler(h);
+            try
+            {
+                var q = new Consumer(topicName, "ch", config);
+                // q.SetLogger(nullLogger, LogLevelInfo)
 
-            SendMessage(topicName, "put", "{\"msg\":\"single\"}");
-            SendMessage(topicName, "mput", "{\"msg\":\"double\"}\n{\"msg\":\"double\"}");
-            SendMessage(topicName, "put", "TOBEFAILED");
-            h.messagesSent = 4;
+                var h = new MyTestHandler { q = q };
+                q.AddHandler(h);
 
-            const string addr = "127.0.0.1:4150";
-            q.ConnectToNsqd(addr);
+                SendMessage(topicName, "put", "{\"msg\":\"single\"}");
+                SendMessage(topicName, "mput", "{\"msg\":\"double\"}\n{\"msg\":\"double\"}");
+                SendMessage(topicName, "put", "TOBEFAILED");
+                h.messagesSent = 4;
 
-            var stats = q.GetStats();
-            Assert.AreNotEqual(0, stats.Connections, "stats report 0 connections (should be > 0)");
+                const string addr = "127.0.0.1:4150";
+                q.ConnectToNsqd(addr);
 
-            // NOTE: changed to just return without throwing; throwing Exceptions is a little more disruptive in .NET
-            // than returning err in Go
-            //Assert.Throws<ErrAlreadyConnected>(() => q.ConnectToNSQD(addr),
-            //    "should not be able to connect to the same NSQ twice");
+                var stats = q.GetStats();
+                Assert.AreNotEqual(0, stats.Connections, "stats report 0 connections (should be > 0)");
 
-            Assert.Throws<ErrNotConnected>(() => q.DisconnectFromNsqd("1.2.3.4:4150"),
-                "should not be able to disconnect from an unknown nsqd");
+                // NOTE: changed to just return without throwing; throwing Exceptions is a little more disruptive in .NET
+                // than returning err in Go
+                //Assert.Throws<ErrAlreadyConnected>(() => q.ConnectToNSQD(addr),
+                //    "should not be able to connect to the same NSQ twice");
 
-            Assert.Throws<TimeoutException>(() => q.ConnectToNsqd("1.2.3.4:4150"),
-                "should not be able to connect to non-existent nsqd");
+                Assert.Throws<ErrNotConnected>(() => q.DisconnectFromNsqd("1.2.3.4:4150"),
+                    "should not be able to disconnect from an unknown nsqd");
 
-            // should be able to disconnect from an nsqd
-            q.DisconnectFromNsqd("1.2.3.4:4150");
-            q.DisconnectFromNsqd("127.0.0.1:4150");
+                Assert.Throws<TimeoutException>(() => q.ConnectToNsqd("1.2.3.4:4150"),
+                    "should not be able to connect to non-existent nsqd");
 
-            q.StopChan.Receive();
+                // should be able to disconnect from an nsqd
+                q.DisconnectFromNsqd("1.2.3.4:4150");
+                q.DisconnectFromNsqd("127.0.0.1:4150");
 
-            stats = q.GetStats();
+                q.StopChan.Receive();
 
-            Assert.AreEqual(h.messagesReceived + h.messagesFailed, stats.MessagesReceived, "stats report messages received");
-            Assert.AreEqual(8, h.messagesReceived, "messages received");
-            Assert.AreEqual(4, h.messagesSent, "messages sent");
-            Assert.AreEqual(1, h.messagesFailed, "failed messaged not done");
+                stats = q.GetStats();
+
+                Assert.AreEqual(h.messagesReceived + h.messagesFailed, stats.MessagesReceived, "stats report messages received");
+                Assert.AreEqual(8, h.messagesReceived, "messages received");
+                Assert.AreEqual(4, h.messagesSent, "messages sent");
+                Assert.AreEqual(1, h.messagesFailed, "failed messaged not done");
+            }
+            finally
+            {
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
+            }
         }
 
         private void SendMessage(string topic, string method, string msg)
