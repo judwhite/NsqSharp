@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using NsqSharp.Core;
-using NsqSharp.Tests.Utils;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Channels;
 using NsqSharp.Utils.Extensions;
@@ -66,7 +65,7 @@ namespace NsqSharp.Tests
 
             for (int i = 0; i < n.got.Count; i++)
             {
-                log.Printf("{0}: {1}", i, Encoding.UTF8.GetString(n.got[i]));
+                Console.WriteLine("{0}: {1}", i, Encoding.UTF8.GetString(n.got[i]));
             }
 
             var expected = new[]
@@ -106,7 +105,7 @@ namespace NsqSharp.Tests
         public void HandleMessage(Message message)
         {
             string body = Encoding.UTF8.GetString(message.Body);
-            log.Printf(body);
+            Console.WriteLine(body);
             if (body != "good")
             {
                 throw new Exception("bad");
@@ -170,7 +169,7 @@ namespace NsqSharp.Tests
             tcpAddr = tcpListener.LocalEndpoint.ToString();
             tcpListener.Start();
 
-            log.Printf("TCP: listening on {0}", tcpListener.LocalEndpoint);
+            Console.WriteLine("TCP: listening on {0}", tcpListener.LocalEndpoint);
 
             while (true)
             {
@@ -186,7 +185,7 @@ namespace NsqSharp.Tests
                 GoFunc.Run(() => handle(conn), "mockNSQD:handle");
             }
 
-            log.Printf("TCP: closing {0}", tcpListener.LocalEndpoint);
+            Console.WriteLine("TCP: closing {0}", tcpListener.LocalEndpoint);
             exitChan.Close();
         }
 
@@ -194,7 +193,7 @@ namespace NsqSharp.Tests
         {
             int idx = 0;
 
-            log.Printf("TCP: new client({0})", conn.Client.RemoteEndPoint);
+            Console.WriteLine("TCP: new client({0})", conn.Client.RemoteEndPoint);
 
             using (var rdr = new BinaryReader(conn.GetStream()))
             using (var connw = new BinaryWriter(conn.GetStream()))
@@ -232,7 +231,7 @@ namespace NsqSharp.Tests
                         .CaseReceive(readChan, line =>
                         {
                             string strLine = Encoding.UTF8.GetString(line);
-                            log.Printf("mock: '{0}'", strLine);
+                            Console.WriteLine("mock: '{0}'", strLine);
                             got.Add(line);
                             var args = strLine.Split(new[] { ' ' });
                             switch (args[0])
@@ -243,11 +242,11 @@ namespace NsqSharp.Tests
                                         byte[] l = rdr.ReadBytes(4);
                                         int size = Binary.BigEndian.Int32(l);
                                         byte[] b = rdr.ReadBytes(size);
-                                        log.Printf(Encoding.UTF8.GetString(b));
+                                        Console.WriteLine(Encoding.UTF8.GetString(b));
                                     }
                                     catch (Exception ex)
                                     {
-                                        log.Printf(ex.ToString());
+                                        Console.WriteLine(ex.ToString());
                                         doLoop = false;
                                         throw;
                                     }
@@ -292,7 +291,7 @@ namespace NsqSharp.Tests
                                 }
                                 catch (Exception ex)
                                 {
-                                    log.Printf(ex.ToString());
+                                    Console.WriteLine(ex.ToString());
                                     doLoop = false;
                                 }
                             }
