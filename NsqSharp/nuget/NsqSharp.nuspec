@@ -3,15 +3,15 @@
   <metadata>
     <id>NsqSharp</id>
     <title>NsqSharp</title>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
     <authors>Judson White</authors>
     <owners>Judson White</owners>
-    <licenseUrl>https://github.com/judwhite/NsqSharp/blob/master/LICENSE</licenseUrl>
+    <licenseUrl>https://raw.githubusercontent.com/judwhite/NsqSharp/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/judwhite/NsqSharp</projectUrl>
     <iconUrl>http://judsonwhite.com/images/nsq_sharp.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Client library for NSQ, a realtime distributed messaging platform. http://nsq.io</description>
-    <summary>Client library for NSQ, a realtime distributed messaging platform.</summary>
+    <summary>Client library for NSQ, a realtime distributed messaging platform. http://nsq.io</summary>
     <releaseNotes>Initial release.</releaseNotes>
     <copyright>Copyright 2015</copyright>
     <tags>nsq queue esb service bus distributed messaging</tags>
