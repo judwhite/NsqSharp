@@ -5,9 +5,13 @@ NsqSharp
 
 A .NET client library for [NSQ](https://github.com/bitly/nsq), a realtime distributed messaging platform.
 
+Check out this [slide deck](https://speakerdeck.com/snakes/nsq-nyc-golang-meetup?slide=19) for a quick intro to NSQ.
+
+Watch [Spray Some NSQ On It](https://www.youtube.com/watch?v=CL_SUzXIUuI) by co-author [Matt Reiferson](https://github.com/mreiferson) for an under 30-minute intro to NSQ as a messaging platform.
+
 ## Quick Start
 
-Download [`nsqd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqd.exe) and [`nsqlookupd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqlookupd.exe) from the [nsq-0.3.2-bin](https://github.com/judwhite/NsqSharp/tree/master/nsq-0.3.2-bin) folder. Alternatively you can build these files from source https://github.com/bitly/nsq.
+Download [`nsqd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqd.exe) and [`nsqlookupd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqlookupd.exe). Alternatively you can build these files from source https://github.com/bitly/nsq.
 
 From two separate command lines run:
 ```
@@ -16,9 +20,24 @@ nsqlookupd
 nsqd -lookupd-tcp-address=127.0.0.1:4160
 ```
 
-For an under 30-minute intro to NSQ as a messaging platform watch [Spray Some NSQ On It](https://www.youtube.com/watch?v=CL_SUzXIUuI) by [@mreiferson](https://github.com/mreiferson).
+To install as Windows Services:
 
-## Examples
+```
+mkdir c:\nsq\data
+
+copy /y nsqd.exe c:\nsq
+copy /y nsqlookupd.exe c:\nsq
+
+sc create nsqlookupd binpath= "c:\nsq\nsqlookupd.exe" start= auto DisplayName= "nsqlookupd"
+sc description nsqlookupd "nsqlookupd 0.3.2"
+sc start nsqlookupd
+
+sc create nsqd binpath= "c:\nsq\nsqd.exe -mem-queue-size=0 -lookupd-tcp-address=127.0.0.1:4160 -data-path=c:\nsq\data" start= auto DisplayName= "nsqd"
+sc description nsqd "nsqd 0.3.2"
+sc start nsqd
+```
+
+## C# Examples
 
 `PM> Install-Package NsqSharp`
 
