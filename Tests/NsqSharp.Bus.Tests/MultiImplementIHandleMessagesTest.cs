@@ -12,13 +12,12 @@ using StructureMap;
 
 namespace NsqSharp.Bus.Tests
 {
-#if !RUN_INTEGRATION_TESTS
-    [TestFixture(IgnoreReason = "NSQD Integration Test")]
-#else
     [TestFixture]
-#endif
     public class MultiImplementIHandleMessagesTest
     {
+#if !RUN_INTEGRATION_TESTS
+        [Ignore("NSQD Integration Test")]
+#endif
         [Test]
         public void Given_Two_Queues_In_One_Process_When_One_Queue_Is_Long_Then_It_Should_Not_Block_Other_Queues()
         {
@@ -148,6 +147,67 @@ namespace NsqSharp.Bus.Tests
                 NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", highPriorityTopicName);
                 NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", lowPriorityTopicName);
             }
+        }
+
+        [Test]
+        public void Given_A_Handler_Implementing_Multiple_IHandleMessages_When_Bus_Starts_Then_An_Exception_Should_Be_Thrown()
+        {
+            string highPriorityTopicName = string.Format("test_high_priority_{0}", DateTime.Now.UnixNano());
+            string lowPriorityTopicName = string.Format("test_low_priority_{0}", DateTime.Now.UnixNano());
+            const string channelName = "test_channel";
+
+            var container = new Container();
+
+            // UpdateHandler implements IHandleMessages multiple times
+
+            Assert.Throws<HandlerConfigurationException>(() => BusService.Start(new BusConfiguration(
+                new StructureMapObjectBuilder(container),
+                new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
+                new MessageAuditorStub(),
+                new MessageTypeToTopicProviderFake(new Dictionary<Type, string> { 
+                        { typeof(HighPriority<UpdateMessage>), highPriorityTopicName },
+                        { typeof(LowPriority<UpdateMessage>), lowPriorityTopicName }
+                    }),
+                new HandlerTypeToChannelProviderFake(new Dictionary<Type, string> { 
+                        { typeof(UpdateHandler), channelName },
+                    }),
+                defaultNsqLookupdHttpEndpoints: new[] { "0.0.0.0:0" },
+                defaultThreadsPerHandler: 4,
+                defaultConsumerNsqConfig: new Config
+                {
+                    LookupdPollJitter = 0,
+                    LookupdPollInterval = TimeSpan.FromSeconds(5),
+                }
+            )));
+
+            // the safe way (explicit channel names for each IHandleMessages<>)
+
+            container.Configure(x =>
+            {
+                x.For<IHandleMessages<HighPriority<UpdateMessage>>>().Use<UpdateHandler>();
+                x.For<IHandleMessages<LowPriority<UpdateMessage>>>().Use<UpdateHandler>();
+            });
+
+            BusService.Start(new BusConfiguration(
+                new StructureMapObjectBuilder(container),
+                new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
+                new MessageAuditorStub(),
+                new MessageTypeToTopicProviderFake(new Dictionary<Type, string> { 
+                        { typeof(HighPriority<UpdateMessage>), highPriorityTopicName },
+                        { typeof(LowPriority<UpdateMessage>), lowPriorityTopicName }
+                    }),
+                new HandlerTypeToChannelProviderFake(new Dictionary<Type, string> { 
+                        { typeof(IHandleMessages<HighPriority<UpdateMessage>>), channelName },
+                        { typeof(IHandleMessages<LowPriority<UpdateMessage>>), channelName }
+                    }),
+                defaultNsqLookupdHttpEndpoints: new[] { "0.0.0.0:0" },
+                defaultThreadsPerHandler: 4,
+                defaultConsumerNsqConfig: new Config
+                {
+                    LookupdPollJitter = 0,
+                    LookupdPollInterval = TimeSpan.FromSeconds(5),
+                }
+            ));
         }
 
         private class HighPriority<T>

@@ -116,9 +116,29 @@ namespace NsqSharp.Bus.Configuration
 
             foreach (var handlerType in handlerTypes)
             {
-                Type messageType;
-                if (IsMessageHandler(handlerType, out messageType))
+                List<Type> handlerMessageTypes = null;
+                PopulateHandlerMessagesTypes(handlerType, ref handlerMessageTypes);
+
+                if (handlerMessageTypes != null && handlerMessageTypes.Count != 0)
                 {
+                    if (handlerMessageTypes.Count > 1)
+                    {
+                        var handlesMessageTypes =
+                            string.Join(", ", handlerMessageTypes.Select(p => string.Format("IHandleMessages<{0}>", p.Name)));
+
+                        var errorMessage = string.Format(
+                            "Handler '{0}' implements multiple handlers: {1}. Register the IHandleMessages<T> interfaces " +
+                            "themselves as handlers and register them with your DI container to resolve to the concrete " +
+                            "handler type. This is to prevent the same channel name from unintentionally applying to " +
+                            "multiple topics.",
+                            handlerType, handlesMessageTypes
+                        );
+
+                        throw new HandlerConfigurationException(errorMessage);
+                    }
+
+                    Type messageType = handlerMessageTypes[0];
+
                     string topic;
                     try
                     {
@@ -241,43 +261,23 @@ namespace NsqSharp.Bus.Configuration
             throw new NotImplementedException();
         }*/
 
-        private static bool IsMessageHandler(Type type, out Type messageType)
+        private static void PopulateHandlerMessagesTypes(Type type, ref List<Type> messageTypes)
         {
-            // TODO: Should throw if 'type' implements IHandleMessages more than once with message to use
-            // TODO: IHandleMessages<> directly and register with dependency injection container
-
-            messageType = null;
-
-            if (!type.IsClass && !type.IsInterface)
-                return false;
-
-            if (IsMessageHandlerInterface(type, out messageType))
-                return true;
-
-            foreach (var interf in type.GetInterfaces())
+            if (type.IsInterface && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IHandleMessages<>))
             {
-                if (IsMessageHandlerInterface(interf, out messageType))
-                    return true;
-
-                foreach (var subInterf in interf.GetInterfaces())
-                {
-                    if (IsMessageHandlerInterface(subInterf, out messageType))
-                        return true;
-                }
+                if (messageTypes == null)
+                    messageTypes = new List<Type>();
+                var messageType = type.GetGenericArguments()[0];
+                messageTypes.Add(messageType);
             }
 
-            return false;
-        }
+            if (type.BaseType != typeof(object) && type.BaseType != null)
+                PopulateHandlerMessagesTypes(type.BaseType, ref messageTypes);
 
-        private static bool IsMessageHandlerInterface(Type interf, out Type messageType)
-        {
-            if (interf.IsInterface && interf.IsGenericType && interf.GetGenericTypeDefinition() == typeof(IHandleMessages<>))
+            foreach (var interfaceType in type.GetInterfaces())
             {
-                messageType = interf.GetGenericArguments()[0];
-                return true;
+                PopulateHandlerMessagesTypes(interfaceType, ref messageTypes);
             }
-            messageType = null;
-            return false;
         }
 
         internal void StartBus()
