@@ -189,8 +189,8 @@ namespace NsqSharp.Bus.Configuration
             if (!Protocol.IsValidChannelName(channel))
                 throw new ArgumentException(string.Format("'{0}' is not a valid channel name", topic), "channel");
 
-            if (handlerType.IsInterface || handlerType.IsAbstract)
-                throw new ArgumentException("handlerType must be instantiable; cannot be an interface or abstract class", "handlerType");
+            if (handlerType.IsAbstract && !handlerType.IsInterface)
+                throw new ArgumentException("handlerType must be instantiable; cannot be an abstract class", "handlerType");
 
             if (nsqLookupdHttpAddresses == null || nsqLookupdHttpAddresses.Length == 0)
                 nsqLookupdHttpAddresses = _defaultNsqlookupdHttpEndpoints;
@@ -243,10 +243,16 @@ namespace NsqSharp.Bus.Configuration
 
         private static bool IsMessageHandler(Type type, out Type messageType)
         {
+            // TODO: Should throw if 'type' implements IHandleMessages more than once with message to use
+            // TODO: IHandleMessages<> directly and register with dependency injection container
+
             messageType = null;
 
-            if (!type.IsClass)
+            if (!type.IsClass && !type.IsInterface)
                 return false;
+
+            if (IsMessageHandlerInterface(type, out messageType))
+                return true;
 
             foreach (var interf in type.GetInterfaces())
             {
@@ -265,7 +271,7 @@ namespace NsqSharp.Bus.Configuration
 
         private static bool IsMessageHandlerInterface(Type interf, out Type messageType)
         {
-            if (interf.IsGenericType && interf.GetGenericTypeDefinition() == typeof(IHandleMessages<>))
+            if (interf.IsInterface && interf.IsGenericType && interf.GetGenericTypeDefinition() == typeof(IHandleMessages<>))
             {
                 messageType = interf.GetGenericArguments()[0];
                 return true;

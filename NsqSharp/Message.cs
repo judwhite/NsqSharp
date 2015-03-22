@@ -155,13 +155,13 @@ namespace NsqSharp
 
             var requeueTimeSpan = Delegate.OnRequeue(this, delay, backoff);
             RequeuedUntil = DateTime.UtcNow + requeueTimeSpan;
-            Backoff = backoff;
+            BackoffTriggered = backoff;
         }
 
         /// <summary>
         /// Gets a value indicating whether this message triggered a backoff event.
         /// </summary>
-        public bool Backoff { get; private set; }
+        public bool BackoffTriggered { get; private set; }
 
         /// <summary>
         /// Gets the minimum date/time the message will be requeued until.
@@ -207,7 +207,7 @@ namespace NsqSharp
         public static Message DecodeMessage(byte[] data)
         {
             if (data == null)
-                throw new ArgumentNullException("b");
+                throw new ArgumentNullException("data");
 
             using (var memoryStream = new MemoryStream(data))
             using (var binaryReader = new BinaryReader(memoryStream))

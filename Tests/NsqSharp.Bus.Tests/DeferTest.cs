@@ -47,7 +47,6 @@ namespace NsqSharp.Bus.Tests
                     defaultThreadsPerHandler: 1,
                     defaultConsumerNsqConfig: new Config
                     {
-                        // TODO: configure default requeue
                         LookupdPollJitter = 0,
                         LookupdPollInterval = TimeSpan.FromSeconds(5),
                         DefaultRequeueDelay = TimeSpan.FromSeconds(90)
@@ -112,13 +111,13 @@ namespace NsqSharp.Bus.Tests
             }
         }
 
-        public class DeferMessage
+        private class DeferMessage
         {
             public bool Ignore { get; set; }
             public DateTime DeferUntil { get; set; }
         }
 
-        public class MessageInfo
+        private class MessageInfo
         {
             public DateTime Received { get; set; }
             public DateTime OriginalTimestamp { get; set; }

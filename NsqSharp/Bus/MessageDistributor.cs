@@ -153,6 +153,14 @@ namespace NsqSharp.Bus
 
                     messageInformation.Finished = DateTime.UtcNow;
 
+                    if (requeue)
+                        message.Requeue();
+                    else
+                        message.Finish();
+
+                    messageInformation.BackoffTriggered = message.BackoffTriggered;
+                    messageInformation.RequeuedUntil = message.RequeuedUntil;
+
                     _messageAuditor.TryOnFailed(_logger, _bus,
                         new FailedMessageInformation
                         (
@@ -163,15 +171,13 @@ namespace NsqSharp.Bus
                         )
                     );
 
-                    if (requeue)
-                        message.Requeue();
-                    else
-                        message.Finish();
-
                     return;
                 }
 
                 messageInformation.Finished = DateTime.UtcNow;
+                messageInformation.BackoffTriggered = message.BackoffTriggered;
+                messageInformation.RequeuedUntil = message.RequeuedUntil;
+
                 _messageAuditor.TryOnSucceeded(_logger, _bus, messageInformation);
             }
             finally
