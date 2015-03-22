@@ -806,7 +806,7 @@ namespace NsqSharp.Core
             _msgResponseChan.Send(new msgResponse { msg = m, cmd = Command.Finish(m.ID), success = true, backoff = true });
         }
 
-        internal void onMessageRequeue(Message m, TimeSpan? delay, bool backoff)
+        internal TimeSpan onMessageRequeue(Message m, TimeSpan? delay, bool backoff)
         {
             if (delay == null || delay <= TimeSpan.Zero)
             {
@@ -826,6 +826,8 @@ namespace NsqSharp.Core
                 success = false,
                 backoff = backoff
             });
+
+            return delay.Value;
         }
 
         internal void onMessageTouch(Message m)

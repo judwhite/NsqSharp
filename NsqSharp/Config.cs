@@ -62,6 +62,7 @@ namespace NsqSharp
         public double LookupdPollJitter { get; set; }
 
         /// <summary>Maximum duration when REQueueing (for doubling of deferred requeue).
+        /// Does not limit <see cref="TimeSpan"/> of manual requeue delays.
         /// Range: 0-60m Default: 15m</summary>
         [Opt("max_requeue_delay"), Min("0"), Max("60m"), Default("15m")]
         public TimeSpan MaxRequeueDelay { get; set; }

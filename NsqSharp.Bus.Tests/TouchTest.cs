@@ -6,8 +6,7 @@ using System.Threading;
 using Newtonsoft.Json;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.BuiltIn;
-using NsqSharp.Bus.Configuration.Providers;
-using NsqSharp.Bus.Logging;
+using NsqSharp.Bus.Tests.Fakes;
 using NsqSharp.Utils.Extensions;
 using NUnit.Framework;
 using StructureMap;
@@ -38,11 +37,11 @@ namespace NsqSharp.Bus.Tests
                 BusService.Start(new BusConfiguration(
                     new StructureMapObjectBuilder(container),
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
-                    new MessageAuditor(),
-                    new MessageTypeToTopicProvider(new Dictionary<Type, string> { 
+                    new MessageAuditorStub(),
+                    new MessageTypeToTopicProviderFake(new Dictionary<Type, string> { 
                         { typeof(TouchTestMessage), topicName } 
                     }),
-                    new HandlerTypeToChannelProvider(new Dictionary<Type, string> { 
+                    new HandlerTypeToChannelProviderFake(new Dictionary<Type, string> { 
                         { typeof(BlockingNoTouchTestHandler), channelName } 
                     }),
                     defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
@@ -75,8 +74,8 @@ namespace NsqSharp.Bus.Tests
                 int count = BlockingNoTouchTestHandler.GetCount();
                 Assert.AreEqual(2, count);
 
-                // give it a chance the possibly requeue/reprocess again
-                Thread.Sleep(10);
+                // give it a chance to possibly requeue/reprocess again
+                Thread.Sleep(100);
 
                 count = BlockingNoTouchTestHandler.GetCount();
                 Assert.AreEqual(2, count);
@@ -122,11 +121,11 @@ namespace NsqSharp.Bus.Tests
                 BusService.Start(new BusConfiguration(
                     new StructureMapObjectBuilder(container),
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
-                    new MessageAuditor(),
-                    new MessageTypeToTopicProvider(new Dictionary<Type, string> { 
+                    new MessageAuditorStub(),
+                    new MessageTypeToTopicProviderFake(new Dictionary<Type, string> { 
                         { typeof(TouchTestMessage), topicName } 
                     }),
-                    new HandlerTypeToChannelProvider(new Dictionary<Type, string> { 
+                    new HandlerTypeToChannelProviderFake(new Dictionary<Type, string> { 
                         { typeof(BlockingTouchTestHandler), channelName } 
                     }),
                     defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
@@ -159,8 +158,8 @@ namespace NsqSharp.Bus.Tests
                 int count = BlockingTouchTestHandler.GetCount();
                 Assert.AreEqual(1, count);
 
-                // give it a chance the possibly requeue/reprocess again
-                Thread.Sleep(10);
+                // give it a chance to possibly requeue/reprocess again
+                Thread.Sleep(100);
 
                 count = BlockingTouchTestHandler.GetCount();
                 Assert.AreEqual(1, count);
@@ -189,19 +188,12 @@ namespace NsqSharp.Bus.Tests
             }
         }
 
-        private class MessageAuditor : IMessageAuditor
-        {
-            public void OnReceived(IBus bus, IMessageInformation info) { }
-            public void OnSucceeded(IBus bus, IMessageInformation info) { }
-            public void OnFailed(IBus bus, IFailedMessageInformation failedInfo) { }
-        }
-
-        public class TouchTestMessage
+        private class TouchTestMessage
         {
             public bool Ignore { get; set; }
         }
 
-        public class BlockingNoTouchTestHandler : IHandleMessages<TouchTestMessage>
+        private class BlockingNoTouchTestHandler : IHandleMessages<TouchTestMessage>
         {
             private static int _count;
             private static readonly AutoResetEvent _wait = new AutoResetEvent(initialState: false);
@@ -239,7 +231,7 @@ namespace NsqSharp.Bus.Tests
             }
         }
 
-        public class BlockingTouchTestHandler : IHandleMessages<TouchTestMessage>
+        private class BlockingTouchTestHandler : IHandleMessages<TouchTestMessage>
         {
             private static int _count;
             private static readonly AutoResetEvent _wait = new AutoResetEvent(initialState: false);
@@ -282,49 +274,6 @@ namespace NsqSharp.Bus.Tests
             public static bool Wait(TimeSpan timeout)
             {
                 return _wait.WaitOne(timeout);
-            }
-        }
-
-        private class MessageTypeToTopicProvider : IMessageTypeToTopicProvider
-        {
-            private readonly Dictionary<Type, string> _messageTopics;
-
-            public MessageTypeToTopicProvider(IEnumerable<KeyValuePair<Type, string>> messageTopics)
-            {
-                _messageTopics = new Dictionary<Type, string>();
-                foreach (var kvp in messageTopics)
-                {
-                    _messageTopics.Add(kvp.Key, kvp.Value);
-                }
-            }
-
-            public string GetTopic(Type messageType)
-            {
-                return _messageTopics[messageType];
-            }
-        }
-
-        private class HandlerTypeToChannelProvider : IHandlerTypeToChannelProvider
-        {
-            private readonly Dictionary<Type, string> _handlerChannels;
-
-            public HandlerTypeToChannelProvider(IEnumerable<KeyValuePair<Type, string>> handlerChannels)
-            {
-                _handlerChannels = new Dictionary<Type, string>();
-                foreach (var kvp in handlerChannels)
-                {
-                    _handlerChannels.Add(kvp.Key, kvp.Value);
-                }
-            }
-
-            public string GetChannel(Type handlerType)
-            {
-                return _handlerChannels[handlerType];
-            }
-
-            public IEnumerable<Type> GetHandlerTypes()
-            {
-                return _handlerChannels.Keys;
             }
         }
     }

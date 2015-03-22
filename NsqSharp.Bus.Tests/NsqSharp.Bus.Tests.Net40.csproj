@@ -58,6 +58,10 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DeferTest.cs" />
+    <Compile Include="Fakes\HandlerTypeToChannelProviderFake.cs" />
+    <Compile Include="Fakes\MessageAuditorStub.cs" />
+    <Compile Include="Fakes\MessageTypeToTopicProviderFake.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TouchTest.cs" />
     <Compile Include="Utils\InterfaceBuilderTest.cs" />

@@ -127,6 +127,8 @@ namespace NsqSharp
         /// <para>A delay of <c>null</c> will automatically calculate
         /// based on the number of attempts and the
         /// configured <see cref="Config.DefaultRequeueDelay"/>.</para>
+        /// 
+        /// <para>Using this method to respond triggers a backoff event.</para>
         /// </summary>
         public void Requeue(TimeSpan? delay = null)
         {
@@ -150,8 +152,21 @@ namespace NsqSharp
             {
                 return;
             }
-            Delegate.OnRequeue(this, delay, backoff);
+
+            var requeueTimeSpan = Delegate.OnRequeue(this, delay, backoff);
+            RequeuedUntil = DateTime.UtcNow + requeueTimeSpan;
+            Backoff = backoff;
         }
+
+        /// <summary>
+        /// Gets a value indicating whether this message triggered a backoff event.
+        /// </summary>
+        public bool Backoff { get; private set; }
+
+        /// <summary>
+        /// Gets the minimum date/time the message will be requeued until.
+        /// </summary>
+        public DateTime? RequeuedUntil { get; private set; }
 
         /// <summary>
         /// <para>WriteTo implements the WriterTo interface and serializes

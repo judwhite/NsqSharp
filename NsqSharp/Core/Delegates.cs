@@ -69,7 +69,7 @@ namespace NsqSharp.Core
     /// MessageDelegate is an interface of methods that are used as
     /// callbacks in Message
     /// </summary>
-    public interface IMessageDelegate
+    internal interface IMessageDelegate
     {
         /// <summary>
         /// OnFinish is called when the Finish() method
@@ -81,7 +81,7 @@ namespace NsqSharp.Core
         /// OnRequeue is called when the Requeue() method
         /// is triggered on the Message
         /// </summary>
-        void OnRequeue(Message m, TimeSpan? delay, bool backoff);
+        TimeSpan OnRequeue(Message m, TimeSpan? delay, bool backoff);
 
         /// <summary>
         /// OnTouch is called when the Touch() method
@@ -95,9 +95,9 @@ namespace NsqSharp.Core
         public Conn c { get; set; }
 
         public void OnFinish(Message m) { c.onMessageFinish(m); }
-        public void OnRequeue(Message m, TimeSpan? delay, bool backoff)
+        public TimeSpan OnRequeue(Message m, TimeSpan? delay, bool backoff)
         {
-            c.onMessageRequeue(m, delay, backoff);
+            return c.onMessageRequeue(m, delay, backoff);
         }
         public void OnTouch(Message m) { c.onMessageTouch(m); }
     }
