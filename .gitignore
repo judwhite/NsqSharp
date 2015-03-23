@@ -6,7 +6,7 @@
 *.fpr
 *.nupkg
 TestResult.xml
-lib/
+**/nuget/lib/
 bin/
 obj/
 build/
