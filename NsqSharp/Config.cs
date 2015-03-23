@@ -391,7 +391,7 @@ namespace NsqSharp
                     c.TlsConfig = new TlsConfig
                     {
                         MinVersion = SslProtocols.Tls,
-#if NET40
+#if NETFX_3_5 || NETFX_4_0
                         MaxVersion = SslProtocols.Tls
 #else
                         MaxVersion = SslProtocols.Tls12
@@ -439,7 +439,7 @@ namespace NsqSharp
                             case "tls1.0":
                                 c.TlsConfig.MinVersion = SslProtocols.Tls;
                                 break;
-#if !NET40
+#if !NETFX_3_5 && !NETFX_4_0
                             case "tls1.1":
                                 c.TlsConfig.MinVersion = SslProtocols.Tls11;
                                 return;

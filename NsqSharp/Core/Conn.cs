@@ -146,7 +146,7 @@ namespace NsqSharp.Core
 
             _logger = l;
             _logFmt = format;
-            if (string.IsNullOrWhiteSpace(_logFmt))
+            if (_logFmt.IsNullOrWhiteSpace())
             {
                 _logFmt = "({0})";
             }

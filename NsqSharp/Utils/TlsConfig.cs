@@ -14,7 +14,7 @@ namespace NsqSharp.Utils
         public TlsConfig()
         {
             MinVersion = SslProtocols.Ssl3;
-#if NET40
+#if NETFX_3_5 || NETFX_4_0
             MaxVersion = SslProtocols.Tls;
 #else
             MaxVersion = SslProtocols.Tls12;

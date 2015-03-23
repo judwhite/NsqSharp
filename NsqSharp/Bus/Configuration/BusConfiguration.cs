@@ -123,8 +123,10 @@ namespace NsqSharp.Bus.Configuration
                 {
                     if (handlerMessageTypes.Count > 1)
                     {
-                        var handlesMessageTypes =
-                            string.Join(", ", handlerMessageTypes.Select(p => string.Format("IHandleMessages<{0}>", p.Name)));
+                        var handlerMessageTypesStrings =
+                            handlerMessageTypes.Select(p => string.Format("IHandleMessages<{0}>", p.Name)).ToArray();
+
+                        var handlesMessageTypes = string.Join(", ", handlerMessageTypesStrings);
 
                         var errorMessage = string.Format(
                             "Handler '{0}' implements multiple handlers: {1}. Register the IHandleMessages<T> interfaces " +

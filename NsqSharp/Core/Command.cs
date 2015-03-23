@@ -86,7 +86,9 @@ namespace NsqSharp.Core
 
             if (Params != null && Params.Count > 0)
             {
-                return string.Format("{0} {1}", name, string.Join(" ", Params.Select(p => Encoding.UTF8.GetString(p))));
+                var paramsStrings = Params.Select(p => Encoding.UTF8.GetString(p)).ToArray();
+
+                return string.Format("{0} {1}", name, string.Join(" ", paramsStrings));
             }
 
             return name;

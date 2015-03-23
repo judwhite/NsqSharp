@@ -5,8 +5,10 @@
 *.sln.DotSettings.user
 *.fpr
 *.nupkg
+TestResult.xml
 lib/
 bin/
 obj/
 build/
+nuget-tests/
 nsq-0.3.2-bin/*.dat
