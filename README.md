@@ -38,7 +38,7 @@ sc description nsqd "nsqd 0.3.2"
 sc start nsqd
 ```
 
-You can also build these files from source: https://github.com/bitly/nsq (official) and https://github.com/judwhite/nsq for the version which can also run as a Windows Service.
+You can also build these files from source: https://github.com/bitly/nsq (official), or https://github.com/judwhite/nsq (fork) to add the ability to run as a Windows Service.
 
 ## C# Examples
 
