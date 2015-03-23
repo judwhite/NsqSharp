@@ -130,7 +130,7 @@ The [PingPong](https://github.com/judwhite/NsqSharp/tree/master/Examples/PingPon
 
 Applications initiated with `BusService.Start` can be installed as a Windows Service using `sc create`. When in console mode the application will gracefully shutdown with `Ctrl+C`. When running as a Windows Service stopping the service or rebooting/shutting down the machine will do a graceful shutdown.
 
-NsqSharp has no 3rd party dependencies. StructureMap 2/3 and Newtonsoft.Json are supported through convenience classes which use reflection for the initial wire-up. Other containers and serializers can be used by implementing `IObjectBuilder` and `IMessageSerializer` wrappers in your code.
+NsqSharp has no external dependencies. StructureMap and Newtonsoft.Json are supported through convenience classes which use reflection for the initial wire-up. Other containers and serializers can be used by implementing `IObjectBuilder` and `IMessageSerializer` wrappers in your code.
 
 ### NsqSharp Project Goals
 - Structurally similar to the official [go-nsq](https://github.com/bitly/go-nsq) client.
