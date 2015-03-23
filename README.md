@@ -13,7 +13,7 @@ Watch [Spray Some NSQ On It](https://www.youtube.com/watch?v=CL_SUzXIUuI) by co-
 
 NsqSharp is a client library that talks to the `nsqd` (message queue) and `nsqlookupd` (topic discovery service). See the slides above for more information about their roles.
 
-Download [`nsqd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqd.exe) and [`nsqlookupd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqlookupd.exe) and run them from the command line. You can also build these files from source: https://github.com/bitly/nsq.
+Download [`nsqd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqd.exe) and [`nsqlookupd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqlookupd.exe) and run them from the command line.
 
 ```
 nsqlookupd
@@ -37,6 +37,8 @@ sc create nsqd binpath= "c:\nsq\nsqd.exe -mem-queue-size=0 -lookupd-tcp-address=
 sc description nsqd "nsqd 0.3.2"
 sc start nsqd
 ```
+
+You can also build these files from source: https://github.com/bitly/nsq (official) and https://github.com/judwhite/nsq for the version which can also run as a Windows Service.
 
 ## C# Examples
 
