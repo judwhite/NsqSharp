@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.BuiltIn;
-using NsqSharp.Bus.Logging;
 using NsqSharp.Core;
 using NsqSharp.Utils.Loggers;
 using StructureMap;
@@ -17,13 +16,14 @@ namespace Echo.Bus
     {
         static void Main()
         {
+            // new dependency injection container
             var container = new Container();
 
             // start the bus
             BusService.Start(new BusConfiguration(
                 new StructureMapObjectBuilder(container), // dependency injection container
                 new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly), // message serializer
-                new MessageAuditor(), // receives received, started, and failed notifications
+                new ConsoleMessageAuditor(), // receives received, started, and failed notifications
                 new MessageTypeToTopicDictionary( // mapping between .NET message types and topics
                     new Dictionary<Type, string> {
                         { typeof(EchoMessage), "echo-topic" },
@@ -38,24 +38,27 @@ namespace Echo.Bus
                 ),
                 busStateChangedHandler: new BusStateChangedHandler(),
                 defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
-                nsqLogger: new ConsoleLogger(LogLevel.Info), 
+                nsqLogger: new ConsoleLogger(LogLevel.Info), // default = TraceLogger
                 defaultThreadsPerHandler: 1, // threads per handler. tweak based on use case.
                 preCreateTopicsAndChannels: true // pre-create topics so we dont have to wait for an nsqlookupd cycle
             ));
         }
     }
 
+    // respond to bus state changes
+
     public class BusStateChangedHandler : IBusStateChangedHandler
     {
         public void OnBusStarting(IBusConfiguration config) { }
+        public void OnBusStopping(IBusConfiguration config, IBus bus) { }
+        public void OnBusStopped(IBusConfiguration config) { }
 
         public void OnBusStarted(IBusConfiguration config, IBus bus)
         {
+            // called synchronously, don't block here
             Task.Factory.StartNew(() =>
             {
                 Console.WriteLine("Enter your message (^C to quit):");
-
-                // Get user input
                 while (true)
                 {
                     var line = Console.ReadLine();
@@ -64,26 +67,20 @@ namespace Echo.Bus
                 }
             });
         }
-
-        public void OnBusStopping(IBusConfiguration config, IBus bus) { }
-
-        public void OnBusStopped(IBusConfiguration config) { }
     }
 
-    public class EchoMessage
-    {
-        public string Text { get; set; }
-    }
+    // message types
 
-    public class ReverseEchoMessage
-    {
-        public string Text { get; set; }
-    }
+    public class EchoMessage { public string Text { get; set; } }
+    public class ReverseEchoMessage { public string Text { get; set; } }
+
+    // message handlers
 
     public class EchoMessageHandler : IHandleMessages<EchoMessage>
     {
         private readonly IBus _bus;
 
+        // the bus is registered with the DI container and can be injected into a handler's constructor
         public EchoMessageHandler(IBus bus)
         {
             _bus = bus;
@@ -92,6 +89,8 @@ namespace Echo.Bus
         public void Handle(EchoMessage message)
         {
             Console.WriteLine("Echo: {0}", message.Text);
+
+            // send a new message on the bus
             _bus.Send(new ReverseEchoMessage { Text = message.Text });
         }
     }
@@ -101,25 +100,6 @@ namespace Echo.Bus
         public void Handle(ReverseEchoMessage message)
         {
             Console.WriteLine("Reverse Echo: {0}", new String(message.Text.Reverse().ToArray()));
-        }
-    }
-
-    public class MessageAuditor : IMessageAuditor
-    {
-        public void OnReceived(IBus bus, IMessageInformation info)
-        {
-            // log received message
-        }
-
-        public void OnSucceeded(IBus bus, IMessageInformation info)
-        {
-            // log successful message
-        }
-
-        public void OnFailed(IBus bus, IFailedMessageInformation failedInfo)
-        {
-            // log failed message
-            Console.WriteLine(failedInfo.Exception);
         }
     }
 }

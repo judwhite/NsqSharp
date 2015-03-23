@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bus\BusService.cs" />
+    <Compile Include="Bus\Configuration\BuiltIn\ConsoleMessageAuditor.cs" />
     <Compile Include="Bus\Configuration\BuiltIn\HandlerTypeToChannelDictionary.cs" />
     <Compile Include="Bus\Configuration\BuiltIn\MessageTypeToTopicDictionary.cs" />
     <Compile Include="Bus\Configuration\BuiltIn\NewtonsoftJsonSerializer.cs" />
