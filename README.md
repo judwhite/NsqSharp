@@ -121,13 +121,14 @@ The classes in the `NsqSharp.Bus` namespace provide conveniences for large scale
 - Separation of concerns with regards to message routing, serialization, and error handling.
 - Abstracting the details of `Producer` and `Consumer` from message sending and handling.
 
-The [PingPong](https://github.com/judwhite/NsqSharp/tree/master/Examples/PingPong) and [PointOfSale](https://github.com/judwhite/NsqSharp/tree/master/Examples/PointOfSale) examples highlight:
+The [PingPong](https://github.com/judwhite/NsqSharp/tree/master/Examples/PingPong) and [PointOfSale](https://github.com/judwhite/NsqSharp/tree/master/Examples/PointOfSale) examples highlight using:
 
 - [StructureMap](https://github.com/structuremap/structuremap) (any dependency injection container will work)
 - [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json) (any serialization method can be chosen)
 - [NLog](https://github.com/NLog/NLog) (any logger can be used)
+- SQL Server for auditing ([PointOfSale](https://github.com/judwhite/NsqSharp/tree/master/Examples/PointOfSale) example)
 
-Applications initiated with `BusService.Start` can be installed as a Windows Service using `sc create`. When in console mode the application will gracefully shutdown when `Ctrl+C` is pressed. When running as a Windows Service stopping the service or rebooting/shutting down the machine will do a graceful shutdown.
+Applications initiated with `BusService.Start` can be installed as a Windows Service using `sc create`. When in console mode the application will gracefully shutdown with `Ctrl+C`. When running as a Windows Service stopping the service or rebooting/shutting down the machine will do a graceful shutdown.
 
 NsqSharp has no 3rd party dependencies. StructureMap 2/3 and Newtonsoft.Json are supported through convenience classes which use reflection for the initial wire-up. Other containers and serializers can be used by implementing `IObjectBuilder` and `IMessageSerializer` wrappers in your code.
 
