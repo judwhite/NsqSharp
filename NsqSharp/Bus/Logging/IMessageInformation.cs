@@ -41,12 +41,12 @@ namespace NsqSharp.Bus.Logging
             _info = info;
             FailedAction = action;
             FailedReason = reason;
-            FailedException = exception;
+            Exception = exception;
         }
 
         public FailedMessageQueueAction FailedAction { get; private set; }
         public FailedMessageReason FailedReason { get; private set; }
-        public Exception FailedException { get; private set; }
+        public Exception Exception { get; private set; }
 
         public Guid UniqueIdentifier { get { return _info.UniqueIdentifier; } }
         public string Topic { get { return _info.Topic; } }
@@ -87,7 +87,7 @@ namespace NsqSharp.Bus.Logging
 
     /// <summary>
     /// Failed message information. In addition to properties provided by <see cref="IMessageInformation"/> the following are
-    /// added: <see cref="FailedAction"/>, <see cref="FailedReason"/>, <see cref="FailedException"/>.
+    /// added: <see cref="FailedAction"/>, <see cref="FailedReason"/>, <see cref="Exception"/>.
     /// <seealso cref="IMessageAuditor"/>
     /// <seealso cref="IMessageInformation"/>
     /// </summary>
@@ -98,6 +98,6 @@ namespace NsqSharp.Bus.Logging
         /// <summary>The category of mesage failure.</summary>
         FailedMessageReason FailedReason { get; }
         /// <summary>The exception (can be <c>null</c>).</summary>
-        Exception FailedException { get; }
+        Exception Exception { get; }
     }
 }

@@ -36,7 +36,7 @@ namespace PointOfSale.Common.Nsq
 
                 string logEntry = string.Format("id: {0} action:{1} reason:{2} topic:{3} channel:{4} msg:{5} ex:{6}",
                      failedInfo.Message.Id, failedInfo.FailedAction, failedInfo.FailedReason, failedInfo.Topic, failedInfo.Channel,
-                     Encoding.UTF8.GetString(failedInfo.Message.Body), failedInfo.FailedException);
+                     Encoding.UTF8.GetString(failedInfo.Message.Body), failedInfo.Exception);
 
                 if (failedInfo.FailedAction == FailedMessageQueueAction.Requeue)
                 {
@@ -88,7 +88,7 @@ namespace PointOfSale.Common.Nsq
                 Success = false,
                 FailedAction = info.FailedAction.ToString(),
                 FailedReason = info.FailedReason.ToString(),
-                FailedException = info.FailedException != null ? info.FailedException.ToString() : null
+                FailedException = info.Exception != null ? info.Exception.ToString() : null
             };
         }
 

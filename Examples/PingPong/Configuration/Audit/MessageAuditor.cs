@@ -15,7 +15,7 @@ namespace PingPong.Configuration.Audit
                 action = "Permanent failure.";
 
             Console.WriteLine("[{0}] {1} Message ID {2} on topic {3} channel {4} failed - {5}", DateTime.Now,
-                action, failedInfo.Message.Id, failedInfo.Topic, failedInfo.Channel, failedInfo.FailedException);
+                action, failedInfo.Message.Id, failedInfo.Topic, failedInfo.Channel, failedInfo.Exception);
         }
 
         public void OnReceived(IBus bus, IMessageInformation info) { }

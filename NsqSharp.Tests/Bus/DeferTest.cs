@@ -38,10 +38,10 @@ namespace NsqSharp.Tests.Bus
                     new StructureMapObjectBuilder(container),
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                     new MessageAuditorStub(),
-                    new MessageTypeToTopicProviderFake(new Dictionary<Type, string> { 
+                    new MessageTypeToTopicDictionary(new Dictionary<Type, string> { 
                         { typeof(DeferMessage), topicName } 
                     }),
-                    new HandlerTypeToChannelProviderFake(new Dictionary<Type, string> { 
+                    new HandlerTypeToChannelDictionary(new Dictionary<Type, string> { 
                         { typeof(DeferHandler), channelName } 
                     }),
                     defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },

@@ -70,9 +70,7 @@
   <ItemGroup>
     <Compile Include="Bus\DeferTest.cs" />
     <Compile Include="Bus\MultiImplementIHandleMessagesTest.cs" />
-    <Compile Include="Bus\TestFakes\HandlerTypeToChannelProviderFake.cs" />
     <Compile Include="Bus\TestFakes\MessageAuditorStub.cs" />
-    <Compile Include="Bus\TestFakes\MessageTypeToTopicProviderFake.cs" />
     <Compile Include="Bus\TouchTest.cs" />
     <Compile Include="Bus\Utils\InterfaceBuilderTest.cs" />
     <Compile Include="Utils\Channels\ChanTest.cs" />

@@ -40,11 +40,11 @@ namespace NsqSharp.Tests.Bus
                     new StructureMapObjectBuilder(container),
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                     new MessageAuditorStub(),
-                    new MessageTypeToTopicProviderFake(new Dictionary<Type, string> { 
+                    new MessageTypeToTopicDictionary(new Dictionary<Type, string> { 
                         { typeof(HighPriority<UpdateMessage>), highPriorityTopicName },
                         { typeof(LowPriority<UpdateMessage>), lowPriorityTopicName }
                     }),
-                    new HandlerTypeToChannelProviderFake(new Dictionary<Type, string> { 
+                    new HandlerTypeToChannelDictionary(new Dictionary<Type, string> { 
                         { typeof(IHandleMessages<HighPriority<UpdateMessage>>), highPriorityChannelName },
                         { typeof(IHandleMessages<LowPriority<UpdateMessage>>), lowPriorityChannelName }
                     }),
@@ -170,11 +170,11 @@ namespace NsqSharp.Tests.Bus
                 new StructureMapObjectBuilder(container),
                 new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                 new MessageAuditorStub(),
-                new MessageTypeToTopicProviderFake(new Dictionary<Type, string> { 
+                new MessageTypeToTopicDictionary(new Dictionary<Type, string> { 
                         { typeof(HighPriority<UpdateMessage>), highPriorityTopicName },
                         { typeof(LowPriority<UpdateMessage>), lowPriorityTopicName }
                     }),
-                new HandlerTypeToChannelProviderFake(new Dictionary<Type, string> { 
+                new HandlerTypeToChannelDictionary(new Dictionary<Type, string> { 
                         { typeof(UpdateHandler), channelName },
                     }),
                 defaultNsqLookupdHttpEndpoints: new[] { "0.0.0.0:0" },
@@ -198,11 +198,11 @@ namespace NsqSharp.Tests.Bus
                 new StructureMapObjectBuilder(container),
                 new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                 new MessageAuditorStub(),
-                new MessageTypeToTopicProviderFake(new Dictionary<Type, string> { 
+                new MessageTypeToTopicDictionary(new Dictionary<Type, string> { 
                         { typeof(HighPriority<UpdateMessage>), highPriorityTopicName },
                         { typeof(LowPriority<UpdateMessage>), lowPriorityTopicName }
                     }),
-                new HandlerTypeToChannelProviderFake(new Dictionary<Type, string> { 
+                new HandlerTypeToChannelDictionary(new Dictionary<Type, string> { 
                         { typeof(IHandleMessages<HighPriority<UpdateMessage>>), channelName },
                         { typeof(IHandleMessages<LowPriority<UpdateMessage>>), channelName }
                     }),
