@@ -13,7 +13,7 @@ Watch [Spray Some NSQ On It](https://www.youtube.com/watch?v=CL_SUzXIUuI) by co-
 
 Download [`nsqd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqd.exe) and [`nsqlookupd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqlookupd.exe). Alternatively you can build these files from source https://github.com/bitly/nsq.
 
-From two separate command lines run:
+From the command line run:
 ```
 nsqlookupd
 
@@ -41,9 +41,9 @@ sc start nsqd
 
 `PM> Install-Package NsqSharp`
 
-More examples are in the [Examples/NsqSharp](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp) and [Examples/NsqSharp.Bus](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp.Bus) folder.
+More examples are in the [Examples](https://github.com/judwhite/NsqSharp/tree/master/Examples) folder.
 
-#### Producer
+#### Simple Producer
 
 ```C#
 using System;
@@ -69,7 +69,7 @@ class Program
 }
 ```
 
-#### Consumer
+#### Simple Consumer
 
 ```C#
 using System;
@@ -116,19 +116,20 @@ public class MessageHandler : IHandler
 
 ## NsqSharp.Bus
 
-The classes in the `NsqSharp.Bus` namespace are meant to provide conveniences for the structure of large scale applications and ease migration from other .NET message buses. The classes in this namespace are not required to use NsqSharp's `Producer` and `Consumer` directly.
+The classes in the `NsqSharp.Bus` namespace provide conveniences for large scale applications:
+- Interoperating with dependency injection containers.
+- Separation of concerns with regards to message routing, serialization, and error handling.
+- Abstracting the details of `Producer` and `Consumer` from message sending and handling.
 
-Two working examples are available in [Examples/NsqSharp.Bus](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp.Bus), the simple [PingPong](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp.Bus/PingPong) application and the multi-process [PointOfSale](https://github.com/judwhite/NsqSharp/tree/master/Examples/NsqSharp.Bus/PointOfSale) application.
+The [PingPong](https://github.com/judwhite/NsqSharp/tree/master/Examples/PingPong) and [PointOfSale](https://github.com/judwhite/NsqSharp/tree/master/Examples/PointOfSale) examples highlight:
 
-These example highlight:
 - [StructureMap](https://github.com/structuremap/structuremap) (any dependency injection container will work)
 - [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json) (any serialization method can be chosen)
 - [NLog](https://github.com/NLog/NLog) (any logger can be used)
-- Running the handler processes as either console applications or Windows Services with graceful shutdown.
+
+Applications initiated with `BusService.Start` can be installed as a Windows Service using `sc create`. When in console mode the application will gracefully shutdown when `Ctrl+C` is pressed. When running as a Windows Service stopping the service or rebooting/shutting down the machine will do a graceful shutdown.
 
 NsqSharp has no 3rd party dependencies. StructureMap 2/3 and Newtonsoft.Json are supported through convenience classes which use reflection for the initial wire-up. Other containers and serializers can be used by implementing `IObjectBuilder` and `IMessageSerializer` wrappers in your code.
-
-The [nsq-0.3.2-bin](https://github.com/judwhite/NsqSharp/tree/master/nsq-0.3.2-bin) folder contains Windows compiled versions of NSQ tools for convenience. The `nsqd` and `nsqlookupd` processes have been modified to run as either console applications or Windows Services; batch files exist to install/uninstall the services. [This repository](https://github.com/judwhite/nsq/tree/master/apps) contains the modified source for running as a Windows Service. If you'd like, you can encourage the NSQ team to support Windows Services in the official repository.
 
 ### NsqSharp Project Goals
 - Structurally similar to the official [go-nsq](https://github.com/bitly/go-nsq) client.
@@ -139,7 +140,7 @@ The [nsq-0.3.2-bin](https://github.com/judwhite/NsqSharp/tree/master/nsq-0.3.2-b
 
 Pull requests and issues are very welcome and appreciated.
 
-When submitting a pull request please keep in mind we're trying to stay as close to [go-nsq](https://github.com/bitly/go-nsq) as possible. This sometimes means writing C# which looks more like Go and follows their file layout. Code in the NsqSharp.Bus namespace should follow C# conventions and more or less look like other code in this namespace.
+When submitting a pull request please keep in mind we're trying to stay as close to [go-nsq](https://github.com/bitly/go-nsq) as possible. This sometimes means writing C# which looks more like Go and follows their file layout. Code in the `NsqSharp.Bus` namespace should follow C# conventions and more or less look like other code in this namespace.
 
 ### License
 
