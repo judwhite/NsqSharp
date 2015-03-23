@@ -11,9 +11,10 @@ Watch [Spray Some NSQ On It](https://www.youtube.com/watch?v=CL_SUzXIUuI) by co-
 
 ## Quick Start
 
-Download [`nsqd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqd.exe) and [`nsqlookupd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqlookupd.exe). Alternatively you can build these files from source https://github.com/bitly/nsq.
+NsqSharp is a client library that talks to the `nsqd` (message queue) and `nsqlookupd` (topic discovery service). See the slides above for more information about their roles.
 
-From the command line run:
+Download [`nsqd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqd.exe) and [`nsqlookupd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqlookupd.exe) and run them from the command line. You can also build these files from source: https://github.com/bitly/nsq.
+
 ```
 nsqlookupd
 
