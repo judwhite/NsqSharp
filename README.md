@@ -13,7 +13,7 @@ Watch [Spray Some NSQ On It](https://www.youtube.com/watch?v=CL_SUzXIUuI) by co-
 
 NsqSharp is a client library that talks to the `nsqd` (message queue) and `nsqlookupd` (topic discovery service). See the slides above for more information about their roles.
 
-Download [`nsqd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqd.exe) and [`nsqlookupd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqlookupd.exe) and run them from the command line.
+Download [`nsqd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqd.exe) and [`nsqlookupd.exe`](https://github.com/judwhite/NsqSharp/blob/master/nsq-0.3.2-bin/nsqlookupd.exe) and run them from the command line:
 
 ```
 nsqlookupd
@@ -21,7 +21,7 @@ nsqlookupd
 nsqd -lookupd-tcp-address=127.0.0.1:4160
 ```
 
-To install as Windows Services:
+Or, to install as Windows Services:
 
 ```
 mkdir c:\nsq\data
@@ -129,23 +129,24 @@ The [PingPong](https://github.com/judwhite/NsqSharp/tree/master/Examples/PingPon
 - [StructureMap](https://github.com/structuremap/structuremap) (any dependency injection container will work)
 - [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json) (any serialization method can be chosen)
 - [NLog](https://github.com/NLog/NLog) (any logger can be used)
-- SQL Server for auditing ([PointOfSale](https://github.com/judwhite/NsqSharp/tree/master/Examples/PointOfSale) example)
+- SQL Server for auditing (See [MessageAuditor.cs](https://github.com/judwhite/NsqSharp/blob/master/Examples/PointOfSale/PointOfSale.Common/Nsq/MessageAuditor.cs) and [TransportAuditHandler.cs](https://github.com/judwhite/NsqSharp/blob/master/Examples/PointOfSale/PointOfSale.Handlers.Audit/Handlers/TransportAuditHandler.cs) in the [PointOfSale](https://github.com/judwhite/NsqSharp/tree/master/Examples/PointOfSale) example)
 
-Applications initiated with `BusService.Start` can be installed as a Windows Service using `sc create`. When in console mode the application will gracefully shutdown with `Ctrl+C`. When running as a Windows Service stopping the service or rebooting/shutting down the machine will do a graceful shutdown.
+Applications initiated with [`BusService.Start`](https://github.com/judwhite/NsqSharp/blob/master/Examples/PingPong/Program.cs#L24) can be installed as a Windows Service using `sc create`. When in console mode the application will gracefully shutdown with `Ctrl+C`. When running as a Windows Service stopping the service or rebooting/shutting down the machine will do a graceful shutdown.
 
-NsqSharp has no external dependencies. StructureMap and Newtonsoft.Json are supported through convenience classes which use reflection for the initial wire-up. Other containers and serializers can be used by implementing `IObjectBuilder` and `IMessageSerializer` wrappers in your code.
+NsqSharp has no external dependencies. StructureMap and Newtonsoft.Json are supported through convenience classes which use reflection for the initial wire-up. Other containers and serializers can be used by implementing [`IObjectBuilder`](https://github.com/judwhite/NsqSharp/blob/master/NsqSharp/Bus/Configuration/IObjectBuilder.cs) and [`IMessageSerializer`](https://github.com/judwhite/NsqSharp/blob/master/NsqSharp/Bus/Configuration/IMessageSerializer.cs) wrappers in your code.
 
-### NsqSharp Project Goals
+## NsqSharp Project Goals
 - Structurally similar to the official [go-nsq](https://github.com/bitly/go-nsq) client.
 - Up to date with the latest stable release of go-nsq.
 - Provide similar behavior and semantics as the official package.
+- Unobtrusive. No external dependencies. Publishing message contracts does not require a reference to NsqSharp.
 
-### Pull Requests
+## Pull Requests
 
 Pull requests and issues are very welcome and appreciated.
 
 When submitting a pull request please keep in mind we're trying to stay as close to [go-nsq](https://github.com/bitly/go-nsq) as possible. This sometimes means writing C# which looks more like Go and follows their file layout. Code in the `NsqSharp.Bus` namespace should follow C# conventions and more or less look like other code in this namespace.
 
-### License
+## License
 
 This project is open source and released under the [MIT license.](LICENSE)
