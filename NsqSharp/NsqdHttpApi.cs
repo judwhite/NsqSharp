@@ -62,11 +62,11 @@ namespace NsqSharp
             if (messages == null)
                 throw new ArgumentNullException("messages");
 
-#if !NETFX_3_5
-            string body = string.Join("\n", messages);
-#else
-            string body = string.Join("\n", messages.ToArray());
-#endif
+            var messagesArray = messages.ToArray();
+            if (messagesArray.Length == 0)
+                return null;
+
+            string body = string.Join("\n", messagesArray);
 
             return Post(GetEndpoint(nsqdHttpAddress, string.Format("/mpub?topic={0}", topic)), Encoding.UTF8.GetBytes(body));
         }
@@ -86,6 +86,9 @@ namespace NsqSharp
                 throw new ArgumentNullException("messages");
 
             ICollection<byte[]> msgList = messages as ICollection<byte[]> ?? messages.ToList();
+
+            if (msgList.Count == 0)
+                return null;
 
             byte[] body;
             using (var memoryStream = new MemoryStream())

@@ -137,6 +137,8 @@ namespace NsqSharp.Bus
             var nsqdHttpAddresses = _defaultProducerNsqdHttpEndpoints;
 
             var msgByteList = messages.Select(p => _sendMessageSerializer.Serialize(p)).ToList();
+            if (msgByteList.Count == 0)
+                return;
 
             // TODO: Re-use Producers per nsqd/topic/thread
             foreach (var nsqdAddress in nsqdHttpAddresses)
