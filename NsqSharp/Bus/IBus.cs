@@ -37,7 +37,8 @@ namespace NsqSharp.Bus
         /// <param name="messages">The messages.</param>
         void SendMulti<T>(IEnumerable<T> messages);
 
-        /// <summary>Gets the current NSQ message being processed.</summary>
+        /// <summary>Gets the current NSQ message being processed. Returns <c>null</c> if the current thread isn't
+        /// a thread started to handle a message.</summary>
         Message CurrentMessage { get; }
     }
 }

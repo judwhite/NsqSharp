@@ -68,6 +68,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bus\BusCurrentMessageTest.cs" />
     <Compile Include="Bus\DeferTest.cs" />
     <Compile Include="Bus\MultiImplementIHandleMessagesTest.cs" />
     <Compile Include="Bus\TestFakes\MessageAuditorStub.cs" />

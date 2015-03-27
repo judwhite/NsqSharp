@@ -151,7 +151,9 @@ namespace NsqSharp.Bus
             {
                 lock (_threadMessagesLocker)
                 {
-                    return _threadMessages[Thread.CurrentThread.ManagedThreadId];
+                    Message currentMessage;
+                    _threadMessages.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentMessage);
+                    return currentMessage;
                 }
             }
         }
