@@ -40,5 +40,9 @@ namespace NsqSharp.Bus
         /// <summary>Gets the current NSQ message being processed. Returns <c>null</c> if the current thread isn't
         /// a thread started to handle a message.</summary>
         Message CurrentMessage { get; }
+
+        /// <summary>Gets <see cref="ICurrentMessageInformation"/> about the current message being processed. Returns
+        /// <c>null</c> if the current thread isn't a thread started to handle a message.</summary>
+        ICurrentMessageInformation GetCurrentMessageInformation();
     }
 }

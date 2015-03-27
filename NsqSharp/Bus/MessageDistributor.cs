@@ -89,7 +89,7 @@ namespace NsqSharp.Bus
                                              Started = DateTime.UtcNow
                                          };
 
-                _bus.AddMessage(message);
+                _bus.AddMessage(messageInformation);
 
                 // Get handler
                 object handler;

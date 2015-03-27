@@ -53,18 +53,13 @@ namespace NsqSharp.Tests.Bus
                         MaxRequeueDelay = TimeSpan.Zero,
                         LookupdPollJitter = 0,
                         LookupdPollInterval = TimeSpan.FromSeconds(5)
-                    }
+                    },
+                    preCreateTopicsAndChannels: true
                 ));
 
                 BlockingNoTouchTestHandler.Reset();
 
                 var bus = container.GetInstance<IBus>();
-
-                // publishing registers this nsqd as a producer, causes consumer to connect via lookup service
-                // TODO: this test would be faster if the cosumer connected to nsqd directly, but that's not the
-                // TODO: pattern to encourage
-                bus.Send(new TouchTestMessage { Ignore = true });
-                Thread.Sleep(TimeSpan.FromSeconds(6));
 
                 // send our message which will get timed out
                 bus.Send(new TouchTestMessage());
@@ -86,11 +81,11 @@ namespace NsqSharp.Tests.Bus
                 var topic = stats.Topics.Single(p => p.TopicName == topicName);
                 var channel = topic.Channels.Single(p => p.ChannelName == channelName);
 
-                Assert.AreEqual(2, topic.MessageCount, "topic.MessageCount"); // ignored kick-off + test message
+                Assert.AreEqual(1, topic.MessageCount, "topic.MessageCount");
                 Assert.AreEqual(0, topic.Depth, "topic.Depth");
                 Assert.AreEqual(0, topic.BackendDepth, "topic.BackendDepth");
 
-                Assert.AreEqual(2, channel.MessageCount, "channel.MessageCount"); // ignored kick-off + test message
+                Assert.AreEqual(1, channel.MessageCount, "channel.MessageCount");
                 Assert.AreEqual(0, channel.DeferredCount, "channel.DeferredCount");
                 Assert.AreEqual(0, channel.Depth, "channel.Depth");
                 Assert.AreEqual(0, channel.BackendDepth, "channel.BackendDepth");
@@ -137,18 +132,13 @@ namespace NsqSharp.Tests.Bus
                         MaxRequeueDelay = TimeSpan.Zero,
                         LookupdPollJitter = 0,
                         LookupdPollInterval = TimeSpan.FromSeconds(5)
-                    }
+                    },
+                    preCreateTopicsAndChannels: true
                 ));
 
                 BlockingTouchTestHandler.Reset();
 
                 var bus = container.GetInstance<IBus>();
-
-                // publishing registers this nsqd as a producer, causes consumer to connect via lookup service
-                // TODO: this test would be faster if the cosumer connected to nsqd directly, but that's not the
-                // TODO: pattern to encourage
-                bus.Send(new TouchTestMessage { Ignore = true });
-                Thread.Sleep(TimeSpan.FromSeconds(6));
 
                 // send our message which will get timed out
                 bus.Send(new TouchTestMessage());
@@ -170,11 +160,11 @@ namespace NsqSharp.Tests.Bus
                 var topic = stats.Topics.Single(p => p.TopicName == topicName);
                 var channel = topic.Channels.Single(p => p.ChannelName == channelName);
 
-                Assert.AreEqual(2, topic.MessageCount, "topic.MessageCount"); // ignored kick-off + test message
+                Assert.AreEqual(1, topic.MessageCount, "topic.MessageCount");
                 Assert.AreEqual(0, topic.Depth, "topic.Depth");
                 Assert.AreEqual(0, topic.BackendDepth, "topic.BackendDepth");
 
-                Assert.AreEqual(2, channel.MessageCount, "channel.MessageCount"); // ignored kick-off + test message
+                Assert.AreEqual(1, channel.MessageCount, "channel.MessageCount");
                 Assert.AreEqual(0, channel.DeferredCount, "channel.DeferredCount");
                 Assert.AreEqual(0, channel.Depth, "channel.Depth");
                 Assert.AreEqual(0, channel.BackendDepth, "channel.BackendDepth");
@@ -191,7 +181,6 @@ namespace NsqSharp.Tests.Bus
 
         private class TouchTestMessage
         {
-            public bool Ignore { get; set; }
         }
 
         private class BlockingNoTouchTestHandler : IHandleMessages<TouchTestMessage>
@@ -201,9 +190,6 @@ namespace NsqSharp.Tests.Bus
 
             public void Handle(TouchTestMessage message)
             {
-                if (message.Ignore)
-                    return;
-
                 int value = Interlocked.Increment(ref _count);
                 if (value == 1)
                 {
@@ -246,9 +232,6 @@ namespace NsqSharp.Tests.Bus
 
             public void Handle(TouchTestMessage message)
             {
-                if (message.Ignore)
-                    return;
-
                 Interlocked.Increment(ref _count);
 
                 var stopwatch = Stopwatch.StartNew();

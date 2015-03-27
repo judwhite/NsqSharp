@@ -20,7 +20,7 @@ namespace NsqSharp.Bus
         private readonly string[] _defaultProducerNsqdHttpEndpoints;
         private readonly ILogger _nsqLogger;
 
-        private readonly Dictionary<int, Message> _threadMessages = new Dictionary<int, Message>();
+        private readonly Dictionary<int, ICurrentMessageInformation> _threadMessages;
         private readonly object _threadMessagesLocker = new object();
 
         public NsqBus(
@@ -46,6 +46,8 @@ namespace NsqSharp.Bus
                 throw new ArgumentException("must contain elements", "defaultProducerNsqdHttpEndpoints");
             if (nsqLogger == null)
                 throw new ArgumentNullException("nsqLogger");
+
+            _threadMessages = new Dictionary<int, ICurrentMessageInformation>();
 
             _topicChannelHandlers = topicChannelHandlers;
             _dependencyInjectionContainer = dependencyInjectionContainer;
@@ -151,12 +153,21 @@ namespace NsqSharp.Bus
         {
             get
             {
-                lock (_threadMessagesLocker)
-                {
-                    Message currentMessage;
-                    _threadMessages.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentMessage);
-                    return currentMessage;
-                }
+                var currentMessageInformation = GetCurrentMessageInformation();
+                if (currentMessageInformation == null)
+                    return null;
+
+                return currentMessageInformation.Message;
+            }
+        }
+
+        public ICurrentMessageInformation GetCurrentMessageInformation()
+        {
+            lock (_threadMessagesLocker)
+            {
+                ICurrentMessageInformation currentMessageInformation;
+                _threadMessages.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentMessageInformation);
+                return currentMessageInformation;
             }
         }
 
@@ -223,11 +234,11 @@ namespace NsqSharp.Bus
             Trace.WriteLine("Stopped.");
         }
 
-        internal void AddMessage(Message message)
+        internal void AddMessage(ICurrentMessageInformation currentMessageInformation)
         {
             lock (_threadMessagesLocker)
             {
-                _threadMessages.Add(Thread.CurrentThread.ManagedThreadId, message);
+                _threadMessages.Add(Thread.CurrentThread.ManagedThreadId, currentMessageInformation);
             }
         }
 

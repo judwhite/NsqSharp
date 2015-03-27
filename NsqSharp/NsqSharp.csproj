@@ -75,6 +75,7 @@
     <Compile Include="Bus\Configuration\Providers\IHandlerTypeToChannelProvider.cs" />
     <Compile Include="Bus\Configuration\Providers\IMessageTypeToTopicProvider.cs" />
     <Compile Include="Bus\Configuration\TopicChannels.cs" />
+    <Compile Include="Bus\ICurrentMessageInformation.cs" />
     <Compile Include="Bus\Exceptions.cs" />
     <Compile Include="Bus\IBus.cs" />
     <Compile Include="Bus\IHandleMessages.cs" />
