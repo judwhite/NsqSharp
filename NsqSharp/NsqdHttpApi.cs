@@ -459,9 +459,9 @@ namespace NsqSharp
         ///<summary>paused</summary>
         [DataMember(Name = "paused")]
         public bool Paused { get; set; }
-        // TODO
-        //[DataMember(Name = "e2e_processing_latency")]
-        //public NsqdStatsEndToEndProcessingLatency EndToEndProcessingLatency { get; set; }
+        ///<summary>e2e_processing_latency</summary>
+        [DataMember(Name = "e2e_processing_latency")]
+        public NsqdStatsEndToEndProcessingLatency EndToEndProcessingLatency { get; set; }
     }
 
     /// <summary>
@@ -576,13 +576,32 @@ namespace NsqSharp
         public bool TlsNegotiatedProtocolIsMutual { get; set; }
     }
 
-    // TODO
-    /*[DataContract]
+    /// <summary></summary>
+    [DataContract]
     public class NsqdStatsEndToEndProcessingLatency
     {
+        /// <summary>count</summary>
         [DataMember(Name = "count")]
         public int Count { get; set; }
+        /// <summary>percentiles</summary>
         [DataMember(Name = "percentiles")]
-        public ? Percentiles { get; set; }
-    }*/
+        public NsqdStatsEndToEndProcessingLatencyPercentile[] Percentiles { get; set; }
+    }
+
+    /// <summary></summary>
+    [DataContract]
+    public class NsqdStatsEndToEndProcessingLatencyPercentile
+    {
+        /// <summary>quantile</summary>
+        [DataMember(Name = "quantile")]
+        public double Quantile { get; set; }
+        /// <summary>value</summary>
+        [DataMember(Name = "value")]
+        public long Value { get; set; }
+        /// <summary>time</summary>
+        public TimeSpan Time
+        {
+            get { return TimeSpan.FromSeconds(Value / 1000000000.0); }
+        }
+    }
 }
