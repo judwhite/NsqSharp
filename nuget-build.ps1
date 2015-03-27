@@ -1,6 +1,7 @@
 # Set-ExecutionPolicy -Scope CurrentUser Unrestricted
 # Make sure msbuild.exe is in your path - C:\Windows\Microsoft.NET\Framework64\v4.0.30319
 # Make sure nuget.exe is in your path
+# nuget push NsqSharp.x.y.z.nupkg
 
 ### Build Tests
 
@@ -98,7 +99,7 @@ if ($LastExitCode -ne 0) {
     Return
 }
 
-msbuild NsqSharp/NsqSharp.csproj /p:TargetFrameworkVersion=v3.5 /p:Configuration=Release /t:Clean /t:Rebuild /tv:4.0 /p:OutputPath="../nuget/lib/net35"
+msbuild NsqSharp/NsqSharp.csproj /p:TargetFrameworkVersion=v3.5 /p:Configuration="Integration Tests" /t:Clean /t:Rebuild /tv:4.0 /p:OutputPath="../nuget/lib/net35"
 if ($LastExitCode -ne 0) {
     echo ".NET 3.5 Build failed. Process exited with error code $LastExitCode."
     Return
