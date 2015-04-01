@@ -134,8 +134,8 @@ namespace NsqSharp.Tests.Utils.Channels
 
             var list = new List<int>();
 
-            t1.Start();
             t2.Start();
+            t1.Start();
 
             Select
                 .DebugName("SelectTwoChannels")

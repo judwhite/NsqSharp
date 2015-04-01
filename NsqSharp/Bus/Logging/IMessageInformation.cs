@@ -14,8 +14,6 @@ namespace NsqSharp.Bus.Logging
         public object DeserializedMessageBody { get; set; }
         public DateTime Started { get; set; }
         public DateTime? Finished { get; set; }
-        public bool BackoffTriggered { get; set; }
-        public DateTime? RequeuedUntil { get; set; }
     }
 
     internal class FailedMessageInformation : IFailedMessageInformation

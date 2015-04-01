@@ -96,6 +96,7 @@ namespace NsqSharp.Bus
                 try
                 {
                     handler = _objectBuilder.GetInstance(_handlerType);
+                    messageInformation.HandlerType = handler.GetType();
                 }
                 catch (Exception ex)
                 {
@@ -158,9 +159,6 @@ namespace NsqSharp.Bus
                     else
                         message.Finish();
 
-                    messageInformation.BackoffTriggered = message.BackoffTriggered;
-                    messageInformation.RequeuedUntil = message.RequeuedUntil;
-
                     _messageAuditor.TryOnFailed(_logger, _bus,
                         new FailedMessageInformation
                         (
@@ -175,8 +173,6 @@ namespace NsqSharp.Bus
                 }
 
                 messageInformation.Finished = DateTime.UtcNow;
-                messageInformation.BackoffTriggered = message.BackoffTriggered;
-                messageInformation.RequeuedUntil = message.RequeuedUntil;
 
                 _messageAuditor.TryOnSucceeded(_logger, _bus, messageInformation);
             }
