@@ -157,10 +157,10 @@ namespace NsqSharp
 
         /// <summary>
         /// Backoff strategy, defaults to <see cref="ExponentialStrategy"/>. Overwrite this to define alternative backoff
-        /// algorithms. See also <see cref="FullJitterStrategy"/>.
+        /// algorithms. See also <see cref="FullJitterStrategy"/>. Supported opt values: 'exponential', 'full_jitter'.
         /// </summary>
+        [Opt("backoff_strategy"), Default("exponential")]
         public IBackoffStrategy BackoffStrategy { get; set; }
-
         /// <summary>Maximum amount of time to backoff when processing fails.
         /// Range: 0-60m Default: 2m</summary>
         [Opt("max_backoff_duration"), Min("0"), Max("60m"), Default("2m")]
@@ -420,7 +420,6 @@ namespace NsqSharp
 
                 string hostname = OS.Hostname();
 
-                c.BackoffStrategy = new ExponentialStrategy();
                 c.ClientID = hostname.Split(new[] { '.' })[0];
                 c.Hostname = hostname;
                 c.UserAgent = string.Format("{0}/{1}", ClientInfo.ClientName, ClientInfo.Version);
@@ -460,6 +459,8 @@ namespace NsqSharp
                         c.HeartbeatInterval, c.ReadTimeout));
                 }
 
+                // TODO: PR go-nsq: this check was removed, seems still valid since the value can be set through code
+                // https://github.com/bitly/go-nsq/commit/dd8e5fc4ad80922d884ece51f5574af3fa4f14d3#diff-b4bda758a2aef091432646c354b4dc59L376
                 if (c.BackoffStrategy == null)
                     throw new Exception(string.Format("BackoffStrategy cannot be null"));
             }

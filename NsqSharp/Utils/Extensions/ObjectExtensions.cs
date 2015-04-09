@@ -98,6 +98,25 @@ namespace NsqSharp.Utils.Extensions
                     return TimeSpan.FromMilliseconds(ms);
                 }
             }
+            else if (targetType == typeof(IBackoffStrategy))
+            {
+                if (valueType == typeof(string))
+                {
+                    string strValue = (string)value;
+                    switch (strValue)
+                    {
+                        case "":
+                        case "exponential":
+                            return new ExponentialStrategy();
+                        case "full_jitter":
+                            return new FullJitterStrategy();
+                    }
+                }
+                else if (value is IBackoffStrategy)
+                {
+                    return value;
+                }
+            }
 
             throw new Exception(string.Format("failed to coerce ({0} {1}) to {2}", value, valueType, targetType));
         }

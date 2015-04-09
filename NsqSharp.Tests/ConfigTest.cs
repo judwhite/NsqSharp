@@ -84,9 +84,6 @@ namespace NsqSharp.Tests
             var list = new List<string>();
             foreach (var propertyInfo in typeof(Config).GetProperties())
             {
-                if (propertyInfo.Name == "BackoffStrategy")
-                    continue;
-
                 var opt = propertyInfo.Get<OptAttribute>();
 
                 string option = opt.Name;
@@ -102,9 +99,6 @@ namespace NsqSharp.Tests
         {
             foreach (var propertyInfo in typeof(Config).GetProperties())
             {
-                if (propertyInfo.Name == "BackoffStrategy")
-                    continue;
-
                 var opt = propertyInfo.Get<OptAttribute>();
 
                 bool hasGoodName = opt.Name == opt.Name.ToLower().Trim() && !opt.Name.Contains("-");
@@ -123,6 +117,8 @@ namespace NsqSharp.Tests
             Assert.AreEqual(0.3, c.LookupdPollJitter, "lookupd_poll_jitter");
             Assert.AreEqual(TimeSpan.FromMinutes(15), c.MaxRequeueDelay, "max_requeue_delay");
             Assert.AreEqual(TimeSpan.FromSeconds(90), c.DefaultRequeueDelay, "default_requeue_delay");
+            Assert.AreEqual(typeof(ExponentialStrategy), c.BackoffStrategy.GetType(), "backoff_strategy");
+            Assert.AreEqual(TimeSpan.FromMinutes(2), c.MaxBackoffDuration, "max_backoff_duration");
             Assert.AreEqual(TimeSpan.FromSeconds(1), c.BackoffMultiplier, "backoff_multiplier");
             Assert.AreEqual(5, c.MaxAttempts, "max_attempts");
             Assert.AreEqual(TimeSpan.FromSeconds(10), c.LowRdyIdleTimeout, "low_rdy_idle_timeout");
@@ -140,7 +136,6 @@ namespace NsqSharp.Tests
             Assert.AreEqual(16384, c.OutputBufferSize, "output_buffer_size");
             Assert.AreEqual(TimeSpan.FromMilliseconds(250), c.OutputBufferTimeout, "output_buffer_timeout");
             Assert.AreEqual(1, c.MaxInFlight, "max_in_flight");
-            Assert.AreEqual(TimeSpan.FromMinutes(2), c.MaxBackoffDuration, "max_backoff_duration");
             Assert.AreEqual(TimeSpan.Zero, c.MessageTimeout, "msg_timeout");
             Assert.IsNull(c.AuthSecret, "auth_secret");
         }
@@ -155,6 +150,8 @@ namespace NsqSharp.Tests
             c.Set("lookupd_poll_jitter", 0);
             c.Set("max_requeue_delay", TimeSpan.Zero);
             c.Set("default_requeue_delay", TimeSpan.Zero);
+            c.Set("backoff_strategy", "exponential");
+            c.Set("max_backoff_duration", TimeSpan.Zero);
             c.Set("backoff_multiplier", 0);
             c.Set("max_attempts", 0);
             c.Set("low_rdy_idle_timeout", TimeSpan.FromSeconds(1));
@@ -172,7 +169,6 @@ namespace NsqSharp.Tests
             c.Set("output_buffer_size", Int64.MinValue);
             c.Set("output_buffer_timeout", TimeSpan.MinValue);
             c.Set("max_in_flight", 0);
-            c.Set("max_backoff_duration", TimeSpan.Zero);
             c.Set("msg_timeout", TimeSpan.Zero);
             c.Set("auth_secret", null);
 
@@ -182,6 +178,8 @@ namespace NsqSharp.Tests
             Assert.AreEqual(0, c.LookupdPollJitter, "lookupd_poll_jitter");
             Assert.AreEqual(TimeSpan.Zero, c.MaxRequeueDelay, "max_requeue_delay");
             Assert.AreEqual(TimeSpan.Zero, c.DefaultRequeueDelay, "default_requeue_delay");
+            Assert.AreEqual(typeof(ExponentialStrategy), c.BackoffStrategy.GetType(), "backoff_strategy");
+            Assert.AreEqual(TimeSpan.Zero, c.MaxBackoffDuration, "max_backoff_duration");
             Assert.AreEqual(TimeSpan.Zero, c.BackoffMultiplier, "backoff_multiplier");
             Assert.AreEqual(0, c.MaxAttempts, "max_attempts");
             Assert.AreEqual(TimeSpan.FromSeconds(1), c.LowRdyIdleTimeout, "low_rdy_idle_timeout");
@@ -199,7 +197,6 @@ namespace NsqSharp.Tests
             Assert.AreEqual(Int64.MinValue, c.OutputBufferSize, "output_buffer_size");
             Assert.AreEqual(TimeSpan.MinValue, c.OutputBufferTimeout, "output_buffer_timeout");
             Assert.AreEqual(0, c.MaxInFlight, "max_in_flight");
-            Assert.AreEqual(TimeSpan.Zero, c.MaxBackoffDuration, "max_backoff_duration");
             Assert.AreEqual(TimeSpan.Zero, c.MessageTimeout, "msg_timeout");
             Assert.AreEqual(null, c.AuthSecret, "auth_secret");
         }
@@ -215,6 +212,8 @@ namespace NsqSharp.Tests
             c.Set("lookupd_poll_jitter", 1);
             c.Set("max_requeue_delay", TimeSpan.FromMinutes(60));
             c.Set("default_requeue_delay", TimeSpan.FromMinutes(60));
+            c.Set("backoff_strategy", "full_jitter");
+            c.Set("max_backoff_duration", TimeSpan.FromMinutes(60));
             c.Set("backoff_multiplier", TimeSpan.FromMinutes(60));
             c.Set("max_attempts", 65535);
             c.Set("low_rdy_idle_timeout", TimeSpan.FromMinutes(5));
@@ -232,7 +231,6 @@ namespace NsqSharp.Tests
             c.Set("output_buffer_size", Int64.MaxValue);
             c.Set("output_buffer_timeout", TimeSpan.MaxValue);
             c.Set("max_in_flight", int.MaxValue);
-            c.Set("max_backoff_duration", TimeSpan.FromMinutes(60));
             c.Set("msg_timeout", TimeSpan.MaxValue);
             c.Set("auth_secret", "!@#@#$#%");
 
@@ -242,6 +240,8 @@ namespace NsqSharp.Tests
             Assert.AreEqual(1, c.LookupdPollJitter, "lookupd_poll_jitter");
             Assert.AreEqual(TimeSpan.FromMinutes(60), c.MaxRequeueDelay, "max_requeue_delay");
             Assert.AreEqual(TimeSpan.FromMinutes(60), c.DefaultRequeueDelay, "default_requeue_delay");
+            Assert.AreEqual(typeof(FullJitterStrategy), c.BackoffStrategy.GetType(), "backoff_strategy");
+            Assert.AreEqual(TimeSpan.FromMinutes(60), c.MaxBackoffDuration, "max_backoff_duration");
             Assert.AreEqual(TimeSpan.FromMinutes(60), c.BackoffMultiplier, "backoff_multiplier");
             Assert.AreEqual(65535, c.MaxAttempts, "max_attempts");
             Assert.AreEqual(TimeSpan.FromMinutes(5), c.LowRdyIdleTimeout, "low_rdy_idle_timeout");
@@ -259,7 +259,6 @@ namespace NsqSharp.Tests
             Assert.AreEqual(Int64.MaxValue, c.OutputBufferSize, "output_buffer_size");
             Assert.AreEqual(TimeSpan.MaxValue, c.OutputBufferTimeout, "output_buffer_timeout");
             Assert.AreEqual(int.MaxValue, c.MaxInFlight, "max_in_flight");
-            Assert.AreEqual(TimeSpan.FromMinutes(60), c.MaxBackoffDuration, "max_backoff_duration");
             Assert.AreEqual(TimeSpan.MaxValue, c.MessageTimeout, "msg_timeout");
             Assert.AreEqual("!@#@#$#%", c.AuthSecret, "auth_secret");
         }
@@ -276,6 +275,8 @@ namespace NsqSharp.Tests
             Assert.Throws<Exception>(() => c.Set("lookupd_poll_jitter", 0 - double.Epsilon), "lookupd_poll_jitter");
             Assert.Throws<Exception>(() => c.Set("max_requeue_delay", TimeSpan.Zero - tick), "max_requeue_delay");
             Assert.Throws<Exception>(() => c.Set("default_requeue_delay", TimeSpan.Zero - tick), "default_requeue_delay");
+            Assert.Throws<Exception>(() => c.Set("backoff_strategy", "invalid"), "backoff_strategy");
+            Assert.Throws<Exception>(() => c.Set("max_backoff_duration", TimeSpan.Zero - tick), "max_backoff_duration");
             Assert.Throws<Exception>(() => c.Set("backoff_multiplier", TimeSpan.Zero - tick), "backoff_multiplier");
             Assert.Throws<Exception>(() => c.Set("max_attempts", 0 - 1), "max_attempts");
             Assert.Throws<Exception>(() => c.Set("low_rdy_idle_timeout", TimeSpan.FromSeconds(1) - tick), "low_rdy_idle_timeout");
@@ -293,7 +294,6 @@ namespace NsqSharp.Tests
             //Assert.Throws<Exception>(() => c.Set("output_buffer_size", Int64.MinValue - 1), "");
             //Assert.Throws<Exception>(() => c.Set("output_buffer_timeout", TimeSpan.MinValue - tick), "output_buffer_timeout");
             Assert.Throws<Exception>(() => c.Set("max_in_flight", 0 - 1), "max_in_flight");
-            Assert.Throws<Exception>(() => c.Set("max_backoff_duration", TimeSpan.Zero - tick), "max_backoff_duration");
             Assert.Throws<Exception>(() => c.Set("msg_timeout", TimeSpan.Zero - tick), "msg_timeout");
             //Assert.Throws<Exception>(() => c.Set("auth_secret", null), "");
         }
@@ -310,6 +310,8 @@ namespace NsqSharp.Tests
             Assert.Throws<Exception>(() => c.Set("lookupd_poll_jitter", 1 + 0.0001), "lookupd_poll_jitter");
             Assert.Throws<Exception>(() => c.Set("max_requeue_delay", TimeSpan.FromMinutes(60) + tick), "max_requeue_delay");
             Assert.Throws<Exception>(() => c.Set("default_requeue_delay", TimeSpan.FromMinutes(60) + tick), "default_requeue_delay");
+            Assert.Throws<Exception>(() => c.Set("backoff_strategy", "invalid"), "backoff_strategy");
+            Assert.Throws<Exception>(() => c.Set("max_backoff_duration", TimeSpan.FromMinutes(60) + tick), "max_backoff_duration");
             Assert.Throws<Exception>(() => c.Set("backoff_multiplier", TimeSpan.FromMinutes(60) + tick), "backoff_multiplier");
             Assert.Throws<Exception>(() => c.Set("max_attempts", 65535 + 1), "max_attempts");
             Assert.Throws<Exception>(() => c.Set("low_rdy_idle_timeout", TimeSpan.FromMinutes(5) + tick), "low_rdy_idle_timeout");
@@ -327,7 +329,6 @@ namespace NsqSharp.Tests
             //Assert.Throws<Exception>(() => c.Set("output_buffer_size", Int64.MaxValue), "output_buffer_size");
             //Assert.Throws<Exception>(() => c.Set("output_buffer_timeout", TimeSpan.MaxValue), "output_buffer_timeout");
             //Assert.Throws<Exception>(() => c.Set("max_in_flight", int.MaxValue), "max_in_flight");
-            Assert.Throws<Exception>(() => c.Set("max_backoff_duration", TimeSpan.FromMinutes(60) + tick), "max_backoff_duration");
             //Assert.Throws<Exception>(() => c.Set("msg_timeout", TimeSpan.MaxValue), "msg_timeout");
             //Assert.Throws<Exception>(() => c.Set("auth_secret", "!@#@#$#%"), "auth_secret");
         }
@@ -355,7 +356,7 @@ namespace NsqSharp.Tests
             c.Set("read_timeout", "5m");
             c.Set("heartbeat_interval", "2s");
             c.Set("rdy_redistribute_interval", "3s");
-            c.BackoffStrategy = backoffStrategy;
+            c.Set("backoff_strategy", backoffStrategy);
             c.Validate();
 
             var c2 = c.Clone();
@@ -366,6 +367,8 @@ namespace NsqSharp.Tests
             Assert.AreEqual(0.3, c2.LookupdPollJitter, "lookupd_poll_jitter");
             Assert.AreEqual(TimeSpan.FromMinutes(15), c2.MaxRequeueDelay, "max_requeue_delay");
             Assert.AreEqual(TimeSpan.FromSeconds(90), c2.DefaultRequeueDelay, "default_requeue_delay");
+            Assert.AreEqual(backoffStrategy, c2.BackoffStrategy, "backoff_strategy");
+            Assert.AreEqual(TimeSpan.FromMinutes(2), c2.MaxBackoffDuration, "max_backoff_duration");
             Assert.AreEqual(TimeSpan.FromSeconds(1), c2.BackoffMultiplier, "backoff_multiplier");
             Assert.AreEqual(5, c2.MaxAttempts, "max_attempts");
             Assert.AreEqual(TimeSpan.FromSeconds(10), c2.LowRdyIdleTimeout, "low_rdy_idle_timeout");
@@ -383,10 +386,8 @@ namespace NsqSharp.Tests
             Assert.AreEqual(16384, c2.OutputBufferSize, "output_buffer_size");
             Assert.AreEqual(TimeSpan.FromMilliseconds(250), c2.OutputBufferTimeout, "output_buffer_timeout");
             Assert.AreEqual(1, c2.MaxInFlight, "max_in_flight");
-            Assert.AreEqual(TimeSpan.FromMinutes(2), c2.MaxBackoffDuration, "max_backoff_duration");
             Assert.AreEqual(TimeSpan.Zero, c2.MessageTimeout, "msg_timeout");
             Assert.IsNull(c2.AuthSecret, "auth_secret");
-            Assert.AreEqual(backoffStrategy, c2.BackoffStrategy, "BackoffStrategy");
         }
 
         // TODO: TLS
@@ -417,6 +418,36 @@ namespace NsqSharp.Tests
 
             Assert.Throws<Exception>(() => c.Set("tls_min_version", "ssl2.0"));
         }*/
+
+        [Test]
+        public void TestBackoffStrategyCoerce()
+        {
+            var c = new Config();
+
+            c.Set("backoff_strategy", "exponential");
+            Assert.AreEqual(typeof(ExponentialStrategy), c.BackoffStrategy.GetType());
+            
+            c.Set("backoff_strategy", "");
+            Assert.AreEqual(typeof(ExponentialStrategy), c.BackoffStrategy.GetType());
+            
+            c.Set("backoff_strategy", null);
+            Assert.IsNull(c.BackoffStrategy);
+
+            c.Set("backoff_strategy", "full_jitter");
+            Assert.AreEqual(typeof(FullJitterStrategy), c.BackoffStrategy.GetType());
+
+            Assert.Throws<Exception>(() => c.Set("backoff_strategy", "invalid"));
+
+            var fullJitterStrategy = new FullJitterStrategy();
+            c.Set("backoff_strategy", fullJitterStrategy);
+            Assert.AreEqual(fullJitterStrategy, c.BackoffStrategy);
+
+            var exponentialStrategy = new ExponentialStrategy();
+            c.Set("backoff_strategy", exponentialStrategy);
+            Assert.AreEqual(exponentialStrategy, c.BackoffStrategy);
+
+            Assert.Throws<Exception>(() => c.Set("backoff_strategy", new object()));
+        }
 
         [Test]
         public void TestExponentialBackoff()
