@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Authentication;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using NsqSharp.Core;
 using NsqSharp.Utils;
@@ -26,6 +27,85 @@ namespace NsqSharp
     }
 
     /// <summary>
+    /// Read only configuration values related to backoff.
+    /// </summary>
+    public interface IBackoffConfig
+    {
+        /// <summary>Maximum amount of time to backoff when processing fails.</summary>
+        TimeSpan MaxBackoffDuration { get; }
+        /// <summary>Unit of time for calculating consumer backoff.</summary>
+        TimeSpan BackoffMultiplier { get; }
+    }
+
+    /// <summary>
+    /// <see cref="IBackoffStrategy" /> defines a strategy for calculating the duration of time
+    /// a consumer should backoff for a given attempt
+    /// </summary>
+    public interface IBackoffStrategy
+    {
+        /// <summary>Calculates the backoff time.</summary>
+        /// <param name="backoffConfig">Read only configuration values related to backoff.</param>
+        /// <param name="attempt">The number of times this message has been attempted (first attempt = 1).</param>
+        /// <returns>The <see cref="TimeSpan"/> to backoff.</returns>
+        TimeSpan Calculate(IBackoffConfig backoffConfig, int attempt);
+    }
+
+    /// <summary>
+    /// <see cref="ExponentialStrategy"/> implements an exponential backoff strategy (default)
+    /// </summary>
+    public class ExponentialStrategy : IBackoffStrategy
+    {
+        /// <summary>
+        /// Calculate returns a duration of time: 2 ^ attempt * <see cref="IBackoffConfig.BackoffMultiplier"/>.
+        /// </summary>
+        /// <param name="backoffConfig">Read only configuration values related to backoff.</param>
+        /// <param name="attempt">The number of times this message has been attempted (first attempt = 1).</param>
+        /// <returns>The <see cref="TimeSpan"/> to backoff.</returns>
+        public TimeSpan Calculate(IBackoffConfig backoffConfig, int attempt)
+        {
+            var backoffDuration = new TimeSpan(backoffConfig.BackoffMultiplier.Ticks *
+                (long)Math.Pow(2, attempt));
+            if (backoffDuration > backoffConfig.MaxBackoffDuration)
+                backoffDuration = backoffConfig.MaxBackoffDuration;
+            return backoffDuration;
+        }
+    }
+
+    /// <summary>
+    /// FullJitterStrategy returns a random duration of time [0, 2 ^ attempt].
+    /// Implements http://www.awsarchitectureblog.com/2015/03/backoff.html.
+    /// </summary>
+    public class FullJitterStrategy : IBackoffStrategy
+    {
+        private readonly Once rngOnce = new Once();
+        private RNGCryptoServiceProvider rng;
+
+        /// <summary>
+        /// Calculate returns a random duration of time [0, 2 ^ attempt] * <see cref="IBackoffConfig.BackoffMultiplier"/>.
+        /// </summary>
+        /// <param name="backoffConfig">Read only configuration values related to backoff.</param>
+        /// <param name="attempt">The number of times this message has been attempted (first attempt = 1).</param>
+        /// <returns>The <see cref="TimeSpan"/> to backoff.</returns>
+        public TimeSpan Calculate(IBackoffConfig backoffConfig, int attempt)
+        {
+            rngOnce.Do(() =>
+                {
+                    // lazily initialize the RNG
+                    if (rng != null)
+                        return;
+                    rng = new RNGCryptoServiceProvider();
+                }
+            );
+
+            var backoffDuration = new TimeSpan(backoffConfig.BackoffMultiplier.Ticks *
+                (long)Math.Pow(2, attempt));
+            if (backoffDuration > backoffConfig.MaxBackoffDuration)
+                backoffDuration = backoffConfig.MaxBackoffDuration;
+            return TimeSpan.FromMilliseconds(rng.Intn((int)backoffDuration.TotalMilliseconds));
+        }
+    }
+
+    /// <summary>
     /// Config is a struct of NSQ options
     ///
     /// The only valid way to create a Config is via NewConfig, using a struct literal will panic.
@@ -34,7 +114,7 @@ namespace NsqSharp
     ///
     /// Use Set(string option, object value) as an alternate way to set parameters
     /// </summary>
-    public class Config
+    public class Config : IBackoffConfig
     {
         // used to Initialize, Validate
         private readonly List<configHandler> configHandlers;
@@ -73,9 +153,20 @@ namespace NsqSharp
         [Opt("default_requeue_delay"), Min("0"), Max("60m"), Default("90s")]
         public TimeSpan DefaultRequeueDelay { get; set; }
 
+        /// <summary>
+        /// Backoff strategy, defaults to <see cref="ExponentialStrategy"/>. Overwrite this to define alternative backoff
+        /// algorithms. See also <see cref="FullJitterStrategy"/>.
+        /// </summary>
+        public IBackoffStrategy BackoffStrategy { get; set; }
+
+        /// <summary>Maximum amount of time to backoff when processing fails.
+        /// Range: 0-60m Default: 2m</summary>
+        [Opt("max_backoff_duration"), Min("0"), Max("60m"), Default("2m")]
+        public TimeSpan MaxBackoffDuration { get; set; }
         /// <summary>Unit of time for calculating consumer backoff.
-        /// Backoff calculation: <see cref="BackoffMultiplier"/> * (2 ^ <see cref="Message.Attempts"/>).
+        /// Default backoff calculation: <see cref="BackoffMultiplier"/> * (2 ^ <see cref="Message.Attempts"/>).
         /// Will not exceed <see cref="MaxBackoffDuration"/>.
+        /// See: <see cref="BackoffStrategy"/>
         /// Range: 0-60m Default: 1s</summary>
         [Opt("backoff_multiplier"), Min("0"), Max("60m"), Default("1s")]
         public TimeSpan BackoffMultiplier { get; set; }
@@ -171,10 +262,6 @@ namespace NsqSharp
         [Opt("max_in_flight"), Min(0), Default(1)]
         public int MaxInFlight { get; set; }
 
-        /// <summary>Maximum amount of time to backoff when processing fails.
-        /// Range: 0-60m Default: 2m</summary>
-        [Opt("max_backoff_duration"), Min("0"), Max("60m"), Default("2m")]
-        public TimeSpan MaxBackoffDuration { get; set; }
         /// <summary>The duration the server waits before auto-requeing a message sent to this client.
         /// Default = Use server settings (server default = 60s).
         /// </summary>
@@ -324,6 +411,7 @@ namespace NsqSharp
 
                 string hostname = OS.Hostname();
 
+                c.BackoffStrategy = new ExponentialStrategy();
                 c.ClientID = hostname.Split(new[] { '.' })[0];
                 c.Hostname = hostname;
                 c.UserAgent = string.Format("{0}/{1}", ClientInfo.ClientName, ClientInfo.Version);
@@ -362,6 +450,9 @@ namespace NsqSharp
                     throw new Exception(string.Format("HeartbeatInterval {0} must be less than ReadTimeout {1}",
                         c.HeartbeatInterval, c.ReadTimeout));
                 }
+
+                if (c.BackoffStrategy == null)
+                    throw new Exception(string.Format("BackoffStrategy cannot be null"));
             }
         }
 
@@ -498,6 +589,8 @@ namespace NsqSharp
         public Config Clone()
         {
             var newConfig = new Config();
+
+            newConfig.BackoffStrategy = BackoffStrategy;
 
             var typ = GetType();
             foreach (var field in typ.GetProperties())

@@ -64,6 +64,13 @@ namespace NsqSharp.Tests
             c.MaxBackoffDuration = TimeSpan.FromHours(24);
             Assert.AreEqual(TimeSpan.FromHours(24), c.MaxBackoffDuration);
             Assert.Throws<Exception>(c.Validate);
+
+            c.MaxBackoffDuration = TimeSpan.FromSeconds(60);
+            c.Validate();
+
+            c.BackoffStrategy = null;
+            Assert.IsNull(c.BackoffStrategy);
+            Assert.Throws<Exception>(c.Validate);
         }
 
         [Test]
@@ -72,6 +79,9 @@ namespace NsqSharp.Tests
             var list = new List<string>();
             foreach (var propertyInfo in typeof(Config).GetProperties())
             {
+                if (propertyInfo.Name == "BackoffStrategy")
+                    continue;
+
                 var opt = propertyInfo.Get<OptAttribute>();
 
                 string option = opt.Name;
@@ -87,6 +97,9 @@ namespace NsqSharp.Tests
         {
             foreach (var propertyInfo in typeof(Config).GetProperties())
             {
+                if (propertyInfo.Name == "BackoffStrategy")
+                    continue;
+
                 var opt = propertyInfo.Get<OptAttribute>();
 
                 bool hasGoodName = opt.Name == opt.Name.ToLower().Trim() && !opt.Name.Contains("-");
@@ -326,8 +339,10 @@ namespace NsqSharp.Tests
         {
             var c = new Config();
 
+            var backoffStrategy = new FullJitterStrategy();
             c.Set("read_timeout", "5m");
             c.Set("heartbeat_interval", "2s");
+            c.BackoffStrategy = backoffStrategy;
             c.Validate();
 
             var c2 = c.Clone();
@@ -357,6 +372,7 @@ namespace NsqSharp.Tests
             Assert.AreEqual(TimeSpan.FromMinutes(2), c2.MaxBackoffDuration, "max_backoff_duration");
             Assert.AreEqual(TimeSpan.Zero, c2.MessageTimeout, "msg_timeout");
             Assert.IsNull(c2.AuthSecret, "auth_secret");
+            Assert.AreEqual(backoffStrategy, c2.BackoffStrategy, "BackoffStrategy");
         }
 
         // TODO: TLS
@@ -387,5 +403,61 @@ namespace NsqSharp.Tests
 
             Assert.Throws<Exception>(() => c.Set("tls_min_version", "ssl2.0"));
         }*/
+
+        [Test]
+        public void TestExponentialBackoff()
+        {
+            var expected = new[]
+                           {
+                               TimeSpan.FromSeconds(1),
+                               TimeSpan.FromSeconds(2),
+                               TimeSpan.FromSeconds(8),
+                               TimeSpan.FromSeconds(32)
+                           };
+
+            var backoffStrategy = new ExponentialStrategy();
+
+            var config = new Config();
+
+            var attempts = new[] { 0, 1, 3, 5 };
+            for (int i = 0; i < attempts.Length; i++)
+            {
+                var result = backoffStrategy.Calculate(config, attempts[i]);
+
+                Assert.AreEqual(expected[i], result, string.Format("wrong backoff duration for attempt {0}", attempts[i]));
+            }
+        }
+
+        [Test]
+        public void TestFullJitterBackoff()
+        {
+            // afaik there's no way to seed a RNGCryptoServiceProvider (probably a good thing)
+            // we'll test the intent: the range will be between 0 and 2^n*backoffmultiplier
+            var maxExpected = new[]
+                           {
+                               TimeSpan.FromSeconds(0.5),
+                               TimeSpan.FromSeconds(1),
+                               TimeSpan.FromSeconds(4),
+                               TimeSpan.FromSeconds(16)
+                           };
+
+            var backoffStrategy = new FullJitterStrategy();
+
+            var config = new Config();
+            config.BackoffMultiplier = TimeSpan.FromSeconds(0.5);
+
+            var attempts = new[] { 0, 1, 3, 5 };
+            for (int count = 0; count < 50000; count++)
+            {
+                for (int i = 0; i < attempts.Length; i++)
+                {
+                    int attempt = attempts[i];
+                    var result = backoffStrategy.Calculate(config, attempt);
+
+                    Assert.LessOrEqual(result, maxExpected[i], string.Format("wrong backoff duration for attempt {0}", attempt));
+                    //Console.WriteLine(string.Format("{0} {1}", result, maxExpected[i]));
+                }
+            }
+        }
     }
 }

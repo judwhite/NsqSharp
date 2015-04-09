@@ -2,6 +2,8 @@
 
 namespace NsqSharp.Utils
 {
+    // https://golang.org/src/sync/once.go
+
     /// <summary>
     /// Once is an object that will perform exactly one action.
     /// </summary>
@@ -20,11 +22,17 @@ namespace NsqSharp.Utils
 
             lock (_mtx)
             {
-                if (_done)
-                    return;
-
-                _done = true;
-                f();
+                if (!_done)
+                {
+                    try
+                    {
+                        f();
+                    }
+                    finally
+                    {
+                        _done = true;
+                    }
+                }
             }
         }
     }

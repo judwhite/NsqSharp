@@ -769,11 +769,6 @@ namespace NsqSharp
         private void startStopContinueBackoff(Conn conn, bool success)
         {
             // TODO: conn isn't used
-            // TODO: a REQ sets ALL connections to RDY 0. this seems to assume this service or a downstream service is having
-            // TODO: intermittent issues. this may not be the case, it could be an unexpected exception we'd want to see in
-            // TODO: the error log. if these are frequent it could choke message processing with backoffs. maybe this is right,
-            // TODO: as it's a per Consumer (topic) backoff, wouldn't apply to Conns held by other Consumers. Action: determine
-            // TODO: if this is the behavior, thought behind it, and impact when unexpected exceptions occur.
 
             if (inBackoffBlock())
                 return;
@@ -794,6 +789,7 @@ namespace NsqSharp
                 }
                 else
                 {
+                    // TODO: PR go-nsq: assumes a class of backoff implementations (works ok for FullJitter and Exponential)
                     int maxBackoffCount = (int)Math.Max(1, Math.Ceiling(
                         Math.Log(_config.MaxBackoffDuration.TotalSeconds, newBase: 2)));
                     if (_backoffCounter < maxBackoffCount)
@@ -824,7 +820,7 @@ namespace NsqSharp
             else if (backoffCounter > 0)
             {
                 // start or continue backoff
-                var backoffDuration = backoffDurationForCount(backoffCounter);
+                var backoffDuration = _config.BackoffStrategy.Calculate(_config, backoffCounter);
                 _backoffDuration = backoffDuration.Nanoseconds();
                 Time.AfterFunc(backoffDuration, backoff);
 
@@ -1013,16 +1009,6 @@ namespace NsqSharp
                     }
                 }, string.Format("onConnClose:reconnect: {0}/{1}", _topic, _channel));
             }
-        }
-
-        private TimeSpan backoffDurationForCount(int count)
-        {
-            var backoffDuration = new TimeSpan((long)(_config.BackoffMultiplier.Ticks * Math.Pow(2, count)));
-            if (backoffDuration > _config.MaxBackoffDuration)
-            {
-                backoffDuration = _config.MaxBackoffDuration;
-            }
-            return backoffDuration;
         }
 
         private bool inBackoff()
