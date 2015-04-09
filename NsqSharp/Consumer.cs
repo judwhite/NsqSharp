@@ -839,10 +839,11 @@ namespace NsqSharp
 
         private void backoff()
         {
-            _backoffDuration = 0;
-
             if (_stopFlag == 1)
+            {
+                _backoffDuration = 0;
                 return;
+            }
 
             // pick a random connection to test the waters
             var connections = conns();
@@ -861,7 +862,17 @@ namespace NsqSharp
                 string.Format("({0}) backoff timeout expired, sending RDY 1",
                 choice));
             // while in backoff only ever let 1 message at a time through
-            updateRDY(choice, 1);
+            var err = updateRDY(choice, 1);
+            if (err != null)
+            {
+                log(LogLevel.Warning, string.Format("({0}) error updating RDY - {1}", choice, err.Message));
+                var backoffDuration = TimeSpan.FromSeconds(1);
+                _backoffDuration = backoffDuration.Nanoseconds();
+                Time.AfterFunc(backoffDuration, backoff);
+                return;
+            }
+
+            _backoffDuration = 0;
         }
 
         internal void onConnResponse(Conn c, byte[] data)
@@ -1070,12 +1081,14 @@ namespace NsqSharp
             _wg.Done();
         }
 
-        private void updateRDY(Conn c, long count)
+        private Exception updateRDY(Conn c, long count)
         {
             try
             {
                 if (c.IsClosing)
-                    return;
+                {
+                    throw new ErrClosing();
+                }
 
                 // never exceed the nsqd's configured max RDY count
                 if (count > c.MaxRDY)
@@ -1134,8 +1147,12 @@ namespace NsqSharp
             catch (Exception ex)
             {
                 // NOTE: errors intentionally not rethrown
-                log(LogLevel.Error, string.Format("({0}) error in updateRDY {1} - {2}", c, count, ex));
+                log(ex is ErrClosing ? LogLevel.Warning : LogLevel.Error,
+                    string.Format("({0}) error in updateRDY {1} - {2}", c, count, ex));
+                return ex;
             }
+
+            return null;
         }
 
         private void sendRDY(Conn c, long count)
