@@ -54,20 +54,25 @@ namespace NsqSharp.Tests
             // property wasn't set, state should still be ok
             c.Validate();
 
+            // test MaxBackoffDuration validation
             c.MaxBackoffDuration = TimeSpan.FromHours(24);
             Assert.AreEqual(TimeSpan.FromHours(24), c.MaxBackoffDuration);
             Assert.Throws<Exception>(c.Validate);
 
+            // reset to good state
             c.MaxBackoffDuration = TimeSpan.FromSeconds(60);
             c.Validate();
 
+            // make sure another bad value and call to Validate still throws after the good Validate
             c.MaxBackoffDuration = TimeSpan.FromHours(24);
             Assert.AreEqual(TimeSpan.FromHours(24), c.MaxBackoffDuration);
             Assert.Throws<Exception>(c.Validate);
 
+            // reset to good state
             c.MaxBackoffDuration = TimeSpan.FromSeconds(60);
             c.Validate();
 
+            // test null BackoffStrategy validation
             c.BackoffStrategy = null;
             Assert.IsNull(c.BackoffStrategy);
             Assert.Throws<Exception>(c.Validate);
@@ -121,7 +126,8 @@ namespace NsqSharp.Tests
             Assert.AreEqual(TimeSpan.FromSeconds(1), c.BackoffMultiplier, "backoff_multiplier");
             Assert.AreEqual(5, c.MaxAttempts, "max_attempts");
             Assert.AreEqual(TimeSpan.FromSeconds(10), c.LowRdyIdleTimeout, "low_rdy_idle_timeout");
-            Assert.AreEqual(OS.Hostname().Split(new[] { '.' })[0], c.ClientID, "client_id");
+            Assert.AreEqual(TimeSpan.FromSeconds(5), c.RDYRedistributeInterval, "rdy_redistribute_interval");
+            Assert.AreEqual(OS.Hostname().Split('.')[0], c.ClientID, "client_id");
             Assert.AreEqual(OS.Hostname(), c.Hostname, "hostname");
             Assert.AreEqual(string.Format("{0}/{1}", ClientInfo.ClientName, ClientInfo.Version), c.UserAgent, "user_agent");
             Assert.AreEqual(TimeSpan.FromSeconds(30), c.HeartbeatInterval, "heartbeat_interval");
@@ -152,6 +158,7 @@ namespace NsqSharp.Tests
             c.Set("backoff_multiplier", 0);
             c.Set("max_attempts", 0);
             c.Set("low_rdy_idle_timeout", TimeSpan.FromSeconds(1));
+            c.Set("rdy_redistribute_interval", TimeSpan.FromMilliseconds(1));
             c.Set("client_id", null);
             c.Set("hostname", null);
             c.Set("user_agent", null);
@@ -178,6 +185,7 @@ namespace NsqSharp.Tests
             Assert.AreEqual(TimeSpan.Zero, c.BackoffMultiplier, "backoff_multiplier");
             Assert.AreEqual(0, c.MaxAttempts, "max_attempts");
             Assert.AreEqual(TimeSpan.FromSeconds(1), c.LowRdyIdleTimeout, "low_rdy_idle_timeout");
+            Assert.AreEqual(TimeSpan.FromMilliseconds(1), c.RDYRedistributeInterval, "rdy_redistribute_interval");
             Assert.AreEqual(null, c.ClientID, "client_id");
             Assert.AreEqual(null, c.Hostname, "hostname");
             Assert.AreEqual(null, c.UserAgent, "user_agent");
@@ -210,6 +218,7 @@ namespace NsqSharp.Tests
             c.Set("backoff_multiplier", TimeSpan.FromMinutes(60));
             c.Set("max_attempts", 65535);
             c.Set("low_rdy_idle_timeout", TimeSpan.FromMinutes(5));
+            c.Set("rdy_redistribute_interval", TimeSpan.FromSeconds(5));
             c.Set("client_id", "my");
             c.Set("hostname", "my.host.name.com");
             c.Set("user_agent", "user-agent/1.0");
@@ -236,6 +245,7 @@ namespace NsqSharp.Tests
             Assert.AreEqual(TimeSpan.FromMinutes(60), c.BackoffMultiplier, "backoff_multiplier");
             Assert.AreEqual(65535, c.MaxAttempts, "max_attempts");
             Assert.AreEqual(TimeSpan.FromMinutes(5), c.LowRdyIdleTimeout, "low_rdy_idle_timeout");
+            Assert.AreEqual(TimeSpan.FromSeconds(5), c.RDYRedistributeInterval, "rdy_redistribute_interval");
             Assert.AreEqual("my", c.ClientID, "client_id");
             Assert.AreEqual("my.host.name.com", c.Hostname, "hostname");
             Assert.AreEqual("user-agent/1.0", c.UserAgent, "user_agent");
@@ -269,6 +279,7 @@ namespace NsqSharp.Tests
             Assert.Throws<Exception>(() => c.Set("backoff_multiplier", TimeSpan.Zero - tick), "backoff_multiplier");
             Assert.Throws<Exception>(() => c.Set("max_attempts", 0 - 1), "max_attempts");
             Assert.Throws<Exception>(() => c.Set("low_rdy_idle_timeout", TimeSpan.FromSeconds(1) - tick), "low_rdy_idle_timeout");
+            Assert.Throws<Exception>(() => c.Set("rdy_redistribute_interval", TimeSpan.FromMilliseconds(1) - tick), "rdy_redistribute_interval");
             //c.Set("client_id", null);
             //c.Set("hostname", null);
             //c.Set("user_agent", null);
@@ -302,6 +313,7 @@ namespace NsqSharp.Tests
             Assert.Throws<Exception>(() => c.Set("backoff_multiplier", TimeSpan.FromMinutes(60) + tick), "backoff_multiplier");
             Assert.Throws<Exception>(() => c.Set("max_attempts", 65535 + 1), "max_attempts");
             Assert.Throws<Exception>(() => c.Set("low_rdy_idle_timeout", TimeSpan.FromMinutes(5) + tick), "low_rdy_idle_timeout");
+            Assert.Throws<Exception>(() => c.Set("rdy_redistribute_interval", TimeSpan.FromSeconds(5) + tick), "rdy_redistribute_interval");
             //Assert.Throws<Exception>(() => c.Set("client_id", "my"), "client_id");
             //Assert.Throws<Exception>(() => c.Set("hostname", "my.host.name.com"), "hostname");
             //Assert.Throws<Exception>(() => c.Set("user_agent", "user-agent/1.0"), "user_agent");
@@ -342,6 +354,7 @@ namespace NsqSharp.Tests
             var backoffStrategy = new FullJitterStrategy();
             c.Set("read_timeout", "5m");
             c.Set("heartbeat_interval", "2s");
+            c.Set("rdy_redistribute_interval", "3s");
             c.BackoffStrategy = backoffStrategy;
             c.Validate();
 
@@ -356,7 +369,8 @@ namespace NsqSharp.Tests
             Assert.AreEqual(TimeSpan.FromSeconds(1), c2.BackoffMultiplier, "backoff_multiplier");
             Assert.AreEqual(5, c2.MaxAttempts, "max_attempts");
             Assert.AreEqual(TimeSpan.FromSeconds(10), c2.LowRdyIdleTimeout, "low_rdy_idle_timeout");
-            Assert.AreEqual(OS.Hostname().Split(new[] { '.' })[0], c2.ClientID, "client_id");
+            Assert.AreEqual(TimeSpan.FromSeconds(3), c2.RDYRedistributeInterval, "rdy_redistribute_interval");
+            Assert.AreEqual(OS.Hostname().Split('.')[0], c2.ClientID, "client_id");
             Assert.AreEqual(OS.Hostname(), c2.Hostname, "hostname");
             Assert.AreEqual(string.Format("{0}/{1}", ClientInfo.ClientName, ClientInfo.Version), c2.UserAgent, "user_agent");
             Assert.AreEqual(TimeSpan.FromSeconds(2), c2.HeartbeatInterval, "heartbeat_interval");

@@ -130,6 +130,8 @@ namespace NsqSharp
         public TimeSpan WriteTimeout { get; set; }
 
         /// <summary>Duration between polling lookupd for new producers.
+        /// NOTE: when not using nsqlookupd, LookupdPollInterval represents the duration of time between
+        /// reconnection attempts.
         /// Range: 5s-5m Default: 60s</summary>
         [Opt("lookupd_poll_interval"), Min("5s"), Max("5m"), Default("60s")]
         public TimeSpan LookupdPollInterval { get; set; }
@@ -176,11 +178,18 @@ namespace NsqSharp
         [Opt("max_attempts"), Min(0), Max(65535), Default(5)]
         public ushort MaxAttempts { get; set; }
 
-        /// <summary>Amount of time to wait for a message from a producer when in a state where RDY
+        /// <summary>Duration to wait for a message from a producer when in a state where RDY
         /// counts are re-distributed (ie. max_in_flight &lt; num_producers).
         /// Range: 1s-5m Default: 10s</summary>
         [Opt("low_rdy_idle_timeout"), Min("1s"), Max("5m"), Default("10s")]
         public TimeSpan LowRdyIdleTimeout { get; set; }
+
+        /// <summary>
+        /// Duration between redistributing max-in-flight to connections.
+        /// Range: 1ms-5s Default: 5s
+        /// </summary>
+        [Opt("rdy_redistribute_interval"), Min("1ms"), Max("5s"), Default("5s")]
+        public TimeSpan RDYRedistributeInterval { get; set; }
 
         /// <summary>ClientID identifier sent to nsqd representing this client.
         /// Default: short hostname.</summary>

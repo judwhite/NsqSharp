@@ -981,8 +981,11 @@ namespace NsqSharp
                 {
                     while (true)
                     {
-                        log(LogLevel.Info, string.Format("({0}) re-connecting in 15 seconds...", connAddr));
-                        Thread.Sleep(TimeSpan.FromSeconds(15));
+                        // TODO: PR go-nsq: do they need .Seconds() on their r.log string?
+                        // https://github.com/bitly/go-nsq/blob/667c739c212e55a5ddde2a33d4be2b9376d2c7e5/consumer.go#L731
+                        log(LogLevel.Info, string.Format("({0}) re-connecting in {1:0.0000} seconds...", connAddr,
+                            _config.LookupdPollInterval.TotalSeconds));
+                        Thread.Sleep(_config.LookupdPollInterval);
                         if (_stopFlag == 1)
                         {
                             break;
@@ -1046,7 +1049,7 @@ namespace NsqSharp
 
         private void rdyLoop()
         {
-            var redistributeTicker = new Ticker(TimeSpan.FromSeconds(5));
+            var redistributeTicker = new Ticker(_config.RDYRedistributeInterval);
 
             bool doLoop = true;
             using (var select =
