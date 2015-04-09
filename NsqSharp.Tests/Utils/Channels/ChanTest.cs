@@ -334,8 +334,8 @@ namespace NsqSharp.Tests.Utils.Channels
             var t2 = new Thread(() => list.Add(c2.Receive()));
             t2.IsBackground = true;
 
-            t1.Start();
             t2.Start();
+            t1.Start();
 
             Select
                 .DebugName("SelectSendAndReceiveReceiveReady")
