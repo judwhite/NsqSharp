@@ -144,6 +144,11 @@ namespace NsqSharp.Core
         void OnBackoff(Conn c);
 
         /// <summary>
+        /// OnContinue is called when the connection finishes a message without adjusting backoff state
+        /// </summary>
+        void OnContinue(Conn c);
+
+        /// <summary>
         /// OnResume is called when the connection triggers a resume state
         /// </summary>
         void OnResume(Conn c);

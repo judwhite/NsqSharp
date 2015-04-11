@@ -8,7 +8,7 @@ namespace NsqSharp.Tests.Utils.Extensions
     [TestFixture]
     public class RNGCryptoServiceProviderExtensionsTest
     {
-        private static readonly RNGCryptoServiceProvider _rng = new RNGCryptoServiceProvider();
+        private readonly RNGCryptoServiceProvider _rng = new RNGCryptoServiceProvider();
 
         [Test]
         public void Float64()

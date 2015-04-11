@@ -66,6 +66,13 @@ namespace NsqSharp
         public int Connections { get; internal set; }
     }
 
+    internal enum BackoffSignal
+    {
+        BackoffFlag,
+        ContinueFlag,
+        ResumeFlag
+    }
+
     /// <summary>
     /// <para>Consumer is a high-level type to consume from NSQ.</para>
     ///
@@ -91,6 +98,7 @@ namespace NsqSharp
         private long _messagesRequeued;
         private long _totalRdyCount;
         private long _backoffDuration;
+        private int _backoffCounter;
         private int _maxInFlight;
 
         private readonly ReaderWriterLockSlim _mtx = new ReaderWriterLockSlim();
@@ -104,12 +112,11 @@ namespace NsqSharp
         private readonly string _channel;
         private readonly Config _config;
 
-        private readonly RNGCryptoServiceProvider _rng; // TODO: Dispose, or make static
+        private readonly RNGCryptoServiceProvider _rng; // TODO: Dispose (don't make static, uses critical section internally)
 
-        private int _needRDYRedistributed;
+        private int _needRdyRedistributed;
 
         private readonly ReaderWriterLockSlim _backoffMtx = new ReaderWriterLockSlim(); // TODO: Dispose
-        private int _backoffCounter;
 
         private readonly Chan<Message> _incomingMessages;
 
@@ -756,123 +763,19 @@ namespace NsqSharp
             Interlocked.Increment(ref _messagesRequeued);
         }
 
-        internal void onConnBackoff(Conn c)
+        internal void onConnBackoff()
         {
-            startStopContinueBackoff(c, success: false);
+            startStopContinueBackoff(BackoffSignal.BackoffFlag);
         }
 
-        internal void onConnResume(Conn c)
+        internal void onConnContinue()
         {
-            startStopContinueBackoff(c, success: true);
+            startStopContinueBackoff(BackoffSignal.ContinueFlag);
         }
 
-        private void startStopContinueBackoff(Conn conn, bool success)
+        internal void onConnResume()
         {
-            // TODO: conn isn't used
-
-            if (inBackoffBlock())
-                return;
-
-            bool backoffUpdated;
-            int backoffCounter;
-            _backoffMtx.EnterWriteLock();
-            try
-            {
-                backoffUpdated = false;
-                if (success)
-                {
-                    if (_backoffCounter > 0)
-                    {
-                        _backoffCounter--;
-                        backoffUpdated = true;
-                    }
-                }
-                else
-                {
-                    // TODO: PR go-nsq: assumes a class of backoff implementations (works ok for FullJitter and Exponential)
-                    int maxBackoffCount = (int)Math.Max(1, Math.Ceiling(
-                        Math.Log(_config.MaxBackoffDuration.TotalSeconds, newBase: 2)));
-                    if (_backoffCounter < maxBackoffCount)
-                    {
-                        _backoffCounter++;
-                        backoffUpdated = true;
-                    }
-                }
-
-                // TODO: PR on go-nsq to store r.backoffCounter in local variable
-                backoffCounter = _backoffCounter;
-            }
-            finally
-            {
-                _backoffMtx.ExitWriteLock();
-            }
-
-            if (backoffCounter == 0 && backoffUpdated)
-            {
-                // exit backoff
-                long count = perConnMaxInFlight();
-                log(LogLevel.Warning, string.Format("exiting backoff, returning all to RDY {0}", count));
-                foreach (var c in conns())
-                {
-                    updateRDY(c, count);
-                }
-            }
-            else if (backoffCounter > 0)
-            {
-                // start or continue backoff
-                var backoffDuration = _config.BackoffStrategy.Calculate(_config, backoffCounter);
-                _backoffDuration = backoffDuration.Nanoseconds();
-                Time.AfterFunc(backoffDuration, backoff);
-
-                // TODO: review log format
-                log(LogLevel.Warning, string.Format(
-                    "backing off for {0:0.0000} seconds (backoff level {1}), setting all to RDY 0",
-                    backoffDuration.TotalSeconds, backoffCounter));
-
-                // send RDY 0 immediately (to *all* connections)
-                foreach (var c in conns())
-                {
-                    updateRDY(c, 0);
-                }
-            }
-        }
-
-        private void backoff()
-        {
-            if (_stopFlag == 1)
-            {
-                _backoffDuration = 0;
-                return;
-            }
-
-            // pick a random connection to test the waters
-            var connections = conns();
-            if (connections.Count == 0)
-            {
-                // backoff again
-                var backoffDuration = TimeSpan.FromSeconds(1);
-                _backoffDuration = backoffDuration.Nanoseconds();
-                Time.AfterFunc(backoffDuration, backoff);
-                return;
-            }
-            var idx = _rng.Intn(connections.Count);
-            var choice = connections[idx];
-
-            log(LogLevel.Warning,
-                string.Format("({0}) backoff timeout expired, sending RDY 1",
-                choice));
-            // while in backoff only ever let 1 message at a time through
-            var err = updateRDY(choice, 1);
-            if (err != null)
-            {
-                log(LogLevel.Warning, string.Format("({0}) error updating RDY - {1}", choice, err.Message));
-                var backoffDuration = TimeSpan.FromSeconds(1);
-                _backoffDuration = backoffDuration.Nanoseconds();
-                Time.AfterFunc(backoffDuration, backoff);
-                return;
-            }
-
-            _backoffDuration = 0;
+            startStopContinueBackoff(BackoffSignal.ResumeFlag);
         }
 
         internal void onConnResponse(Conn c, byte[] data)
@@ -951,7 +854,7 @@ namespace NsqSharp
                 //
                 // trigger RDY redistribution to make sure this RDY is moved
                 // to a new connection
-                _needRDYRedistributed = 1;
+                _needRdyRedistributed = 1;
             }
 
             if (_stopFlag == 1)
@@ -1025,19 +928,125 @@ namespace NsqSharp
             }
         }
 
+        private void startStopContinueBackoff(BackoffSignal signal)
+        {
+            // prevent many async failures/successes from immediately resulting in
+            // max backoff/normal rate (by ensuring that we dont continually incr/decr
+            // the counter during a backoff period)
+            lock (_backoffMtx)
+            {
+                if (inBackoffTimeout())
+                {
+                    return;
+                }
+
+                // update backoff state
+                var backoffUpdated = false;
+                var backoffCounter = _backoffCounter;
+                switch (signal)
+                {
+                    case BackoffSignal.ResumeFlag:
+                        if (backoffCounter > 0)
+                        {
+                            backoffCounter--;
+                            backoffUpdated = true;
+                        }
+                        break;
+                    case BackoffSignal.BackoffFlag:
+                        var nextBackoff = _config.BackoffStrategy.Calculate(_config, backoffCounter + 1);
+                        if (nextBackoff <= _config.MaxBackoffDuration)
+                        {
+                            backoffCounter++;
+                            backoffUpdated = true;
+                        }
+                        break;
+                }
+                _backoffCounter = backoffCounter;
+
+                if (backoffCounter == 0 && backoffUpdated)
+                {
+                    // exit backoff
+                    var count = perConnMaxInFlight();
+                    log(LogLevel.Warning, string.Format("exiting backoff, return all to RDY {0}", count));
+                    foreach (var c in conns())
+                    {
+                        updateRDY(c, count);
+                    }
+                }
+                else if (backoffCounter > 0)
+                {
+                    // start or continue backoff
+                    var backoffDuration = _config.BackoffStrategy.Calculate(_config, backoffCounter);
+                    log(LogLevel.Warning,
+                        string.Format("backing off for {0:0.0000} seconds (backoff level {1}), setting all to RDY 0",
+                            backoffDuration.TotalSeconds, backoffCounter
+                        ));
+
+                    // send RDY 0 immediately (to *all* connections)
+                    foreach (var c in conns())
+                    {
+                        updateRDY(c, 0);
+                    }
+
+                    backoff(backoffDuration);
+                }
+            }
+        }
+
+        private void backoff(TimeSpan d)
+        {
+            _backoffDuration = d.Nanoseconds();
+            Time.AfterFunc(d, resume);
+        }
+
+        private void resume()
+        {
+            if (_stopFlag == 1)
+            {
+                _backoffDuration = 0;
+                return;
+            }
+
+            // pick a random connection to test the waters
+            var connections = conns();
+            if (connections.Count == 0)
+            {
+                // backoff again
+                backoff(TimeSpan.FromSeconds(1));
+                return;
+            }
+            var idx = _rng.Intn(connections.Count);
+            var choice = connections[idx];
+
+            log(LogLevel.Warning,
+                string.Format("({0}) backoff timeout expired, sending RDY 1",
+                choice));
+
+            // while in backoff only ever let 1 message at a time through
+            var err = updateRDY(choice, 1);
+            if (err != null)
+            {
+                log(LogLevel.Warning, string.Format("({0}) error updating RDY - {1}", choice, err.Message));
+                backoff(TimeSpan.FromSeconds(1));
+                return;
+            }
+
+            _backoffDuration = 0;
+        }
+
         private bool inBackoff()
         {
             return _backoffCounter > 0;
         }
 
-        private bool inBackoffBlock()
+        private bool inBackoffTimeout()
         {
             return _backoffDuration > 0;
         }
 
         private void maybeUpdateRDY(Conn conn)
         {
-            if (inBackoff() || inBackoffBlock())
+            if (inBackoff() || inBackoffTimeout())
                 return;
 
             long remain = conn.RDY;
@@ -1178,7 +1187,7 @@ namespace NsqSharp
 
         private void redistributeRDY()
         {
-            if (inBackoffBlock())
+            if (inBackoffTimeout())
                 return;
 
             int numConns = conns().Count;
@@ -1187,16 +1196,16 @@ namespace NsqSharp
             {
                 log(LogLevel.Debug, string.Format("redistributing RDY state ({0} conns > {1} max_in_flight)",
                     numConns, maxInFlight));
-                _needRDYRedistributed = 1;
+                _needRdyRedistributed = 1;
             }
 
             if (inBackoff() && numConns > 1)
             {
                 log(LogLevel.Debug, string.Format("redistributing RDY state (in backoff and {0} conns > 1)", numConns));
-                _needRDYRedistributed = 1;
+                _needRdyRedistributed = 1;
             }
 
-            if (Interlocked.CompareExchange(ref _needRDYRedistributed, value: 0, comparand: 1) != 1)
+            if (Interlocked.CompareExchange(ref _needRdyRedistributed, value: 0, comparand: 1) != 1)
             {
                 return;
             }
@@ -1435,8 +1444,9 @@ namespace NsqSharp
         void IConnDelegate.OnMessage(Conn c, Message m) { onConnMessage(c, m); }
         void IConnDelegate.OnMessageFinished(Conn c, Message m) { onConnMessageFinished(c, m); }
         void IConnDelegate.OnMessageRequeued(Conn c, Message m) { onConnMessageRequeued(c, m); }
-        void IConnDelegate.OnBackoff(Conn c) { onConnBackoff(c); }
-        void IConnDelegate.OnResume(Conn c) { onConnResume(c); }
+        void IConnDelegate.OnBackoff(Conn c) { onConnBackoff(); }
+        void IConnDelegate.OnContinue(Conn c) { onConnContinue(); }
+        void IConnDelegate.OnResume(Conn c) { onConnResume(); }
         void IConnDelegate.OnIOError(Conn c, Exception err) { onConnIOError(c, err); }
         void IConnDelegate.OnHeartbeat(Conn c) { onConnHeartbeat(c); }
         void IConnDelegate.OnClose(Conn c) { onConnClose(c); }

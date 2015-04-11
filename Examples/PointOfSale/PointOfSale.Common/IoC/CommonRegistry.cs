@@ -20,6 +20,7 @@ namespace PointOfSale.Common.IoC
             For<IConnectionStrings>(Lifecycles.Singleton).Use<ConnectionStrings>();
             For<IServiceEndpoints>(Lifecycles.Singleton).Use<ServiceEndpoints>();
             For<IRestClient>(Lifecycles.Singleton).Use<RestClient>();
+            For<INemesis>(Lifecycles.Singleton).Use<Nemesis>();
         }
     }
 }

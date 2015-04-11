@@ -17,22 +17,23 @@ namespace NsqSharp.Tests
     [TestFixture]
     public class MockTest
     {
+        private static byte[] frameMessage(Message m)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                m.WriteTo(memoryStream);
+                return memoryStream.ToArray();
+            }
+        }
+
         [Test]
         public void TestConsumerBackoff()
         {
-            var mgood = new MemoryStream();
             var msgIDGood = Encoding.UTF8.GetBytes("1234567890asdfgh");
             var msgGood = new Message(msgIDGood, Encoding.UTF8.GetBytes("good"));
-            msgGood.WriteTo(mgood);
-            var msgBytesGood = mgood.ToArray();
-            mgood.Dispose();
 
-            var mbad = new MemoryStream();
             var msgIDBad = Encoding.UTF8.GetBytes("zxcvb67890asdfgh");
             var msgBad = new Message(msgIDBad, Encoding.UTF8.GetBytes("bad"));
-            msgBad.WriteTo(mbad);
-            var msgBytesBad = mbad.ToArray();
-            mbad.Dispose();
 
             var script = new[]
                          {
@@ -40,18 +41,17 @@ namespace NsqSharp.Tests
                              new instruction(0, FrameType.Response, "OK"),
                              // IDENTIFY
                              new instruction(0, FrameType.Response, "OK"),
-                             new instruction(100*Time.Millisecond, FrameType.Message, msgBytesGood),
-                             new instruction(100*Time.Millisecond, FrameType.Message, msgBytesGood),
-                             new instruction(100*Time.Millisecond, FrameType.Message, msgBytesGood),
-                             new instruction(100*Time.Millisecond, FrameType.Message, msgBytesBad),
-                             new instruction(100*Time.Millisecond, FrameType.Message, msgBytesBad),
-                             new instruction(100*Time.Millisecond, FrameType.Message, msgBytesGood),
-                             new instruction(100*Time.Millisecond, FrameType.Message, msgBytesGood),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgBad)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgBad)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              // needed to exit test
-                             new instruction(1000*Time.Millisecond, -1, "exit")
+                             new instruction(200 * Time.Millisecond, -1, "exit")
                          };
-
-            var n = new mockNSQD(script);
+            var n = new mockNSQD(script, IPAddress.Loopback);
 
             var topicName = "test_consumer_commands" + DateTime.Now.Unix();
             var config = new Config();
@@ -98,6 +98,75 @@ namespace NsqSharp.Tests
 
             Assert.AreEqual(expected, actual);
         }
+
+        [Test]
+        public void TestConsumerRequeueNoBackoff()
+        {
+            var msgIDGood = Encoding.UTF8.GetBytes("1234567890asdfgh");
+            var msgIDRequeue = Encoding.UTF8.GetBytes("reqvb67890asdfgh");
+            var msgIDRequeueNoBackoff = Encoding.UTF8.GetBytes("reqnb67890asdfgh");
+
+            var msgGood = new Message(msgIDGood, Encoding.UTF8.GetBytes("good"));
+            var msgRequeue = new Message(msgIDRequeue, Encoding.UTF8.GetBytes("requeue"));
+            var msgRequeueNoBackoff = new Message(msgIDRequeueNoBackoff, Encoding.UTF8.GetBytes("requeue_no_backoff_1"));
+
+            var script = new[]
+                         {
+                             // SUB
+                             new instruction(0, FrameType.Response, "OK"),
+                             // IDENTIFY
+                             new instruction(0, FrameType.Response, "OK"),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeueNoBackoff)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             // needed to exit test
+                             new instruction(100 * Time.Millisecond, -1, "exit")
+                         };
+
+            var n = new mockNSQD(script, IPAddress.Loopback);
+
+            var topicName = "test_requeue" + DateTime.Now.Unix();
+            var config = new Config();
+            config.MaxInFlight = 1;
+            config.BackoffMultiplier = Time.Duration(10 * Time.Millisecond);
+            var q = new Consumer(topicName, "ch", new ConsoleLogger(LogLevel.Debug), config);
+            q.AddHandler(new testHandler());
+            q.ConnectToNsqd(n.tcpAddr);
+
+            Select
+                .CaseReceive(n.exitChan, o => { })
+                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(2500)), o => { throw new Exception("timeout"); })
+                .NoDefault();
+
+            for (int i = 0; i < n.got.Count; i++)
+            {
+                Console.WriteLine("{0}: {1}", i, Encoding.UTF8.GetString(n.got[i]));
+            }
+
+            var expected = new[]
+                           {
+                               "IDENTIFY",
+                               "SUB " + topicName + " ch",
+                               "RDY 1",
+                               "RDY 1",
+                               "RDY 0",
+                               string.Format("REQ {0} 0", Encoding.UTF8.GetString(msgIDRequeue)),
+                               "RDY 1",
+                               "RDY 0",
+                               string.Format("REQ {0} 0", Encoding.UTF8.GetString(msgIDRequeueNoBackoff)),
+                               "RDY 1",
+                               "RDY 1",
+                               string.Format("FIN {0}", Encoding.UTF8.GetString(msgIDGood)),
+                           };
+
+            var actual = new List<string>();
+            foreach (var g in n.got)
+            {
+                actual.Add(Encoding.UTF8.GetString(g));
+            }
+
+            Assert.AreEqual(expected, actual);
+        }
     }
 
     public class testHandler : IHandler
@@ -106,9 +175,23 @@ namespace NsqSharp.Tests
         {
             string body = Encoding.UTF8.GetString(message.Body);
             Console.WriteLine(body);
-            if (body != "good")
+
+            switch (body)
             {
-                throw new Exception("bad");
+                case "requeue":
+                    message.Requeue();
+                    break;
+                case "requeue_no_backoff_1":
+                    if (message.Attempts > 1)
+                        break;
+                    message.RequeueWithoutBackoff(delay: null);
+                    break;
+                case "good":
+                    break;
+                case "bad":
+                    throw new Exception("bad");
+                default:
+                    throw new InvalidOperationException(string.Format("body '{0}' not recognized", body));
             }
         }
 
@@ -150,22 +233,24 @@ namespace NsqSharp.Tests
     {
         private instruction[] script { get; set; }
         private TcpListener tcpListener { get; set; }
+        private IPAddress ipAddr { get; set; }
 
         public List<byte[]> got { get; set; }
         public string tcpAddr { get; set; }
         public Chan<int> exitChan { get; set; }
 
-        public mockNSQD(instruction[] script)
+        public mockNSQD(instruction[] script, IPAddress addr)
         {
             this.script = script;
             exitChan = new Chan<int>();
             got = new List<byte[]>();
+            ipAddr = addr;
             GoFunc.Run(listen, "mockNSQD:listen");
         }
 
         private void listen()
         {
-            tcpListener = new TcpListener(IPAddress.Loopback, 4152);
+            tcpListener = new TcpListener(ipAddr, 4152);
             tcpAddr = tcpListener.LocalEndpoint.ToString();
             tcpListener.Start();
 
@@ -301,6 +386,7 @@ namespace NsqSharp.Tests
             }
 
             tcpListener.Stop();
+            conn.Close();
         }
 
         internal static byte[] framedResponse(int frameType, byte[] data)

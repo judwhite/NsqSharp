@@ -533,6 +533,11 @@ namespace NsqSharp
             // no-op
         }
 
+        void IConnDelegate.OnContinue(Conn c)
+        {
+            // no-op
+        }
+
         void IConnDelegate.OnResume(Conn c)
         {
             // no-op

@@ -7,7 +7,7 @@ namespace PointOfSale.Common.Utils
 {
     public class Nemesis : INemesis
     {
-        private static readonly RNGCryptoServiceProvider _random = new RNGCryptoServiceProvider();
+        private readonly RNGCryptoServiceProvider _random = new RNGCryptoServiceProvider();
 
         private readonly int _value;
 

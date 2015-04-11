@@ -658,10 +658,7 @@ namespace NsqSharp.Core
                         {
                             log(LogLevel.Debug, string.Format("FIN {0}", resp.msg.Id));
                             _delegate.OnMessageFinished(this, resp.msg);
-                            if (resp.backoff)
-                            {
-                                _delegate.OnResume(this);
-                            }
+                            _delegate.OnResume(this);
                         }
                         else
                         {
@@ -670,6 +667,10 @@ namespace NsqSharp.Core
                             if (resp.backoff)
                             {
                                 _delegate.OnBackoff(this);
+                            }
+                            else
+                            {
+                                _delegate.OnContinue(this);
                             }
                         }
 
