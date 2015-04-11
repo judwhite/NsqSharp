@@ -381,22 +381,24 @@ namespace NsqSharp
                 if (responseStream == null)
                     throw new Exception("responseStream is null");
 
-                var buf = new byte[256];
-                using (MemoryStream memoryStream = new MemoryStream())
-                {
-                    int read;
-                    do
-                    {
-                        read = responseStream.Read(buf, 0, 256);
-                        memoryStream.Write(buf, 0, read);
-                    } while (read > 0);
+                int contentLength = (int)httpResponse.ContentLength;
+                byte[] responseBytes = new byte[contentLength];
 
-                    response = Encoding.UTF8.GetString(memoryStream.ToArray());
+                int position = 0;
+                while (position < responseBytes.Length)
+                {
+                    int bytesRead = responseStream.Read(responseBytes, position, contentLength - position);
+                    if (bytesRead == 0)
+                        throw new Exception(string.Format("premature end of response stream {0}", endpoint));
+                    position += bytesRead;
                 }
+
+                response = Encoding.UTF8.GetString(responseBytes);
 
                 if (httpResponse.StatusCode != HttpStatusCode.OK)
                 {
-                    throw new Exception(string.Format("got response {0} {1}", httpResponse.StatusDescription, response));
+                    throw new Exception(string.Format("got response {0} {1} {2}",
+                        httpResponse.StatusDescription, endpoint, response));
                 }
             }
 

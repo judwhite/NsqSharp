@@ -40,20 +40,6 @@ namespace NsqSharp.Tests
             }
         }
 
-        // TODO: Is Ping really useful?
-        /*[Test]
-        public void TestProducerPing()
-        {
-            var config = new Config();
-            var w = new Producer("127.0.0.1:4150", new ConsoleLogger(LogLevel.Debug), config);
-
-            w.Ping();
-
-            w.Stop();
-
-            Assert.Throws<ErrStopped>(w.Ping, "should not be able to ping after Stop()");
-        }*/
-
         [Test]
         public void TestProducerPublish()
         {
@@ -108,15 +94,14 @@ namespace NsqSharp.Tests
             }
         }
 
-        [Test, Ignore("PublishAsync made private")]
+        [Test]
         public void TestProducerPublishAsync()
         {
-            /*var topicName = "async_publish" + DateTime.Now.Unix();
+            var topicName = "async_publish" + DateTime.Now.Unix();
             const int msgCount = 10;
 
             var config = new Config();
-            var w = new Producer("127.0.0.1:4150", config);
-            w.SetLogger(new ConsoleLogger(), LogLevel.Debug);
+            var w = new Producer("127.0.0.1:4150", new ConsoleLogger(LogLevel.Debug), config);
             try
             {
                 var responseChan = new Chan<ProducerTransaction>(msgCount);
@@ -143,18 +128,17 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
-            }*/
+            }
         }
 
-        [Test, Ignore("MultiPublishAsync made private")]
+        [Test]
         public void TestProducerMultiPublishAsync()
         {
-            /*var topicName = "multi_publish" + DateTime.Now.Unix();
+            var topicName = "multi_publish" + DateTime.Now.Unix();
             const int msgCount = 10;
 
             var config = new Config();
-            var w = new Producer("127.0.0.1:4150", config);
-            w.SetLogger(new ConsoleLogger(), LogLevel.Debug);
+            var w = new Producer("127.0.0.1:4150", new ConsoleLogger(LogLevel.Debug), config);
             try
             {
                 var testData = new List<byte[]>();
@@ -181,7 +165,7 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
-            }*/
+            }
         }
 
         [Test]

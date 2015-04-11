@@ -85,7 +85,7 @@ as
     end
   end
 
-  merge dbo.TransportAudit t
+  merge dbo.TransportAudit with(holdlock) t
   using (select @TransportAuditId as TransportAuditId) s
   on t.TransportAuditId = s.TransportAuditId
   when not matched by target then

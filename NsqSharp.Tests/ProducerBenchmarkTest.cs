@@ -33,6 +33,12 @@ namespace NsqSharp.Tests
         }
 
         [Test]
+        public void BenchmarkTcp8()
+        {
+            BenchmarkTcp(8);
+        }
+
+        [Test]
         public void BenchmarkHttp1()
         {
             BenchmarkHttp(1);
@@ -50,13 +56,18 @@ namespace NsqSharp.Tests
             BenchmarkHttp(4);
         }
 
+        [Test]
+        public void BenchmarkHttp8()
+        {
+            BenchmarkHttp(8);
+        }
+
         private void BenchmarkTcp(int parallel)
         {
             string topicName = "test_benchmark_" + DateTime.Now.UnixNano();
 
             try
             {
-
                 const int benchmarkNum = 30000;
 
                 byte[] body = new byte[512];
@@ -88,8 +99,22 @@ namespace NsqSharp.Tests
 
                 var stopwatch = Stopwatch.StartNew();
                 startCh.Close();
-                wg.Wait();
+
+                var done = new Chan<bool>();
+                GoFunc.Run(() => { wg.Wait(); done.Send(true); });
+
+                bool finished = false;
+                Select
+                    .CaseReceive(done, b => finished = b)
+                    .CaseReceive(Time.After(TimeSpan.FromSeconds(10)), b => finished = false)
+                    .NoDefault();
+
                 stopwatch.Stop();
+
+                if (!finished)
+                {
+                    Assert.Fail("timeout");
+                }
 
                 Console.WriteLine(string.Format("{0:#,0} sent in {1:mm\\:ss\\.fff}; Avg: {2:#,0} msgs/s; Threads: {3}",
                     benchmarkNum, stopwatch.Elapsed, benchmarkNum / stopwatch.Elapsed.TotalSeconds, parallel));

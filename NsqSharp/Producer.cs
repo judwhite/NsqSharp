@@ -85,7 +85,7 @@ namespace NsqSharp
     /// to retrieve metadata about the command after the
     /// response is received.
     /// </summary>
-    internal class ProducerTransaction
+    public class ProducerTransaction
     {
         internal Command _cmd;
         internal Chan<ProducerTransaction> _doneChan;
@@ -180,23 +180,6 @@ namespace NsqSharp
             _connFactory = connFactory;
         }
 
-        // TODO: This code really isn't useful.
-        /*/// <summary>
-        /// Ping causes the Producer to connect to it's configured nsqd (if not already
-        /// connected) and send a `Nop` command, returning any error that might occur.
-        ///
-        /// This method can be used to verify that a newly-created Producer instance is
-        /// configured correctly, rather than relying on the lazy "connect on Publish"
-        /// behavior of a Producer.
-        /// </summary>
-        public void Ping()
-        {
-            Connect();
-
-            // TODO: PR: go-nsq, what does writing NO_OP prove above just Connect? nsqd does not respond to NO_OP
-            _conn.WriteCommand(Command.Nop());
-        }*/
-
         /// <summary>
         /// String returns the address of the Producer.
         /// </summary>
@@ -238,7 +221,7 @@ namespace NsqSharp
         /// will receive a `ProducerTransaction` instance with the supplied variadic arguments
         /// and the response error if present
         /// </summary>
-        private void PublishAsync(string topic, byte[] body, Chan<ProducerTransaction> doneChan, params object[] args)
+        public void PublishAsync(string topic, byte[] body, Chan<ProducerTransaction> doneChan, params object[] args)
         {
             sendCommandAsync(Command.Publish(topic, body), doneChan, args);
         }
@@ -252,7 +235,7 @@ namespace NsqSharp
         /// will receive a `ProducerTransaction` instance with the supplied variadic arguments
         /// and the response error if present
         /// </summary>
-        private void PublishAsync(string topic, string value, Chan<ProducerTransaction> doneChan, params object[] args)
+        public void PublishAsync(string topic, string value, Chan<ProducerTransaction> doneChan, params object[] args)
         {
             sendCommandAsync(Command.Publish(topic, Encoding.UTF8.GetBytes(value)), doneChan, args);
         }
@@ -266,7 +249,7 @@ namespace NsqSharp
         /// will receive a `ProducerTransaction` instance with the supplied variadic arguments
         /// and the response error if present
         /// </summary>
-        private void MultiPublishAsync(string topic, ICollection<byte[]> body, Chan<ProducerTransaction> doneChan, params object[] args)
+        public void MultiPublishAsync(string topic, ICollection<byte[]> body, Chan<ProducerTransaction> doneChan, params object[] args)
         {
             var cmd = Command.MultiPublish(topic, body);
             sendCommandAsync(cmd, doneChan, args);
@@ -300,29 +283,27 @@ namespace NsqSharp
             sendCommand(cmd);
         }
 
-        // TODO: temporary until multithreaded issue is figured out
-        private readonly object _sendCommandLocker = new object();
         private void sendCommand(Command cmd)
         {
-            lock (_sendCommandLocker)
+            var doneChan = new Chan<ProducerTransaction>();
+
+            try
             {
-                var doneChan = new Chan<ProducerTransaction>();
-
-                try
-                {
-                    sendCommandAsync(cmd, doneChan, null);
-                }
-                catch (Exception)
-                {
-                    doneChan.Close();
-                    throw;
-                }
-
-                var t = doneChan.Receive();
-                if (t.Error != null)
-                    throw t.Error;
+                sendCommandAsync(cmd, doneChan);
             }
+            catch (Exception)
+            {
+                doneChan.Close();
+                throw;
+            }
+
+            var t = doneChan.Receive();
+            if (t.Error != null)
+                throw t.Error;
         }
+
+        private readonly Action _noopAction = () => { };
+        private readonly Action<int> _throwErrStoppedAction = b => { throw new ErrStopped(); };
 
         private void sendCommandAsync(Command cmd, Chan<ProducerTransaction> doneChan, params object[] args)
         {
@@ -332,7 +313,7 @@ namespace NsqSharp
             {
                 _cmd = cmd,
                 _doneChan = doneChan,
-                Args = args,
+                Args = args
             };
 
             try
@@ -343,8 +324,8 @@ namespace NsqSharp
                 }
 
                 Select
-                    .CaseSend(_transactionChan, t, () => { })
-                    .CaseReceive(_exitChan, m => { throw new ErrStopped(); })
+                    .CaseSend(_transactionChan, t, _noopAction)
+                    .CaseReceive(_exitChan, _throwErrStoppedAction)
                     .NoDefault();
             }
             catch (Exception ex)

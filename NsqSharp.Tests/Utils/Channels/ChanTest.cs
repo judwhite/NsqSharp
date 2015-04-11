@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Channels;
@@ -630,6 +631,162 @@ namespace NsqSharp.Tests.Utils.Channels
                 Assert.AreEqual(false, ok2, string.Format("ok2 iteration {0}", i));
                 Assert.AreEqual(default(int), actual2, string.Format("actual2 iteration {0}", i));
             }
+        }
+
+        [Test]
+        public void MultiThreadedSelectTestWithDefer()
+        {
+            var c1 = new Chan<int>();
+            var c2 = new Chan<int>();
+            var done = new Chan<bool>();
+            var start = new Chan<bool>();
+
+            int c1Count = 0;
+            int c2Count = 0;
+
+            int count = 0;
+            int totalReceived = 0;
+
+            Action receive = () =>
+                             {
+                                 start.Receive();
+
+                                 int val1 = 0;
+                                 int val2 = 0;
+                                 bool doLoop = true;
+
+                                 var select =
+                                     Select
+                                         .CaseReceive(c1, i => val1 = i)
+                                         .CaseReceive(c2, i => val2 = i)
+                                         .CaseReceive(done, b => doLoop = false)
+                                         .NoDefault(defer: true);
+
+                                 while (doLoop)
+                                 {
+                                     val1 = 0;
+                                     val2 = 0;
+
+                                     select.Execute();
+
+                                     if (doLoop)
+                                     {
+                                         Assert.IsTrue(val1 == 0 || val2 == 0, "val1 == 0 || val2 == 0");
+                                         Assert.IsTrue(val1 == 1 || val2 == 2, "val1 == 1 || val2 == 2");
+                                     }
+
+                                     Interlocked.Increment(ref totalReceived);
+                                 }
+                             };
+
+            Action send = () =>
+                          {
+                              start.Receive();
+
+                              var select =
+                                  Select
+                                      .CaseSend(c1, 1, () => Interlocked.Increment(ref c1Count))
+                                      .CaseSend(c2, 2, () => Interlocked.Increment(ref c2Count))
+                                      .NoDefault(defer: true);
+
+                              while (count < 30000)
+                              {
+                                  Interlocked.Increment(ref count);
+                                  select.Execute();
+                              }
+
+                              done.Close();
+                          };
+
+            for (int i = 0; i < 8; i++)
+            {
+                GoFunc.Run(receive);
+                GoFunc.Run(send);
+            }
+
+            start.Close();
+            done.Receive();
+
+            Assert.GreaterOrEqual(count, 30000);
+            Assert.Greater(totalReceived, 29900);
+        }
+
+        [Test]
+        public void MultiThreadedSelectTestWithoutDefer()
+        {
+            var c1 = new Chan<int>();
+            var c2 = new Chan<int>();
+            var done = new Chan<bool>();
+            var start = new Chan<bool>();
+
+            int c1Count = 0;
+            int c2Count = 0;
+
+            int count = 0;
+            int totalReceived = 0;
+
+            Action receive = () =>
+            {
+                start.Receive();
+
+                int val1 = 0;
+                int val2 = 0;
+                bool doLoop = true;
+
+                while (doLoop)
+                {
+                    val1 = 0;
+                    val2 = 0;
+
+                    Select
+                        .CaseReceive(c1, i => val1 = i)
+                        .CaseReceive(c2, i => val2 = i)
+                        .CaseReceive(done, b => doLoop = false)
+                        .NoDefault();
+
+                    if (doLoop)
+                    {
+                        Assert.IsTrue(val1 == 0 || val2 == 0, "val1 == 0 || val2 == 0");
+                        Assert.IsTrue(val1 == 1 || val2 == 2, "val1 == 1 || val2 == 2");
+                    }
+
+                    Interlocked.Increment(ref totalReceived);
+                }
+            };
+
+            Action send = () =>
+            {
+                start.Receive();
+
+                while (count < 30000)
+                {
+                    Interlocked.Increment(ref count);
+
+                    Select
+                        .CaseSend(c1, 1, () => Interlocked.Increment(ref c1Count))
+                        .CaseSend(c2, 2, () => Interlocked.Increment(ref c2Count))
+                        .NoDefault();
+
+                    Select
+                        .CaseSend(c2, 2, () => Interlocked.Increment(ref c2Count))
+                        .CaseSend(c1, 1, () => Interlocked.Increment(ref c1Count))
+                        .NoDefault();
+                }
+
+                done.Close();
+            };
+
+            for (int i = 0; i < 8; i++)
+            {
+                GoFunc.Run(receive);
+                GoFunc.Run(send);
+            }
+
+            start.Close();
+            done.Receive();
+
+            Assert.GreaterOrEqual(count, 30000);
+            Assert.Greater(totalReceived, 59900);
         }
     }
 }

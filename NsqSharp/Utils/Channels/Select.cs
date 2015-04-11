@@ -503,9 +503,9 @@ namespace NsqSharp.Utils.Channels
                         }
 
                         _isExecuteCalled = true;
-
-                        isDone = CheckCases(out caseHandlerException);
                     }
+
+                    isDone = CheckCases(out caseHandlerException);
 
                     if (!isDone)
                     {
@@ -521,7 +521,6 @@ namespace NsqSharp.Utils.Channels
 
                 if (!_defer)
                     Dispose();
-
             }
             catch (Exception)
             {
