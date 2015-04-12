@@ -535,7 +535,7 @@ namespace NsqSharp.Core
                         // if !strings.Contains(err.Error(), "use of closed network connection")
                         if (_closeFlag != 1)
                         {
-                            log(LogLevel.Error, string.Format("IO error - {0}", ex.Message));
+                            log(LogLevel.Error, string.Format("IO error - {0}", ex));
                             _delegate.OnIOError(this, ex);
                         }
                         break;

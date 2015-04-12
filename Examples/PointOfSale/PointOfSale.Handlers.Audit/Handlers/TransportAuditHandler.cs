@@ -51,37 +51,31 @@ namespace PointOfSale.Handlers.Audit.Handlers
             }
             else
             {
-                bool inserted = false;
-                for (int i = 0; i < 5 && !inserted; i++)
+                using (var conn = new SqlConnection(_connectionStrings.TransportAudit))
+                using (var cmd = new SqlCommand("dbo.spTransportAudit_InsertUpdate", conn))
                 {
-                    using (var conn = new SqlConnection(_connectionStrings.TransportAudit))
-                    using (var cmd = new SqlCommand("dbo.spTransportAudit_InsertUpdate", conn))
-                    {
-                        conn.Open();
+                    conn.Open();
 
-                        cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandType = CommandType.StoredProcedure;
 
-                        cmd.Parameters.AddWithValue("@TransportAuditId", info.UniqueIdentifier);
-                        cmd.Parameters.AddWithValue("@Topic", info.Topic);
-                        cmd.Parameters.AddWithValue("@Channel", info.Channel);
-                        cmd.Parameters.AddWithValue("@HandlerType", info.HandlerType);
-                        cmd.Parameters.AddWithValue("@MessageType", info.MessageType);
-                        cmd.Parameters.AddWithValue("@MessageId", info.MessageId);
-                        cmd.Parameters.AddWithValue("@Attempt", info.MessageAttempt);
-                        cmd.Parameters.AddWithValue("@NsqdAddress", info.MessageNsqdAddress);
-                        cmd.Parameters.AddWithValue("@Body", info.MessageBody);
-                        cmd.Parameters.AddWithValue("@PublishTimestamp", info.MessageOriginalTimestamp);
-                        cmd.Parameters.AddWithValue("@HandlerStarted", info.Started);
-                        cmd.Parameters.AddWithValue("@HandlerFinished", info.Finished ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@Success", info.Success ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@FailedAction", info.FailedAction ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@FailedReason", info.FailedReason ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@Exception", info.FailedException ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@TransportAuditId", info.UniqueIdentifier);
+                    cmd.Parameters.AddWithValue("@Topic", info.Topic);
+                    cmd.Parameters.AddWithValue("@Channel", info.Channel);
+                    cmd.Parameters.AddWithValue("@HandlerType", info.HandlerType);
+                    cmd.Parameters.AddWithValue("@MessageType", info.MessageType);
+                    cmd.Parameters.AddWithValue("@MessageId", info.MessageId);
+                    cmd.Parameters.AddWithValue("@Attempt", info.MessageAttempt);
+                    cmd.Parameters.AddWithValue("@NsqdAddress", info.MessageNsqdAddress);
+                    cmd.Parameters.AddWithValue("@Body", info.MessageBody);
+                    cmd.Parameters.AddWithValue("@PublishTimestamp", info.MessageOriginalTimestamp);
+                    cmd.Parameters.AddWithValue("@HandlerStarted", info.Started);
+                    cmd.Parameters.AddWithValue("@HandlerFinished", info.Finished ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Success", info.Success ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@FailedAction", info.FailedAction ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@FailedReason", info.FailedReason ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Exception", info.FailedException ?? (object)DBNull.Value);
 
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    inserted = true;
+                    cmd.ExecuteNonQuery();
                 }
             }
         }

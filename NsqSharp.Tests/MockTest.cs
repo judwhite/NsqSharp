@@ -266,7 +266,7 @@ namespace NsqSharp.Tests
                 .CaseReceive(Time.After(TimeSpan.FromMilliseconds(2000)), o => { timeout2 = true; })
                 .NoDefault();
 
-            Assert.IsFalse(timeout2);
+            Assert.IsFalse(timeout2, "timeout2");
 
             for (int i = 0; i < n.got.Count; i++)
             {
@@ -289,7 +289,14 @@ namespace NsqSharp.Tests
                 actual.Add(Encoding.UTF8.GetString(g));
             }
 
-            Assert.AreEqual(expected, actual, "test2 failed");
+            try
+            {
+                Assert.AreEqual(expected, actual, "test2 failed");
+            }
+            finally
+            {
+                q.Stop(blockUntilStopCompletes: true);
+            }
         }
     }
 

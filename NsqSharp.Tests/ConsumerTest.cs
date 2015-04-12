@@ -176,6 +176,7 @@ namespace NsqSharp.Tests
             }
             finally
             {
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
                 NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
             }
         }

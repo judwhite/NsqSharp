@@ -23,20 +23,23 @@ namespace NsqSharp.Tests
         [Test]
         public void TestProducerConnection()
         {
+            string topicName = "write_test" + DateTime.Now.Unix();
+
             try
             {
                 var config = new Config();
                 var w = new Producer("127.0.0.1:4150", new ConsoleLogger(LogLevel.Debug), config);
 
-                w.Publish("write_test", "test");
+                w.Publish(topicName, "test");
 
                 w.Stop();
 
-                Assert.Throws<ErrStopped>(() => w.Publish("write test", "fail test"));
+                Assert.Throws<ErrStopped>(() => w.Publish(topicName, "fail test"));
             }
             finally
             {
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", "write_test");
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
             }
         }
 
@@ -62,6 +65,7 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
                 NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
             }
         }
@@ -90,6 +94,7 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
                 NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
             }
         }
@@ -128,6 +133,8 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
             }
         }
 
@@ -165,6 +172,8 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
             }
         }
 
@@ -186,7 +195,7 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
+                // note: if test successful, topic will not be created - don't need to delete
             }
 
             try
@@ -213,6 +222,7 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
+                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
                 NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
             }
         }

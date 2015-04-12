@@ -145,7 +145,9 @@ namespace NsqSharp.Tests.Bus
             finally
             {
                 BusService.Stop();
+                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4151", highPriorityTopicName);
                 NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", highPriorityTopicName);
+                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4151", lowPriorityTopicName);
                 NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", lowPriorityTopicName);
             }
         }
