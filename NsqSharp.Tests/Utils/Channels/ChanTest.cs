@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Threading;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Channels;
@@ -325,7 +324,7 @@ namespace NsqSharp.Tests.Utils.Channels
 
             var t1 = new Thread(() =>
             {
-                Thread.Sleep(10);
+                Thread.Sleep(30);
                 c1.Send(1);
             });
             t1.IsBackground = true;
@@ -758,7 +757,7 @@ namespace NsqSharp.Tests.Utils.Channels
             {
                 start.Receive();
 
-                while (count < 30000)
+                while (count < 10000)
                 {
                     Interlocked.Increment(ref count);
 
@@ -785,8 +784,8 @@ namespace NsqSharp.Tests.Utils.Channels
             start.Close();
             done.Receive();
 
-            Assert.GreaterOrEqual(count, 30000);
-            Assert.Greater(totalReceived, 59900);
+            Assert.GreaterOrEqual(count, 10000);
+            Assert.Greater(totalReceived, 19900);
         }
     }
 }
