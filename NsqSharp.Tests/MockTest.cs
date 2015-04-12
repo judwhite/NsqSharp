@@ -186,12 +186,12 @@ namespace NsqSharp.Tests
                              new instruction(0, FrameType.Response, "OK"),
                              // IDENTIFY
                              new instruction(0, FrameType.Response, "OK"),
-                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
-                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
-                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
-                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
+                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
+                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              // needed to exit test
-                             new instruction(100 * Time.Millisecond, -1, "exit")
+                             new instruction(500 * Time.Millisecond, -1, "exit")
                          };
 
             var n = new mockNSQD(script, IPAddress.Loopback, 4154);
