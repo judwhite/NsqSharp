@@ -265,8 +265,8 @@ namespace NsqSharp
             if (string.IsNullOrEmpty(nsqdHttpAddress))
                 throw new ArgumentNullException("nsqdHttpAddress");
 
-            string response = Get(GetEndpoint(nsqdHttpAddress, "/stats?format=json"));
-            byte[] respBody = Encoding.UTF8.GetBytes(response);
+            string endpoint = GetEndpoint(nsqdHttpAddress, "/stats?format=json");
+            byte[] respBody = Request(endpoint, "GET");
 
             var serializer = new DataContractJsonSerializer(typeof(NsqdStatsResponse));
             using (var memoryStream = new MemoryStream(respBody))
@@ -343,15 +343,17 @@ namespace NsqSharp
 
         private static string Post(string endpoint, byte[] body = null)
         {
-            return Request(endpoint, "POST", body);
+            var bytes = Request(endpoint, "POST", body);
+            return Encoding.UTF8.GetString(bytes);
         }
 
         private static string Get(string endpoint)
         {
-            return Request(endpoint, "GET");
+            var bytes = Request(endpoint, "GET");
+            return Encoding.UTF8.GetString(bytes);
         }
 
-        private static string Request(string endpoint, string method, byte[] body = null)
+        private static byte[] Request(string endpoint, string method, byte[] body = null)
         {
             const int timeoutMilliseconds = 2000;
 
@@ -373,8 +375,6 @@ namespace NsqSharp
                 }
             }
 
-            string response;
-
             using (var httpResponse = (HttpWebResponse)webRequest.GetResponse())
             using (var responseStream = httpResponse.GetResponseStream())
             {
@@ -382,27 +382,32 @@ namespace NsqSharp
                     throw new Exception("responseStream is null");
 
                 int contentLength = (int)httpResponse.ContentLength;
-                byte[] responseBytes = new byte[contentLength];
+                byte[] responseBytes;
 
-                int position = 0;
-                while (position < responseBytes.Length)
+                var buf = new byte[256];
+                using (MemoryStream memoryStream = new MemoryStream())
                 {
-                    int bytesRead = responseStream.Read(responseBytes, position, contentLength - position);
-                    if (bytesRead == 0)
-                        throw new Exception(string.Format("premature end of response stream {0}", endpoint));
-                    position += bytesRead;
+                    int bytesRead;
+                    do
+                    {
+                        bytesRead = responseStream.Read(buf, 0, 256);
+                        memoryStream.Write(buf, 0, bytesRead);
+                    } while (bytesRead > 0);
+
+                    responseBytes = memoryStream.ToArray();
                 }
 
-                response = Encoding.UTF8.GetString(responseBytes);
+                if (responseBytes.Length < contentLength)
+                    throw new Exception(string.Format("premature end of response stream {0}", endpoint));
 
                 if (httpResponse.StatusCode != HttpStatusCode.OK)
                 {
                     throw new Exception(string.Format("got response {0} {1} {2}",
-                        httpResponse.StatusDescription, endpoint, response));
+                        httpResponse.StatusDescription, endpoint, Encoding.UTF8.GetString(responseBytes)));
                 }
-            }
 
-            return response;
+                return responseBytes;
+            }
         }
     }
 
