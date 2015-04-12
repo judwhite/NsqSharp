@@ -119,6 +119,11 @@ namespace NsqSharp
         // used to Initialize, Validate
         private readonly List<configHandler> configHandlers;
 
+        /// <summary>Deadline for establishing TCP connections.
+        /// Default: 1s</summary>
+        [Opt("dial_timeout"), Default("1s")]
+        public TimeSpan DialTimeout { get; set; }
+
         /// <summary>Deadline for network reads.
         /// Range: 100ms-5m Default: 60s</summary>
         [Opt("read_timeout"), Min("100ms"), Max("5m"), Default("60s")]

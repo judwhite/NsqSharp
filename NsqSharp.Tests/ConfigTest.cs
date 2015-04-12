@@ -111,6 +111,7 @@ namespace NsqSharp.Tests
         {
             var c = new Config();
 
+            Assert.AreEqual(TimeSpan.FromSeconds(1), c.DialTimeout, "dial_timeout");
             Assert.AreEqual(TimeSpan.FromSeconds(60), c.ReadTimeout, "read_timeout");
             Assert.AreEqual(TimeSpan.FromSeconds(1), c.WriteTimeout, "write_timeout");
             Assert.AreEqual(TimeSpan.FromSeconds(60), c.LookupdPollInterval, "lookupd_poll_interval");
@@ -334,7 +335,7 @@ namespace NsqSharp.Tests
         }
 
         [Test]
-        public void TestHeartbeatLessThanReadTimout()
+        public void TestHeartbeatLessThanReadTimeout()
         {
             var c = new Config();
 
@@ -353,6 +354,7 @@ namespace NsqSharp.Tests
             var c = new Config();
 
             var backoffStrategy = new FullJitterStrategy();
+            c.Set("dial_timeout", "50ms");
             c.Set("read_timeout", "5m");
             c.Set("heartbeat_interval", "2s");
             c.Set("rdy_redistribute_interval", "3s");
@@ -361,6 +363,7 @@ namespace NsqSharp.Tests
 
             var c2 = c.Clone();
 
+            Assert.AreEqual(TimeSpan.FromMilliseconds(50), c2.DialTimeout, "dial_timeout");
             Assert.AreEqual(TimeSpan.FromMinutes(5), c2.ReadTimeout, "read_timeout");
             Assert.AreEqual(TimeSpan.FromSeconds(1), c2.WriteTimeout, "write_timeout");
             Assert.AreEqual(TimeSpan.FromSeconds(60), c2.LookupdPollInterval, "lookupd_poll_interval");
@@ -426,10 +429,10 @@ namespace NsqSharp.Tests
 
             c.Set("backoff_strategy", "exponential");
             Assert.AreEqual(typeof(ExponentialStrategy), c.BackoffStrategy.GetType());
-            
+
             c.Set("backoff_strategy", "");
             Assert.AreEqual(typeof(ExponentialStrategy), c.BackoffStrategy.GetType());
-            
+
             c.Set("backoff_strategy", null);
             Assert.IsNull(c.BackoffStrategy);
 

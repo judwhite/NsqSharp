@@ -158,7 +158,7 @@ namespace NsqSharp.Core
         /// </summary>
         public IdentifyResponse Connect()
         {
-            var conn = Net.DialTimeout("tcp", _addr, TimeSpan.FromSeconds(1));
+            var conn = Net.DialTimeout("tcp", _addr, _config.DialTimeout);
             _conn = (ITcpConn)conn;
             if (_conn == null)
                 throw new Exception("Net.DialTimeout returned null");
