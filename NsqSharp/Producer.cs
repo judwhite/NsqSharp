@@ -350,14 +350,14 @@ namespace NsqSharp
                 if (_stopFlag == 1)
                     throw new ErrStopped();
 
-                if (_state == (int)State.Connected)
-                    return;
-
-                const int newValue = (int)State.Connected;
-                const int comparand = (int)State.Init;
-                if (Interlocked.CompareExchange(ref _state, newValue, comparand) != comparand)
+                switch (_state)
                 {
-                    throw new ErrNotConnected();
+                    case (int)State.Init:
+                        break;
+                    case (int)State.Connected:
+                        return;
+                    default:
+                        throw new ErrNotConnected();
                 }
 
                 log(LogLevel.Info, string.Format("{0} connecting to nsqd", _addr));
@@ -372,10 +372,10 @@ namespace NsqSharp
                 {
                     _conn.Close();
                     log(LogLevel.Error, string.Format("({0}) error connecting to nsqd - {1}", _addr, ex.Message));
-                    _state = (int)State.Init;
                     throw;
                 }
 
+                _state = (int)State.Connected;
                 _closeChan = new Chan<int>();
                 _wg.Add(1);
                 GoFunc.Run(router, string.Format("Producer:router P{0}", _id));
