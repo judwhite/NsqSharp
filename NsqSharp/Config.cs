@@ -132,8 +132,8 @@ namespace NsqSharp
         /// <summary>Duration between polling lookupd for new producers.
         /// NOTE: when not using nsqlookupd, LookupdPollInterval represents the duration of time between
         /// reconnection attempts.
-        /// Range: 5s-5m Default: 60s</summary>
-        [Opt("lookupd_poll_interval"), Min("5s"), Max("5m"), Default("60s")]
+        /// Range: 10ms-5m Default: 60s</summary>
+        [Opt("lookupd_poll_interval"), Min("10ms"), Max("5m"), Default("60s")]
         public TimeSpan LookupdPollInterval { get; set; }
 
         /// <summary>Fractional jitter to add to the lookupd pool loop. This helps evenly

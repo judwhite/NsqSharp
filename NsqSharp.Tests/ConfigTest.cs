@@ -146,7 +146,7 @@ namespace NsqSharp.Tests
             var c = new Config();
             c.Set("read_timeout", TimeSpan.FromMilliseconds(100));
             c.Set("write_timeout", TimeSpan.FromMilliseconds(100));
-            c.Set("lookupd_poll_interval", TimeSpan.FromSeconds(5));
+            c.Set("lookupd_poll_interval", TimeSpan.FromMilliseconds(10));
             c.Set("lookupd_poll_jitter", 0);
             c.Set("max_requeue_delay", TimeSpan.Zero);
             c.Set("default_requeue_delay", TimeSpan.Zero);
@@ -174,7 +174,7 @@ namespace NsqSharp.Tests
 
             Assert.AreEqual(TimeSpan.FromMilliseconds(100), c.ReadTimeout, "read_timeout");
             Assert.AreEqual(TimeSpan.FromMilliseconds(100), c.WriteTimeout, "write_timeout");
-            Assert.AreEqual(TimeSpan.FromSeconds(5), c.LookupdPollInterval, "lookupd_poll_interval");
+            Assert.AreEqual(TimeSpan.FromMilliseconds(10), c.LookupdPollInterval, "lookupd_poll_interval");
             Assert.AreEqual(0, c.LookupdPollJitter, "lookupd_poll_jitter");
             Assert.AreEqual(TimeSpan.Zero, c.MaxRequeueDelay, "max_requeue_delay");
             Assert.AreEqual(TimeSpan.Zero, c.DefaultRequeueDelay, "default_requeue_delay");
@@ -271,7 +271,7 @@ namespace NsqSharp.Tests
 
             Assert.Throws<Exception>(() => c.Set("read_timeout", TimeSpan.FromMilliseconds(100) - tick), "read_timeout");
             Assert.Throws<Exception>(() => c.Set("write_timeout", TimeSpan.FromMilliseconds(100) - tick), "write_timeout");
-            Assert.Throws<Exception>(() => c.Set("lookupd_poll_interval", TimeSpan.FromSeconds(5) - tick), "lookupd_poll_interval");
+            Assert.Throws<Exception>(() => c.Set("lookupd_poll_interval", TimeSpan.FromMilliseconds(10) - tick), "lookupd_poll_interval");
             Assert.Throws<Exception>(() => c.Set("lookupd_poll_jitter", 0 - double.Epsilon), "lookupd_poll_jitter");
             Assert.Throws<Exception>(() => c.Set("max_requeue_delay", TimeSpan.Zero - tick), "max_requeue_delay");
             Assert.Throws<Exception>(() => c.Set("default_requeue_delay", TimeSpan.Zero - tick), "default_requeue_delay");

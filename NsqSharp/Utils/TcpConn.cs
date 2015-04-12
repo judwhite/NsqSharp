@@ -70,11 +70,8 @@ namespace NsqSharp.Utils
                     ReadTimeout = TimeSpan.FromMilliseconds(10);
                     WriteTimeout = TimeSpan.FromMilliseconds(10);
 
-                    Time.AfterFunc(TimeSpan.FromSeconds(2), () =>
-                    {
-                        _networkStream.Close();
-                        _tcpClient.Close();
-                    });
+                    _networkStream.Close();
+                    _tcpClient.Close();
                 }
             }
         }

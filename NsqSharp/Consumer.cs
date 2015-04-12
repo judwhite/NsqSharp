@@ -1011,7 +1011,8 @@ namespace NsqSharp
             var connections = conns();
             if (connections.Count == 0)
             {
-                // backoff again
+                log(LogLevel.Warning, "no connection available to resume");
+                log(LogLevel.Warning, string.Format("backing off for {0:0.0000} seconds", 1));
                 backoff(TimeSpan.FromSeconds(1));
                 return;
             }
@@ -1026,7 +1027,8 @@ namespace NsqSharp
             var err = updateRDY(choice, 1);
             if (err != null)
             {
-                log(LogLevel.Warning, string.Format("({0}) error updating RDY - {1}", choice, err.Message));
+                log(LogLevel.Warning, string.Format("({0}) error resuming RDY - {1}", choice, err.Message));
+                log(LogLevel.Warning, string.Format("backing off for {0:0.0000} seconds", 1));
                 backoff(TimeSpan.FromSeconds(1));
                 return;
             }
@@ -1046,8 +1048,14 @@ namespace NsqSharp
 
         private void maybeUpdateRDY(Conn conn)
         {
-            if (inBackoff() || inBackoffTimeout())
+            var isInBackoff = inBackoff();
+            var isInBackoffTimeout = inBackoffTimeout();
+            if (isInBackoff || isInBackoffTimeout)
+            {
+                log(LogLevel.Debug, string.Format("({0}) skip sending RDY inBackoff:{1} || inBackoffTimeout:{2}",
+                    conn, isInBackoff, isInBackoffTimeout));
                 return;
+            }
 
             long remain = conn.RDY;
             long lastRdyCount = conn.LastRDY;
@@ -1190,18 +1198,25 @@ namespace NsqSharp
             if (inBackoffTimeout())
                 return;
 
-            int numConns = conns().Count;
+            // if an external heuristic set needRDYRedistributed we want to wait
+	        // until we can actually redistribute to proceed
+            var connections = conns();
+	        if (connections.Count == 0)
+	        {
+	            return;
+	        }
+
             int maxInFlight = getMaxInFlight();
-            if (numConns > maxInFlight)
+            if (connections.Count > maxInFlight)
             {
                 log(LogLevel.Debug, string.Format("redistributing RDY state ({0} conns > {1} max_in_flight)",
-                    numConns, maxInFlight));
+                    connections.Count, maxInFlight));
                 _needRdyRedistributed = 1;
             }
 
-            if (inBackoff() && numConns > 1)
+            if (inBackoff() && connections.Count > 1)
             {
-                log(LogLevel.Debug, string.Format("redistributing RDY state (in backoff and {0} conns > 1)", numConns));
+                log(LogLevel.Debug, string.Format("redistributing RDY state (in backoff and {0} conns > 1)", connections.Count));
                 _needRdyRedistributed = 1;
             }
 
@@ -1210,7 +1225,6 @@ namespace NsqSharp
                 return;
             }
 
-            var connections = conns();
             var possibleConns = new List<Conn>();
             foreach (var c in connections)
             {
