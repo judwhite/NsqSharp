@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.Providers;
 using NsqSharp.Bus.Utils;
@@ -19,9 +18,11 @@ namespace NsqSharp.Bus
         private readonly IMessageSerializer _sendMessageSerializer;
         private readonly string[] _defaultProducerNsqdHttpEndpoints;
         private readonly ILogger _nsqLogger;
+        private readonly IMessageMutator _messageMutator;
+        private readonly IMessageTopicRouter _messageTopicRouter;
 
-        private readonly Dictionary<int, ICurrentMessageInformation> _threadMessages;
-        private readonly object _threadMessagesLocker = new object();
+        [ThreadStatic]
+        private static ICurrentMessageInformation _threadMessage;
 
         public NsqBus(
             Dictionary<string, List<MessageHandlerMetadata>> topicChannelHandlers,
@@ -29,7 +30,9 @@ namespace NsqSharp.Bus
             IMessageTypeToTopicProvider messageTypeToTopicProvider,
             IMessageSerializer sendMessageSerializer,
             string[] defaultProducerNsqdHttpEndpoints,
-            ILogger nsqLogger
+            ILogger nsqLogger,
+            IMessageMutator messageMutator,
+            IMessageTopicRouter messageTopicRouter
         )
         {
             if (topicChannelHandlers == null)
@@ -47,13 +50,13 @@ namespace NsqSharp.Bus
             if (nsqLogger == null)
                 throw new ArgumentNullException("nsqLogger");
 
-            _threadMessages = new Dictionary<int, ICurrentMessageInformation>();
-
             _topicChannelHandlers = topicChannelHandlers;
             _dependencyInjectionContainer = dependencyInjectionContainer;
             _messageTypeToTopicProvider = messageTypeToTopicProvider;
             _sendMessageSerializer = sendMessageSerializer;
             _nsqLogger = nsqLogger;
+            _messageMutator = messageMutator;
+            _messageTopicRouter = messageTopicRouter;
 
             _defaultProducerNsqdHttpEndpoints = new string[defaultProducerNsqdHttpEndpoints.Length];
             for (int i = 0; i < defaultProducerNsqdHttpEndpoints.Length; i++)
@@ -115,17 +118,29 @@ namespace NsqSharp.Bus
             if (string.IsNullOrEmpty(topic))
                 throw new ArgumentNullException("topic");
 
+            // mutate
+            if (_messageMutator != null)
+            {
+                message = _messageMutator.GetMutatedMessage(this, message);
+            }
+
+            // route
+            if (_messageTopicRouter != null)
+            {
+                topic = _messageTopicRouter.GetMessageTopic(this, topic, message);
+            }
+
+            // serialize
             byte[] serializedMessage = _sendMessageSerializer.Serialize(message);
 
+            // send
             if (nsqdHttpAddresses == null || nsqdHttpAddresses.Length == 0)
             {
                 nsqdHttpAddresses = _defaultProducerNsqdHttpEndpoints;
             }
 
-            // TODO: When not usig HTTP, re-use Producers per nsqd/topic/thread
             foreach (var nsqdHttpAddress in nsqdHttpAddresses)
             {
-                // TODO: What happens if this call fails? Error code or exception? Logging?
                 NsqdHttpApi.Publish(nsqdHttpAddress, topic, serializedMessage);
             }
         }
@@ -136,16 +151,69 @@ namespace NsqSharp.Bus
                 throw new ArgumentNullException("messages");
 
             string topic = GetTopic<T>();
-            var nsqdHttpAddresses = _defaultProducerNsqdHttpEndpoints;
 
-            var msgByteList = messages.Select(p => _sendMessageSerializer.Serialize(p)).ToList();
-            if (msgByteList.Count == 0)
-                return;
+            var messagesList = messages.ToList();
 
-            // TODO: Re-use Producers per nsqd/topic/thread
-            foreach (var nsqdAddress in nsqdHttpAddresses)
+            // mutate
+            if (_messageMutator != null)
             {
-                NsqdHttpApi.PublishMultiple(nsqdAddress, topic, msgByteList);
+                var newList = new List<T>();
+                foreach (var message in messagesList)
+                {
+                    var newMessage = _messageMutator.GetMutatedMessage(this, message);
+                    newList.Add(newMessage);
+                }
+                messagesList = newList;
+            }
+
+            // route
+            var topicMessages = new Dictionary<string, List<T>>();
+            if (_messageTopicRouter != null)
+            {
+                var originalTopicMessageList = new List<T>();
+                topicMessages.Add(topic, originalTopicMessageList);
+                foreach (var message in messagesList)
+                {
+                    var newTopic = _messageTopicRouter.GetMessageTopic(this, topic, message);
+                    if (newTopic == topic)
+                    {
+                        originalTopicMessageList.Add(message);
+                    }
+                    else
+                    {
+                        List<T> newTopicMessageList;
+                        if (!topicMessages.TryGetValue(newTopic, out newTopicMessageList))
+                        {
+                            newTopicMessageList = new List<T>();
+                            topicMessages.Add(newTopic, newTopicMessageList);
+                        }
+
+                        newTopicMessageList.Add(message);
+                    }
+                }
+            }
+            else
+            {
+                topicMessages.Add(topic, messagesList);
+            }
+
+            // iterate on topic/message partition
+            var nsqdHttpAddresses = _defaultProducerNsqdHttpEndpoints;
+            foreach (var kvp in topicMessages)
+            {
+                var thisTopic = kvp.Key;
+                var thisTopicMessages = kvp.Value;
+
+                // serialize
+                var msgByteList = thisTopicMessages.Select(p => _sendMessageSerializer.Serialize(p)).ToList();
+                if (msgByteList.Count == 0)
+                    continue;
+
+                // send
+                foreach (var nsqdAddress in nsqdHttpAddresses)
+                {
+                    NsqdHttpApi.PublishMultiple(nsqdAddress, thisTopic, msgByteList);
+                }
             }
         }
 
@@ -163,12 +231,7 @@ namespace NsqSharp.Bus
 
         public ICurrentMessageInformation GetCurrentMessageInformation()
         {
-            lock (_threadMessagesLocker)
-            {
-                ICurrentMessageInformation currentMessageInformation;
-                _threadMessages.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentMessageInformation);
-                return currentMessageInformation;
-            }
+            return _threadMessage;
         }
 
         private T CreateInstance<T>()
@@ -234,20 +297,9 @@ namespace NsqSharp.Bus
             Trace.WriteLine("Stopped.");
         }
 
-        internal void AddMessage(ICurrentMessageInformation currentMessageInformation)
+        internal void SetCurrentMessageInformation(ICurrentMessageInformation currentMessageInformation)
         {
-            lock (_threadMessagesLocker)
-            {
-                _threadMessages.Add(Thread.CurrentThread.ManagedThreadId, currentMessageInformation);
-            }
-        }
-
-        internal void RemoveMessage()
-        {
-            lock (_threadMessagesLocker)
-            {
-                _threadMessages.Remove(Thread.CurrentThread.ManagedThreadId);
-            }
+            _threadMessage = currentMessageInformation;
         }
     }
 }

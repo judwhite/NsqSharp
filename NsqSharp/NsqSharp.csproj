@@ -69,6 +69,8 @@
     <Compile Include="Bus\Configuration\BuiltIn\StructureMapObjectBuilder.cs" />
     <Compile Include="Bus\Configuration\BusConfiguration.cs" />
     <Compile Include="Bus\Configuration\IBusStateChangedHandler.cs" />
+    <Compile Include="Bus\Configuration\IMessageMutator.cs" />
+    <Compile Include="Bus\Configuration\IMessageTopicRouter.cs" />
     <Compile Include="Bus\Configuration\IMessageSerializer.cs" />
     <Compile Include="Bus\Configuration\IObjectBuilder.cs" />
     <Compile Include="Bus\Configuration\MessageHandlerMetadata.cs" />

@@ -75,111 +75,104 @@ namespace NsqSharp.Bus
 
         public void HandleMessage(Message message)
         {
+            var messageInformation = new MessageInformation
+                                     {
+                                         UniqueIdentifier = Guid.NewGuid(),
+                                         Topic = _topic,
+                                         Channel = _channel,
+                                         HandlerType = _handlerType,
+                                         MessageType = _messageType,
+                                         Message = message,
+                                         DeserializedMessageBody = null,
+                                         Started = DateTime.UtcNow
+                                     };
+
+            _bus.SetCurrentMessageInformation(messageInformation);
+
+            // Get handler
+            object handler;
             try
             {
-                var messageInformation = new MessageInformation
-                                         {
-                                             UniqueIdentifier = Guid.NewGuid(),
-                                             Topic = _topic,
-                                             Channel = _channel,
-                                             HandlerType = _handlerType,
-                                             MessageType = _messageType,
-                                             Message = message,
-                                             DeserializedMessageBody = null,
-                                             Started = DateTime.UtcNow
-                                         };
+                handler = _objectBuilder.GetInstance(_handlerType);
+                messageInformation.HandlerType = handler.GetType();
+            }
+            catch (Exception ex)
+            {
+                messageInformation.Finished = DateTime.UtcNow;
 
-                _bus.AddMessage(messageInformation);
+                _messageAuditor.TryOnFailed(_logger, _bus,
+                    new FailedMessageInformation
+                    (
+                        messageInformation,
+                        FailedMessageQueueAction.Finish,
+                        FailedMessageReason.HandlerConstructor,
+                        ex
+                    )
+                );
 
-                // Get handler
-                object handler;
-                try
-                {
-                    handler = _objectBuilder.GetInstance(_handlerType);
-                    messageInformation.HandlerType = handler.GetType();
-                }
-                catch (Exception ex)
-                {
-                    messageInformation.Finished = DateTime.UtcNow;
+                message.Finish();
+                return;
+            }
 
-                    _messageAuditor.TryOnFailed(_logger, _bus,
-                        new FailedMessageInformation
-                        (
-                            messageInformation,
-                            FailedMessageQueueAction.Finish,
-                            FailedMessageReason.HandlerConstructor,
-                            ex
-                        )
-                    );
+            // Get deserialized value
+            object value;
+            try
+            {
+                value = _serializer.Deserialize(_concreteMessageType, message.Body);
+            }
+            catch (Exception ex)
+            {
+                messageInformation.Finished = DateTime.UtcNow;
 
-                    message.Finish();
-                    return;
-                }
+                _messageAuditor.TryOnFailed(_logger, _bus,
+                    new FailedMessageInformation
+                    (
+                        messageInformation,
+                        FailedMessageQueueAction.Finish,
+                        FailedMessageReason.MessageDeserialization,
+                        ex
+                    )
+                );
 
-                // Get deserialized value
-                object value;
-                try
-                {
-                    value = _serializer.Deserialize(_concreteMessageType, message.Body);
-                }
-                catch (Exception ex)
-                {
-                    messageInformation.Finished = DateTime.UtcNow;
+                message.Finish();
+                return;
+            }
 
-                    _messageAuditor.TryOnFailed(_logger, _bus,
-                        new FailedMessageInformation
-                        (
-                            messageInformation,
-                            FailedMessageQueueAction.Finish,
-                            FailedMessageReason.MessageDeserialization,
-                            ex
-                        )
-                    );
+            // Handle message
+            messageInformation.DeserializedMessageBody = value;
+            _messageAuditor.TryOnReceived(_logger, _bus, messageInformation);
 
-                    message.Finish();
-                    return;
-                }
-
-                // Handle message
-                messageInformation.DeserializedMessageBody = value;
-                _messageAuditor.TryOnReceived(_logger, _bus, messageInformation);
-
-                try
-                {
-                    _handleMethod.Invoke(handler, new[] { value });
-                }
-                catch (Exception ex)
-                {
-                    bool requeue = (message.Attempts < message.MaxAttempts);
-
-                    messageInformation.Finished = DateTime.UtcNow;
-
-                    if (requeue)
-                        message.Requeue();
-                    else
-                        message.Finish();
-
-                    _messageAuditor.TryOnFailed(_logger, _bus,
-                        new FailedMessageInformation
-                        (
-                            messageInformation,
-                            requeue ? FailedMessageQueueAction.Requeue : FailedMessageQueueAction.Finish,
-                            requeue ? FailedMessageReason.HandlerException : FailedMessageReason.MaxAttemptsExceeded,
-                            ex
-                        )
-                    );
-
-                    return;
-                }
+            try
+            {
+                _handleMethod.Invoke(handler, new[] { value });
+            }
+            catch (Exception ex)
+            {
+                bool requeue = (message.Attempts < message.MaxAttempts);
 
                 messageInformation.Finished = DateTime.UtcNow;
 
-                _messageAuditor.TryOnSucceeded(_logger, _bus, messageInformation);
+                if (requeue)
+                    message.Requeue();
+                else
+                    message.Finish();
+
+                _messageAuditor.TryOnFailed(_logger, _bus,
+                    new FailedMessageInformation
+                    (
+                        messageInformation,
+                        requeue ? FailedMessageQueueAction.Requeue : FailedMessageQueueAction.Finish,
+                        requeue ? FailedMessageReason.HandlerException : FailedMessageReason.MaxAttemptsExceeded,
+                        ex
+                    )
+                );
+
+                return;
             }
-            finally
-            {
-                _bus.RemoveMessage();
-            }
+
+            messageInformation.Finished = DateTime.UtcNow;
+
+            _messageAuditor.TryOnSucceeded(_logger, _bus, messageInformation);
         }
 
         public void LogFailedMessage(Message message)

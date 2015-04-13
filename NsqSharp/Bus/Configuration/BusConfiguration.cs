@@ -30,6 +30,8 @@ namespace NsqSharp.Bus.Configuration
         private readonly IBusStateChangedHandler _busStateChangedHandler;
         private readonly ILogger _nsqLogger;
         private readonly bool _preCreateTopicsAndChannels;
+        private readonly IMessageMutator _messageMutator;
+        private readonly IMessageTopicRouter _messageTopicRouter;
 
         private NsqBus _bus;
 
@@ -53,6 +55,9 @@ namespace NsqSharp.Bus.Configuration
         /// <param name="preCreateTopicsAndChannels">Set to <c>true</c> to pre-create all registered topics and channels
         /// on the local nsqd instance listening on 127.0.0.1:4151; useful for self-contained clusters (default =
         /// <c>false</c>).</param>
+        /// <param name="messageMutator">The message mutator used to modify a message before it's sent (optional).</param>
+        /// <param name="messageTopicRouter">The message router used to specify custom message-to-topic routing logic; used
+        /// to override <paramref name="messageTypeToTopicProvider"/> (optional).</param>
         public BusConfiguration(
             IObjectBuilder dependencyInjectionContainer,
             IMessageSerializer defaultMessageSerializer,
@@ -64,7 +69,9 @@ namespace NsqSharp.Bus.Configuration
             Config defaultConsumerNsqConfig = null,
             IBusStateChangedHandler busStateChangedHandler = null,
             ILogger nsqLogger = null,
-            bool preCreateTopicsAndChannels = false
+            bool preCreateTopicsAndChannels = false,
+            IMessageMutator messageMutator = null,
+            IMessageTopicRouter messageTopicRouter = null
         )
         {
             if (dependencyInjectionContainer == null)
@@ -99,6 +106,8 @@ namespace NsqSharp.Bus.Configuration
             _busStateChangedHandler = busStateChangedHandler;
             _nsqLogger = nsqLogger ?? new TraceLogger();
             _preCreateTopicsAndChannels = preCreateTopicsAndChannels;
+            _messageMutator = messageMutator;
+            _messageTopicRouter = messageTopicRouter;
 
             var handlerTypes = _handlerTypeToChannelProvider.GetHandlerTypes();
             AddMessageHandlers(handlerTypes);
@@ -329,7 +338,9 @@ namespace NsqSharp.Bus.Configuration
                 _messageTypeToTopicProvider,
                 _defaultMessageSerializer,
                 _defaultNsqdHttpEndpoints,
-                _nsqLogger
+                _nsqLogger,
+                _messageMutator,
+                _messageTopicRouter
             );
 
             _bus.Start();
