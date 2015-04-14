@@ -70,6 +70,8 @@
   <ItemGroup>
     <Compile Include="Bus\BusCurrentMessageTest.cs" />
     <Compile Include="Bus\DeferTest.cs" />
+    <Compile Include="Bus\MessageMutatorTest.cs" />
+    <Compile Include="Bus\MessageRouterTest.cs" />
     <Compile Include="Bus\MultiImplementIHandleMessagesTest.cs" />
     <Compile Include="Bus\TestFakes\MessageAuditorStub.cs" />
     <Compile Include="Bus\TouchTest.cs" />

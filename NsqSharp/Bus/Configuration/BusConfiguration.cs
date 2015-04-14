@@ -149,16 +149,27 @@ namespace NsqSharp.Bus.Configuration
                     }
 
                     Type messageType = handlerMessageTypes[0];
+                    List<string> topics;
 
-                    string topic;
-                    try
+                    if (_messageTopicRouter == null)
                     {
-                        topic = _messageTypeToTopicProvider.GetTopic(messageType);
+                        string topic;
+                        try
+                        {
+                            topic = _messageTypeToTopicProvider.GetTopic(messageType);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception(string.Format(
+                                "Topic for message type '{0}' not registered.", messageType.FullName), ex);
+                        }
+
+                        topics = new List<string>();
+                        topics.Add(topic);
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        throw new Exception(string.Format(
-                            "Topic for message type '{0}' not registered.", messageType.FullName), ex);
+                        topics = new List<string>(_messageTopicRouter.GetTopics(messageType));
                     }
 
                     string channel;
@@ -172,7 +183,10 @@ namespace NsqSharp.Bus.Configuration
                             "Channel for handler type '{0}' not registered.", handlerType.FullName), ex);
                     }
 
-                    AddMessageHandler(handlerType, messageType, topic, channel);
+                    foreach (var topic in topics)
+                    {
+                        AddMessageHandler(handlerType, messageType, topic, channel);
+                    }
                 }
                 else
                 {

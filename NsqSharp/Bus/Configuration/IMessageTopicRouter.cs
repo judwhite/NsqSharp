@@ -1,4 +1,5 @@
-﻿using NsqSharp.Bus.Configuration.Providers;
+﻿using System;
+using NsqSharp.Bus.Configuration.Providers;
 
 namespace NsqSharp.Bus.Configuration
 {
@@ -17,5 +18,14 @@ namespace NsqSharp.Bus.Configuration
         /// <param name="sentMessage">The message about to be sent.</param>
         /// <returns>The topic to send this message on.</returns>
         string GetMessageTopic<T>(IBus bus, string originalTopic, T sentMessage);
+
+        /// <summary>
+        /// Gets the topics a specified <paramref name="messageType"/> can be produced/published on based on
+        /// the implementation of <see cref="GetMessageTopic&lt;T&gt;"/>.
+        /// </summary>
+        /// <param name="messageType">The message type. See <see cref="IHandleMessages&lt;T&gt;"/>.</param>
+        /// <returns>The topics the specified <paramref name="messageType"/> can be produced/published on. based on
+        /// the implementation of <see cref="GetMessageTopic&lt;T&gt;"/>.</returns>
+        string[] GetTopics(Type messageType);
     }
 }
