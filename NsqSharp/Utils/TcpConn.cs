@@ -38,14 +38,19 @@ namespace NsqSharp.Utils
         {
             lock (_readLocker)
             {
-                int total = 0;
-                do
+                int byteLength = b.Length;
+
+                int total = _networkStream.Read(b, 0, byteLength);
+                if (total == byteLength || total == 0)
+                    return total;
+
+                while (total < byteLength)
                 {
-                    int n = _networkStream.Read(b, total, b.Length - total);
+                    int n = _networkStream.Read(b, total, byteLength - total);
                     if (n == 0)
                         return total;
                     total += n;
-                } while (total < b.Length);
+                } 
                 return total;
             }
         }
