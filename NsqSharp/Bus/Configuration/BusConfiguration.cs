@@ -16,24 +16,28 @@ namespace NsqSharp.Bus.Configuration
     /// </summary>
     public class BusConfiguration : IBusConfiguration
     {
-        private readonly Dictionary<string, List<MessageHandlerMetadata>> _topicChannelHandlers;
+        private Dictionary<string, List<MessageHandlerMetadata>> _topicChannelHandlers;
 
-        private readonly IObjectBuilder _dependencyInjectionContainer;
-        private readonly IMessageSerializer _defaultMessageSerializer;
-        private readonly IMessageAuditor _messageAuditor;
-        private readonly string[] _defaultNsqlookupdHttpEndpoints;
-        private readonly Config _defaultConsumerNsqConfig;
-        private readonly int _defaultThreadsPerHandler;
-        private readonly IMessageTypeToTopicProvider _messageTypeToTopicProvider;
-        private readonly IHandlerTypeToChannelProvider _handlerTypeToChannelProvider;
-        private readonly string[] _defaultNsqdHttpEndpoints;
-        private readonly IBusStateChangedHandler _busStateChangedHandler;
-        private readonly ILogger _nsqLogger;
-        private readonly bool _preCreateTopicsAndChannels;
-        private readonly IMessageMutator _messageMutator;
-        private readonly IMessageTopicRouter _messageTopicRouter;
+        private IObjectBuilder _dependencyInjectionContainer;
+        private IMessageSerializer _defaultMessageSerializer;
+        private IMessageAuditor _messageAuditor;
+        private string[] _defaultNsqlookupdHttpEndpoints;
+        private Config _defaultConsumerNsqConfig;
+        private int _defaultThreadsPerHandler;
+        private IMessageTypeToTopicProvider _messageTypeToTopicProvider;
+        private IHandlerTypeToChannelProvider _handlerTypeToChannelProvider;
+        private string[] _defaultNsqdHttpEndpoints;
+        private IBusStateChangedHandler _busStateChangedHandler;
+        private ILogger _nsqLogger;
+        private bool _preCreateTopicsAndChannels;
+        private IMessageMutator _messageMutator;
+        private IMessageTopicRouter _messageTopicRouter;
 
         private NsqBus _bus;
+
+        internal BusConfiguration()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BusConfiguration"/> class.
@@ -113,12 +117,110 @@ namespace NsqSharp.Bus.Configuration
             AddMessageHandlers(handlerTypes);
         }
 
+      
+
+        internal Dictionary<string, List<MessageHandlerMetadata>> TopicChannelHandlers
+        {
+            get { return _topicChannelHandlers; }
+            set { _topicChannelHandlers = value; }
+        }
+
+        internal IObjectBuilder DependencyInjectionContainer
+        {
+            get { return _dependencyInjectionContainer; }
+            set { _dependencyInjectionContainer = value; }
+        }
+
+        internal IMessageSerializer DefaultMessageSerializer
+        {
+            get { return _defaultMessageSerializer; }
+            set { _defaultMessageSerializer = value; }
+        }
+
+        internal IMessageAuditor MessageAuditor
+        {
+            get { return _messageAuditor; }
+            set { _messageAuditor = value; }
+        }
+
+        internal string[] DefaultNsqlookupdHttpEndpoints
+        {
+            get { return _defaultNsqlookupdHttpEndpoints; }
+            set { _defaultNsqlookupdHttpEndpoints = value; }
+        }
+
+        internal Config DefaultConsumerNsqConfig
+        {
+            get { return _defaultConsumerNsqConfig; }
+            set { _defaultConsumerNsqConfig = value; }
+        }
+
+        internal int DefaultThreadsPerHandler
+        {
+            get { return _defaultThreadsPerHandler; }
+            set { _defaultThreadsPerHandler = value; }
+        }
+
+        internal IMessageTypeToTopicProvider MessageTypeToTopicProvider
+        {
+            get { return _messageTypeToTopicProvider; }
+            set { _messageTypeToTopicProvider = value; }
+        }
+
+        internal IHandlerTypeToChannelProvider HandlerTypeToChannelProvider
+        {
+            get { return _handlerTypeToChannelProvider; }
+            set { _handlerTypeToChannelProvider = value; }
+        }
+
+        internal string[] DefaultNsqdHttpEndpoints
+        {
+            get { return _defaultNsqdHttpEndpoints; }
+            set { _defaultNsqdHttpEndpoints = value; }
+        }
+
+        internal IBusStateChangedHandler BusStateChangedHandler
+        {
+            get { return _busStateChangedHandler; }
+            set { _busStateChangedHandler = value; }
+        }
+
+        internal ILogger NsqLogger
+        {
+            get { return _nsqLogger; }
+            set { _nsqLogger = value; }
+        }
+
+        internal bool PreCreateTopicsAndChannels
+        {
+            get { return _preCreateTopicsAndChannels; }
+            set { _preCreateTopicsAndChannels = value; }
+        }
+
+        internal IMessageMutator MessageMutator
+        {
+            get { return _messageMutator; }
+            set { _messageMutator = value; }
+        }
+
+        internal IMessageTopicRouter MessageTopicRouter
+        {
+            get { return _messageTopicRouter; }
+            set { _messageTopicRouter = value; }
+        }
+
+        internal NsqBus Bus
+        {
+            get { return _bus; }
+            set { _bus = value; }
+        }
+
         /// <summary>
         /// Add message handlers from the specified list of <paramref name="handlerTypes"/>.
         /// Uses defaults specified in the <see cref="BusConfiguration"/> constructor.
         /// </summary>
         /// <param name="handlerTypes">The message handler types to add. Throws if a type is an invalid message handler.</param>
-        private void AddMessageHandlers(IEnumerable<Type> handlerTypes)
+        internal void AddMessageHandlers(IEnumerable<Type> handlerTypes)
         {
             if (handlerTypes == null)
                 throw new ArgumentNullException("handlerTypes");
