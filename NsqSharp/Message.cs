@@ -11,8 +11,8 @@ namespace NsqSharp
     // https://github.com/bitly/go-nsq/blob/master/message.go
 
     /// <summary>
-    /// Message is the fundamental data type containing
-    /// the id, body, and metadata
+    ///     Message is the fundamental data type containing the <see cref="Id"/>, <see cref="Body"/>, and metadata of a
+    ///     message sent to or received from an nsqd instance.
     /// </summary>
     [DebuggerDisplay("Id={Id}, Attempts={Attempts}, TS={Timestamp}, NSQD={NsqdAddress}")]
     public class Message
@@ -22,30 +22,42 @@ namespace NsqSharp
 
         private static readonly DateTime _epoch = new DateTime(1970, 1, 1);
 
-        /// <summary>ID</summary>
         internal byte[] ID { get; set; }
-        /// <summary>Body</summary>
-        public byte[] Body { get; internal set; }
-        /// <summary>Timestamp</summary>
-        public DateTime Timestamp { get; internal set; }
-        /// <summary>Attempts</summary>
-        public int Attempts { get; internal set; }
-        /// <summary>Max Attempts</summary>
-        public int MaxAttempts { get; internal set; }
-
-        /// <summary>NsqdAddress</summary>
-        public string NsqdAddress { get; internal set; }
-
-        /// <summary>Delegate</summary>
         internal IMessageDelegate Delegate { get; set; }
 
         private int _autoResponseDisabled;
         private int _responded;
         private string _idHexString;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Message"/> class.
-        /// </summary>
+        /// <summary>The message body byte array.</summary>
+        /// <value>The message body byte array.</value>
+        public byte[] Body { get; internal set; }
+
+        /// <summary>The original timestamp when the message was published.</summary>
+        /// <value>The original timestamp when the message was published.</value>
+        public DateTime Timestamp { get; internal set; }
+
+        /// <summary>The current attempt count to process this message. The first attempt is <c>1</c>.</summary>
+        /// <value>The current attempt count to process this message. The first attempt is <c>1</c>.</value>
+        public int Attempts { get; internal set; }
+
+        /// <summary>The maximum number of attempts before nsqd will permanently fail this message.</summary>
+        /// <value>The maximum number of attempts before nsqd will permanently fail this message.</value>
+        public int MaxAttempts { get; internal set; }
+
+        /// <summary>The nsqd address which sent this message.</summary>
+        /// <value>The nsqd address which sent this message.</value>
+        public string NsqdAddress { get; internal set; }
+
+        /// <summary>Initializes a new instance of the <see cref="Message"/> class.</summary>
+        /// <remarks>
+        ///     The class is created in response to messages read from the TCP connection with nsqd. Typically you would not
+        ///     need to instantiate this class yourself.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException">Thrown when either <paramref name="id"/> or <paramref name="body"/> are
+        ///     <c>null</c>.
+        /// </exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="id"/> length is not 16.</exception>
         /// <param name="id">The message ID.</param>
         /// <param name="body">The message body.</param>
         public Message(byte[] id, byte[] body)
@@ -63,12 +75,10 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// <para>Disables the automatic response that
-        /// would normally be sent when <see cref="IHandler.HandleMessage"/>
-        /// returns or throw.</para>
-        ///
-        /// <para>This is useful if you want to batch, buffer, or asynchronously
-        /// respond to messages.</para>
+        ///     <para>Disables the automatic response that would normally be sent when <see cref="IHandler.HandleMessage"/>
+        ///     returns or throws.</para>
+        ///     
+        ///     <para>This is useful if you want to batch, buffer, or asynchronously respond to messages.</para>
         /// </summary>
         public void DisableAutoResponse()
         {
@@ -78,25 +88,24 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// Indicates whether or not this message
-        /// will be responded to automatically.
+        ///     Indicates whether or not this message will be responded to automatically when
+        ///     <see cref="IHandler.HandleMessage"/> returns or throws.
         /// </summary>
+        /// <value><c>true</c> if automatic response is disabled; otherwise, <c>false</c>.</value>
         public bool IsAutoResponseDisabled
         {
             get { return (_autoResponseDisabled == 1); }
         }
 
-        /// <summary>
-        /// Indicates whether or not this message has been responded to.
-        /// </summary>
+        /// <summary>Indicates whether or not this message has been FIN'd or REQ'd.</summary>
+        /// <value><c>true</c> if this message has been FIN'd or REQ'd; otherwise, <c>false</c>.</value>
         public bool HasResponded
         {
             get { return (_responded == 1); }
         }
 
         /// <summary>
-        /// Finish sends a FIN command to the nsqd which
-        /// sent this message.
+        ///     Sends a FIN command to the nsqd which sent this message, indicating the message processed successfully.
         /// </summary>
         public void Finish()
         {
@@ -108,8 +117,11 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// Touch sends a TOUCH command to the nsqd which sent this message, resetting the default timeout.
-        /// The server-default timeout is 60s; see <see cref="Config.MessageTimeout"/>.
+        ///     <para>Sends a TOUCH command to the nsqd which sent this message, resetting the default message timeout.</para>
+        ///     
+        ///     <para>The server-default timeout is 60s; see <see cref="Config.MessageTimeout"/>.</para>
+        ///     
+        ///     <para>If FIN or REQ have already been sent for this message, calling <see cref="Touch"/> has no effect.</para>
         /// </summary>
         public void Touch()
         {
@@ -121,26 +133,28 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// <para>Sends a REQ command to the nsqd which
-        /// sent this message, using the supplied delay.</para>
-        ///
-        /// <para>A delay of <c>null</c> will automatically calculate
-        /// based on the number of attempts and the
-        /// configured <see cref="Config.DefaultRequeueDelay"/>.</para>
-        /// 
-        /// <para>Using this method to respond triggers a backoff event.</para>
+        ///     <para>Sends a REQ command to the nsqd which sent this message, using the supplied delay.</para>
+        ///     
+        ///     <para>A delay of <c>null</c> will automatically calculate based on the number of attempts and the configured
+        ///     <see cref="Config.DefaultRequeueDelay"/>.</para>
+        ///     
+        ///     <para>Using this method to respond triggers a backoff event.</para>
         /// </summary>
+        /// <param name="delay">The minimum amount of time the message will be requeued.</param>
         public void Requeue(TimeSpan? delay = null)
         {
             doRequeue(delay, backoff: true);
         }
 
         /// <summary>
-        /// <para>Sends a REQ command to the nsqd which
-        /// sent this message, using the supplied delay.</para>
-        ///
-        /// <para>Using this method to respond does not trigger a backoff event.</para>
+        ///     <para>Sends a REQ command to the nsqd which sent this message, using the supplied delay.</para>
+        /// 
+        ///     <para>A delay of <c>null</c> will automatically calculate based on the number of attempts and the configured
+        ///     <see cref="Config.DefaultRequeueDelay"/>.</para>
+        ///     
+        ///     <para>Using this method to respond does not trigger a backoff event.</para>
         /// </summary>
+        /// <param name="delay">The minimum amount of time the message will be requeued.</param>
         public void RequeueWithoutBackoff(TimeSpan? delay)
         {
             doRequeue(delay, backoff: false);
@@ -159,49 +173,52 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// Gets a value indicating whether this message triggered a backoff event.
+        ///     Indicates whether this message triggered a backoff event, causing the <see cref="Consumer"/>
+        ///     to slow its processing based on <see cref="Config.BackoffStrategy"/>.
         /// </summary>
+        /// <value><c>true</c> if this message triggered a backoff event; otherwise, <c>false</c>.</value>
         public bool BackoffTriggered { get; private set; }
 
         /// <summary>
-        /// Gets the minimum date/time the message will be requeued until.
+        ///     The minimum date/time the message will be requeued until; <c>null</c> indicates the message has not been
+        ///     requeued.
         /// </summary>
+        /// <value>
+        ///     The minimum date/time the message will be requeued until; <c>null</c> indicates the message has not been
+        ///     requeued.
+        /// </value>
         public DateTime? RequeuedUntil { get; private set; }
 
         /// <summary>
-        /// <para>WriteTo implements the WriterTo interface and serializes
-        /// the message into the supplied producer.</para>
-        ///
-        /// <para>It is suggested that the target Writer is buffered to
-        /// avoid performing many system calls.</para>
+        ///     <para>Encodes the message frame and body and writes it to the supplied <paramref name="writeStream"/>.</para>
+        ///     
+        ///     <para>It is suggested that the target <paramref name="writeStream"/> is buffered to avoid performing many
+        ///     system calls.</para>
         /// </summary>
-        public Int64 WriteTo(Stream w)
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="writeStream"/> is <c>null</c>.</exception>
+        /// <param name="writeStream">The stream to write this message.</param>
+        /// <returns>The number of bytes written to <paramref name="writeStream"/>.</returns>
+        public Int64 WriteTo(Stream writeStream)
         {
-            if (w == null)
-                throw new ArgumentNullException("w");
+            if (writeStream == null)
+                throw new ArgumentNullException("writeStream");
 
-            Int64 total;
-
-            using (var writer = new BinaryWriter(w))
+            using (var writer = new BinaryWriter(writeStream))
             {
                 ulong ns = (ulong)(Timestamp - _epoch).Ticks * 100;
-                Binary.BigEndian.PutUint64(writer, ns);
-                Binary.BigEndian.PutUint16(writer, (ushort)Attempts);
-                total = 10;
+                Binary.BigEndian.PutUint64(writer, ns); // 8 bytes
+                Binary.BigEndian.PutUint16(writer, (ushort)Attempts); // 2 bytes
 
-                writer.Write(ID);
-                total += MsgIdLength;
+                writer.Write(ID); // MsgIdLength (16) bytes
 
                 writer.Write(Body);
-                total += Body.Length;
             }
 
-            return total;
+            return 10 + MsgIdLength + Body.Length;
         }
 
-        /// <summary>
-        /// Deseralizes <paramref name="data"/> and creates a new <see cref="Message"/>.
-        /// </summary>
+        /// <summary>Decodes <paramref name="data"/> and creates a new <see cref="Message"/>.</summary>
+        /// <exception cref="ArgumentNullException">Thrown <paramref name="data"/> is <c>null</c>.</exception>
         /// <param name="data">The fully encoded message.</param>
         /// <returns>The decoded message.</returns>
         public static Message DecodeMessage(byte[] data)
@@ -225,9 +242,8 @@ namespace NsqSharp
             }
         }
 
-        /// <summary>
-        /// The message ID as a hex string.
-        /// </summary>
+        /// <summary>The message ID as a hexadecimal string.</summary>
+        /// <value>The message ID as a hexadecimal string.</value>
         public string Id
         {
             get
