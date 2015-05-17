@@ -238,7 +238,7 @@ namespace NsqSharp.Tests
             q.AddHandler(h);
 
             q.ConnectToNsqd("127.0.0.1:4150");
-            q.StopChan.Receive();
+            q.Wait();
 
             Assert.AreEqual(msgCount, h.messagesGood, "should have handled a diff number of messages");
             Assert.AreEqual(1, h.messagesFailed, "failed message not done");
@@ -316,7 +316,7 @@ namespace NsqSharp.Tests
         public void LogFailedMessage(Message message)
         {
             messagesFailed++;
-            q.Stop();
+            q.StopAsync();
         }
 
         public void HandleMessage(Message message)

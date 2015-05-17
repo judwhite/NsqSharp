@@ -165,7 +165,7 @@ namespace NsqSharp.Tests
                 q.DisconnectFromNsqd("1.2.3.4:4150");
                 q.DisconnectFromNsqd("127.0.0.1:4150");
 
-                q.StopChan.Receive();
+                q.Wait();
 
                 stats = q.GetStats();
 
@@ -226,7 +226,7 @@ namespace NsqSharp.Tests
             public void LogFailedMessage(Message message)
             {
                 messagesFailed++;
-                q.Stop();
+                q.StopAsync();
             }
 
             public void HandleMessage(Message message)

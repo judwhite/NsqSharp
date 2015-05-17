@@ -285,7 +285,7 @@ namespace NsqSharp.Bus
                         wg.Add(1);
                         GoFunc.Run(() =>
                         {
-                            consumer.Stop(blockUntilStopCompletes: true);
+                            consumer.Stop();
                             wg.Done();
                         }, "NsqBus consumer shutdown");
                     }

@@ -34,7 +34,7 @@ namespace Echo.Primitives
 
             // Stop Producer/Consumer
             producer.Stop();
-            consumer.Stop(blockUntilStopCompletes: true);
+            consumer.Stop();
         }
     }
 

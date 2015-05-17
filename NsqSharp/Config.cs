@@ -298,28 +298,37 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// Set takes an option as a string and a value as an interface and
-        /// attempts to set the appropriate configuration option.
-        ///
-        /// It attempts to coerce the value into the right format depending on the named
-        /// option and the underlying type of the value passed in.
-        ///
-        /// Calls to Set() that take a time.Duration as an argument can be input as:
-        ///
-        ///     "1000ms" (a string parsed by time.ParseDuration())
-        ///     1000 (an integer interpreted as milliseconds)
-        ///     1000*time.Millisecond (a literal time.Duration value)
-        ///
-        /// Calls to Set() that take bool can be input as:
-        ///
-        ///     "true" (a string parsed by strconv.ParseBool())
-        ///     true (a boolean)
-        ///     1 (an int where 1 == true and 0 == false)
-        ///
-        /// It returns an error for an invalid option or value.
+        ///     <para>Takes an <paramref name="option"/> as a string and a <paramref name="value"/> and attempts to set the
+        ///     appropriate configuration option.</para>
+        ///     
+        ///     <para>It attempts to coerce the <paramref name="value"/> into the right format depending on the named option
+        ///     and the underlying type of the value passed in.</para>
+        ///     
+        ///     <para>Calls to <see cref="Set"/> that take a <see cref="TimeSpan"/> as an argument can be input as:
+        ///     <list type="bullet">
+        ///         <item><description>"1000ms" (a string parsed by <see cref="Time.ParseDuration"/>)</description></item>
+        ///         <item><description>1000 (an integer interpreted as milliseconds)</description></item>
+        ///         <item><description><see cref="TimeSpan.FromMilliseconds"/>(1000) (a literal <see cref="TimeSpan"/>
+        ///         value)</description></item>
+        ///     </list>
+        ///     </para>
+        ///     
+        ///     <para>Calls to <see cref="Set"/> that take bool can be input as:
+        ///     <list type="bullet">
+        ///         <item><description>"true" (a string parsed by <see cref="bool.Parse"/>)</description></item>
+        ///         <item><description>true (a boolean)</description></item>
+        ///         <item><description>1 (an int where 1 == true and 0 == false)</description></item>
+        ///     </list>
+        ///     </para>
         /// </summary>
-        /// <param name="option"></param>
-        /// <param name="value"></param>
+        /// <exception cref="Exception"><para>Thrown when an invalid <paramref name="option"/> name is specified.</para>
+        ///     <para>Thrown when an invalid <paramref name="value"/> is specified for the given
+        ///     <paramref name="option"/>.</para>
+        /// </exception>
+        /// <param name="option">The option name. See the <see cref="OptAttribute.Name"/> on <see cref="Config"/> properties
+        ///     for valid option names.
+        /// </param>
+        /// <param name="value">The value.</param>
         public void Set(string option, object value)
         {
             option = option.Replace("-", "_");
@@ -335,9 +344,7 @@ namespace NsqSharp
             throw new Exception(string.Format("invalid option {0}", option));
         }
 
-        /// <summary>
-        /// Validate checks that all values are within specified min/max ranges
-        /// </summary>
+        /// <summary>Checks that all config values are within specified min/max ranges.</summary>
         public void Validate()
         {
             foreach (var h in configHandlers)
@@ -598,9 +605,8 @@ namespace NsqSharp
             }
         }
 
-        /// <summary>
-        /// Clones (makes a copy) of this instance.
-        /// </summary>
+        /// <summary>Clones (makes a copy) of this instance.</summary>
+        /// <returns>A copy of this object.</returns>
         public Config Clone()
         {
             var newConfig = new Config();

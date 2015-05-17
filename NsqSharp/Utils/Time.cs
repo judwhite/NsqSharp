@@ -64,7 +64,8 @@ namespace NsqSharp.Utils
 
                     try
                     {
-                        timeoutChan.Send(default(bool));
+                        if (!((IChan)timeoutChan).IsClosed)
+                            timeoutChan.Send(default(bool));
                     }
                     catch { }
 

@@ -295,7 +295,7 @@ namespace NsqSharp.Tests
             }
             finally
             {
-                q.Stop(blockUntilStopCompletes: true);
+                q.StopAsync();
             }
         }
     }
