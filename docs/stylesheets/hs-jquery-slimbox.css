@@ -1,0 +1,30 @@
+table.hs-thumbnail-container, 
+div.OH_outerContent div#mainSection table.hs-thumbnail-container
+{
+	border-collapse: collapse;
+	border: 1px #CCC solid;
+	width: auto;
+}
+table.hs-thumbnail-container td, 
+div.OH_outerContent div#mainSection table.hs-thumbnail-container td
+{
+	padding: 5px;
+	margin: 0px;
+	border-style: none;
+	background: white;
+}
+table.hs-thumbnail-container img, 
+div.OH_outerContent div#mainSection table.hs-thumbnail-container img
+{
+	border-style: none;
+	margin: 0px;
+	padding: 0px;
+}
+table.hs-thumbnail-container td p, 
+div.OH_outerContent div#mainSection table.hs-thumbnail-container td p
+{
+	margin: 0px;
+	color: #696969;
+	font-size: 90%;
+	padding: 3px 0px 0px 0px;	
+}

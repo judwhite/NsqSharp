@@ -1,0 +1,35 @@
+.linkstyle
+{
+    color: #2178e0;
+    text-decoration: none;
+}
+
+/* Support for boxes to override default table styles in the branding package */
+
+div.OH_outerContent div#mainBody table.hs-box
+{
+    border:             buttonshadow 1px solid; 
+    width:              95%;
+}
+div.OH_outerContent div#mainBody table.hs-box td
+{
+    border:             0px none;
+}
+div#mainBody td.hs-box-icon
+{
+    padding:            4 4 6 4;
+    width:              12px;
+}
+
+/* Stop scroll bars where divs are 100% */
+div#mainBody,div.OH_outerContent div#mainSection
+{
+    width: auto;
+}
+
+/* Alternate spacing for title tag */
+div.OH_outerContent div.title, div.NonScrollingPageFooter
+{
+	margin-left:	8px;
+	margin-bottom:	0px;	
+}

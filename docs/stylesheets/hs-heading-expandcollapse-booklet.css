@@ -1,0 +1,5 @@
+/* This stylesheet supports the Expandable Heading and Section Widget in booklet output*/
+img.toggle
+{
+    display: none;
+}

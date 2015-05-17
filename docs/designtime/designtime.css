@@ -1,0 +1,31 @@
+﻿div.dxedit
+{
+    margin: 0px -2px 0px -2px;
+    /* IE8 compat */
+    margin: 0px\9;
+    border: 1px dotted #d0d0d0;
+}
+div.dxedit>div:last-child
+{
+    margin: 0px;
+    padding: 2px 4px 2px 2px;
+}
+div.dxeditable
+{
+    line-height: 7pt;
+}
+div.dxeditable span
+{	
+    display: inline-block;
+    padding: 0px 2px 1px 2px;
+    line-height: 9pt\9;
+}
+.TabContainer .ui-tabs-nav li a.DesignItemEdit, .TabContainer .ui-tabs-nav li a.DesignItemDelete
+{
+	padding-left: 0px;
+}
+
+.TabContainer .ui-tabs-nav li a.DesignItemEdit
+{
+	padding-right: 4px;
+}

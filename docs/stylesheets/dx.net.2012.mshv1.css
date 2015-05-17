@@ -1,0 +1,51 @@
+﻿/* Standard url() references in stylesheets don't work in MSHV 2 so we have to use an alternate syntax 
+    in this stylesheet, which is loaded only when the content runs under MSHV 1 */
+
+.SectionHeading .SectionHeadingIcon
+{
+    background-image: url('../dotnetimages/collapse.png');
+}
+
+.SectionHeading.SectionHeadingCollapsed .SectionHeadingIcon
+{
+    background-image: url('../dotnetimages/expand.png');
+}
+
+#BeforeHeaderContent .PopupLink, #BeforeHeaderContent .FunctionLink,
+#AfterHeaderContent .PopupLink, #AfterHeaderContent .FunctionLink
+{
+    background-image: url('../dotnetimages/dropdown.png');
+}
+
+.IsNew
+{
+    background-image: url('../dotnetimages/isnew.png');
+}
+
+.TabContainer .ui-state-active {
+    background: transparent url('../dotnetimages/uiTabsArrow.png') no-repeat bottom center;
+}
+
+.hs-toggler a
+{
+ background-image: url('../images/hs-toggler-collapsed.png');
+}
+
+.hs-toggler a.open
+{
+ background-image: url('../images/hs-toggler-expanded.png');
+} 
+
+div.OH_topic
+{
+	display: none;	
+}
+
+#lbCloseLink {
+	background-image: url('../images/slimbox-closelabel.png');
+}
+
+span.CopyCode
+{
+    background-image: url('../dotnetimages/copycode.png');
+}

@@ -1,0 +1,159 @@
+/* Non scrolling page footer */
+div.fullwidthfooter
+{
+    font-size:      90%;
+}
+
+div#communityfooter
+{
+    width: 100%;
+    padding: 0;
+}
+
+div.fullwidthfooter, div.communityprivatecontentcommands, div.communitypubliccontentcommands
+{
+    border-top:     1px solid #c0c0c0;
+    border-left:    0px;
+    border-right:   0px;
+    border-bottom:  0px;
+    padding-top:    2;
+    padding-bottom: 2;
+    padding-left:   5;
+    padding-right:  5;    
+    vertical-align: bottom;
+}
+
+div#communityfooter, div.communityprivatecontainer, div.communitypubliccontainer, div.communityratingcontainer
+{
+    display: none;
+}
+
+div.communityprivatecontainer, div.communitypubliccontainer
+{
+    margin-top: 5px;
+    border-right: lightgrey 1px dotted;
+    border-top: lightgrey 1px dotted;
+    border-left: lightgrey 1px dotted;
+    border-bottom: lightgrey 1px dotted;
+    padding-bottom: 0px;
+    margin-left: 5;
+    margin-right: 5;
+}
+
+div.communityratingcontainer
+{
+    padding: 0px;
+    float: right;
+    width: 200px;
+    text-align: right;
+}
+
+div.communityratingcontainer img
+{
+    margin-top: -1px;
+    margin-bottom: -4px;
+}
+
+div.communityratingcontentcontainer
+{
+    margin: 0px;
+    padding: 0px;
+}
+
+div.communityprivatecontainer
+{
+    background-color: #ffffcc;
+}
+
+div.communitypubliccontainer
+{
+    background-color: #EBFFD7 ;
+}
+
+div.communityprivatecontentcontainer, div.communitypubliccontentcontainer, div.communityratingcontentcontainer
+{
+    padding-top: 2;
+    padding-bottom: 2;
+    padding-left: 5;
+    padding-right: 2;
+
+}
+
+div.communityprivatecontentcommands, div.communitypubliccontentcommands
+{
+    background-color: white;
+    border-top: lightgrey 1px dotted;
+    margin-bottom: 0;
+}
+
+.communityprivatecontentheader, .communitypubliccontentheader
+{
+    margin-bottom: 2px;
+    font-style: italic;
+    border-bottom: lightgrey 1px dotted;
+    color: #666666
+}
+
+.communityAddedBy
+{
+    font-weight: bold;
+}
+
+.communitycreate, .communityedit
+{
+    display: none;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.communitycreate INPUT, .communityedit INPUT
+{
+    margin-top: 2px;
+}
+
+.communityTextBox
+{
+    width: 100%;
+}
+
+TABLE.communityratingstable 
+{
+    border: none;
+    background-color: transparent;
+    width: auto;
+    margin: 0;
+}
+
+TABLE.communityratingstable TD
+{
+    background-color: transparent;
+    border: none;
+    vertical-align: bottom;
+}
+
+
+div#dxcommunitymenu
+{
+    width:      auto;
+}
+
+img#communityFilterImage
+{
+    border:     0;
+    margin-left:    0;
+    vertical-align: middle;
+}
+
+.communityFilter
+{
+    color:      #0000FF;
+    cursor:     hand;
+    text-decoration:underline;
+    padding-bottom: 4;
+    font-size:  8pt;
+}
+
+div#communityPhrases
+{
+    display:    none;
+}

@@ -1,0 +1,26 @@
+/* This stylesheet supports the Expandable Heading and Section Widget */
+h1.hs-collapsibleheading
+{
+    margin-left: 0px;   
+    cursor: pointer;
+    cursor: hand;
+}
+
+img.toggle
+{
+    margin-top: 3px;
+    zoom: 1;
+    position: relative;
+}
+
+div.section h1, div.section h2, div.section h3
+{
+    zoom: 1;
+    position: relative;
+}
+
+/* So that design time shows the elements with no clipping */
+div#pagebody div.InnovaContentWidget img.toggle
+{
+    margin-top: 5px;
+}

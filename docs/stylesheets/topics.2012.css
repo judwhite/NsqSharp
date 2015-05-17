@@ -1,0 +1,711 @@
+﻿/* Default Text Style */
+body
+{
+    font-family: 'Segoe UI',Verdana,Arial;
+    font-size: 10pt;
+}
+
+body
+{    
+    margin-top: 8px;
+    margin-bottom: 8px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+pre
+{
+    margin: 0;
+    font-size: 1em;
+}
+
+.code
+{
+    font-family:    Monospace, Courier New, Courier;
+}
+
+#BeforeHeaderContent, #HeaderContent, #AfterHeaderContent, #BodyContent, #FooterContent
+{
+    margin-left: 8px;
+    margin-right: 8px;
+}
+
+.BreadcrumbsContainer
+{
+    margin-top: .5em;
+    padding-left: 8px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+}
+
+.BreadcrumbsContainer table
+{
+    border-spacing: 0;
+    border-style: none;
+}
+
+.BreadcrumbsContainer td
+{
+    padding-left: 0px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    border-style: none;
+}
+
+#BodyContent
+{
+    margin-top: 6px;
+}
+
+/* Page Title */
+#PageTitle
+{
+    font-size: 1.769em;
+    font-weight: bold;
+    margin-left: -1.5px;
+}
+
+#ProjectTitle, .BreadcrumbsContainer table td, #BeforeHeaderContent
+{
+    font-size: 0.9em;
+}
+
+#BeforeHeaderContent
+{
+    padding: 0 0 2px 0;
+}
+
+#HeaderContent
+{
+
+}
+
+.BreadcrumbsContainer table
+{
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.BreadcrumbsContainer table td
+{
+    padding: 2px 0 2px 0;
+    margin: 0px;
+}
+
+/* No borders on images */
+img
+{
+    border: 0;
+}
+
+/* Reduce spacing between adjacent paragraphs */
+p+p, .AdjacentParagraph
+{
+    margin-top: -6px;
+}
+
+/* Headings */
+h1
+{
+    font-size: 1.538em;
+}
+
+h2, .SectionHeading
+{
+    font-size: 1.538em;
+}
+
+.SectionHeading
+{
+    font-weight: bold;
+}
+
+/* Section and Description Section Padding */
+.SectionContent
+{
+    padding-left: 18px;
+}
+
+.SectionContent, .DescriptionContent
+{
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+/* Avoid double spacing in Returns content */
+h4+.ReturnsContent, .ReturnsContentAfterHeading
+{
+    padding-top: 0em;
+    padding-bottom: 0em;
+}
+
+/* Remove the padding from before the first element in a section so that the 
+   spacing is consistent for just text and paragraphs */
+.SectionContent>:first-child, 
+.DescriptionContent>:first-child, 
+.ReturnsContent>:first-child,
+.DescriptionCell>:first-child,
+.SectionContent .FirstChild, 
+.DescriptionContent .FirstChild, 
+.ReturnsContent .FirstChild,
+.DescriptionCell .FirstChild
+{
+    padding-top: 0;
+    margin-top: 0;
+}
+
+.SectionContent .LastChild, 
+.DescriptionContent .LastChild, 
+.ReturnsContent .LastChild,
+.DescriptionCell .LastChild
+{
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.SectionContent>:last-child, 
+.DescriptionContent>:last-child, 
+.ReturnsContent>:last-child,
+.DescriptionCell>:last-child
+{
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+/* Avoid a double separating space when an example immediately follows the example intro text */
+exampleSectionContent p+div, .ExampleAfterParagraph
+{
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+}
+
+h3
+{
+    font-size: 1.077em;
+    font-weight: bold;
+}
+
+/* See Also Headings */
+h4, .SeeAlsoSubHeading
+{
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.SeeAlsoSubHeading
+{
+    margin-top: 13px;
+    margin-bottom: 7px;
+}
+
+/* Reduced text size in the footer */
+#FooterContent
+{
+    font-size: .813em;
+}
+
+/* Horizontal rule single pixel */
+hr
+{
+    height: 1px;
+    border-style: none;
+}
+
+/* Branding */
+.logoimage
+{
+    float: right;
+    clear: both;
+    margin: .5em;
+}
+
+/* Copy Code */
+#BodyContent table.SyntaxTable th:first-child,
+#BodyContent table.SyntaxTable th.FirstChild
+{
+    border-right: none;
+}
+#BodyContent table.SyntaxTable th.LastChild
+{
+    border-left: none;
+    text-align: right;
+}
+#BodyContent table.SyntaxTable th:last-child
+{
+    border-left: none;
+    text-align: right;
+}
+
+/* Required for zClip positioning */
+.CopyCodeWrapper
+{
+    position: relative;
+}
+span.CopyCode
+{
+    cursor: pointer;
+    padding-left: 18px;
+    background-image: url('../images/copycode.png');
+    background-repeat: no-repeat;
+    background-position-y: 1px;
+}
+
+/* Toggle images */
+.SectionHeadingIcon
+{
+    display: inline-block;
+    background-repeat: no-repeat;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    padding: -2px 0 0 0;	
+}
+
+.SectionHeading .SectionHeadingIcon
+{
+    background-image: url('../images/collapse.png');
+}
+
+.SectionHeading.SectionHeadingCollapsed .SectionHeadingIcon
+{
+    background-image: url('../images/expand.png');
+}
+
+/* Default Table Style */
+#BodyContent table
+{
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#BodyContent table th
+{
+    text-align: left;
+    font-size: 1em;
+    font-style: normal;
+    font-weight: normal;
+}
+
+#BodyContent table th, #BodyContent table td
+{
+    border-style: solid;
+    border-width: 1px;
+    padding: 4px;
+}
+
+#BodyContent table td
+{
+    line-height: 140%;
+    vertical-align: top;
+}
+
+#AfterHeaderContent
+{
+    font-size: 0.9em;
+}
+
+#BodyContent
+{
+    margin-top: 0.5em;
+}
+
+/* Members Table Style */
+td.DescriptionCell, td.MembersDescriptionCell
+{
+    width: 80%;
+}
+
+td.LinkCell, td.MembersLinkCell, td.NewMembersLinkCell
+{
+    width: 20%;
+}
+
+#BodyContent td.ImageCell 
+{
+    width: 1%;
+    padding-bottom: 0px;
+}
+
+#BodyContent td.ImageCell img
+{
+    width: 16px;
+    height: 16px;
+    margin-top: 1px;
+}
+
+td.LinkCell, td.MembersLinkCell, td.NewMembersLinkCell, td.ImageCell
+{
+    white-space: nowrap;
+}
+
+/* Link Style */
+a:visited, a:link
+{
+    text-decoration: none;
+}
+
+a:hover 
+{
+    text-decoration: underline;
+}
+
+/* Popups */
+.PopupContent
+{
+    display: none;
+}
+
+.ui-tooltip
+{
+    font-size: 1em;
+}
+
+.PopupLink
+{
+    cursor: pointer;
+}
+
+dd
+{
+    margin-left: 2em;
+}
+
+#BeforeHeaderContent .PopupLink, #BeforeHeaderContent .FunctionLink,
+#AfterHeaderContent .PopupLink, #AfterHeaderContent .FunctionLink
+{
+    padding-left: 8px;
+    background-repeat: no-repeat;
+    background-image: url('../images/dropdown.png');
+    background-position: left center;
+    cursor: pointer;
+}
+
+#BeforeHeaderContent .PopupLink label, #BeforeHeaderContent .FunctionLink label,
+#AfterHeaderContent .PopupLink label, #AfterHeaderContent .FunctionLink label
+{
+    cursor: pointer;
+}
+
+#BeforeHeaderContent .PopupLink, #BeforeHeaderContent .FunctionLink, #BeforeHeaderContent .PageLink,
+#AfterHeaderContent .PopupLink, #AfterHeaderContent .FunctionLink, #AfterHeaderContent .PageLink
+{
+    padding-right: 8px;
+}
+
+/* Glossary Link */
+a.GlossaryLink, a.GlossaryLink:link, a.GlossaryLink:visited, a.GlossaryLink:hover
+{
+    color: #64912D;
+    border-bottom: 1px dotted #64912D;
+    text-decoration: none;
+}
+
+/* Is New highlight */
+.IsNew
+{
+    background-image: url('../images/isnew.png');
+    background-repeat: no-repeat;
+}
+
+/* jQuery overrides */
+.TabContainer {
+    background: transparent;
+    border: none;
+}
+.TabContainer .ui-widget-header {
+    background: transparent;
+    border: none;
+    border-radius: 0px;
+    -moz-border-radius: 0px;
+    -webkit-border-radius: 0px;
+}
+.TabContainer .ui-state-default {
+    background: transparent;
+    border: none;
+}
+.TabContainer .ui-state-active {
+    background: transparent url('../images/uiTabsArrow.png') no-repeat bottom center;
+    border: none;
+}
+.TabContainer {
+    padding: 0;
+}
+.TabContainer .ui-tabs-panel
+{
+    padding: .5em .6em;
+}
+.TabContainer .ui-tabs-nav li a
+{
+    padding: .5em .6em .5em .6em;
+}
+.TabContainer .ui-tabs-panel ul:first-child
+{
+display: none;
+}
+
+
+/* Widget Overrides */
+#BodyContent table.hs-box
+{
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+#BodyContent table.hs-box td
+{
+    border-style: none;
+}
+
+#BodyContent table.hs-box td.hs-box-icon
+{
+    padding-top: 6px;
+}
+
+#BodyContent table.hs-box td.hs-box-content
+{
+    width: 100%;
+}
+
+#BodyContent table.hs-box
+{
+    border-left: 2px solid;
+}
+
+#BodyContent table.hs-box td.hs-box-content>:first-child,
+#BodyContent table.hs-box td.hs-box-content .FirstChild,
+#BodyContent table.hs-box td.hs-box-content span#Content>:first-child,
+#BodyContent table.hs-box td.hs-box-content span#Content .FirstChild
+{
+    padding-top: 0;
+    margin-top: 0;
+}
+
+#BodyContent table.hs-box td.hs-box-content .LastChild,
+#BodyContent table.hs-box td.hs-box-content span#Content .LastChild
+{
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+#BodyContent table.hs-box td.hs-box-content>:last-child,
+#BodyContent table.hs-box td.hs-box-content span#Content>:last-child
+{
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+
+/*** Common Coloring ***/
+body
+{
+    color: black;
+    font-style: normal;
+}
+
+#PageTitle, h1, h2, h3, h4, 
+.SectionHeading, .SeeAlsoSubHeading
+{
+    color: #3F529C;
+}
+
+#ProjectTitle
+{
+    color: #949494;
+}
+
+/* Table Header and cell borders */
+#BodyContent table th
+{
+    background-color: #E5E5E5;
+    color: black;
+}
+
+#BodyContent table th, table td
+{
+    border-color: #d0d0d0;
+}
+
+/* Breadcrumbs */
+.BreadcrumbsContainer
+{
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* jQuery Tabs */
+.TabContainer .ui-state-active, 
+.TabContainer .ui-state-default {
+	color: transparent;
+}
+.TabContainer .ui-widget-header {
+    border-bottom: 1px solid #c0c0c0;
+}
+.TabContainer .ui-state-default a {
+    color: #c0c0c0;
+}
+.TabContainer .ui-state-active a {
+    color: #459E00;
+}
+
+/* Link coloring */
+a:visited, a.PopupLink:visited
+{
+    color: #960BB4;
+}
+
+a:link, a.PopupLink, a.PopupLink:link
+{
+    color: #1364C4;
+}
+
+/* Glossary Link */
+a.GlossaryLink, a.GlossaryLink:link, a.GlossaryLink:visited, a.GlossaryLink:hover
+{
+    color: #64912D;
+}
+
+/* Horizontal rule */
+hr
+{
+    background: #d0d0d0;
+}
+
+/* Widget Overrides */
+#BodyContent table.hs-box
+{
+    border-left-color: #3F529C;
+    background: #F5F5F5;
+}
+#BodyContent table.hs-thumbnail-container 
+{
+    width: auto;
+}
+div.hs-toggler-container
+{
+    /* Prevents jumping during height animation */
+    overflow: visible !important;
+}
+
+.TabContainerWidget
+{
+	font-size: 1em;
+}
+
+.TabContainerWidget .ui-tabs-nav
+{
+	font-size: 1.1em;
+}
+
+.TabItemWidget ui-tabs-panel
+{
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border-right: 1px solid silver;
+    border-bottom: 1px solid silver;
+    border-left: 1px solid silver;
+}
+
+.hs-inthistopic-container
+{
+	float: right;
+	padding: 8px 8px 4px 6px;
+	border-left: 2px solid #e0e0e0;
+	background-color: #f5f5f5;
+	max-width: 30%;
+    margin-left: 10px;
+}
+
+.hs-inthistopic-prefix
+{
+	font-size: 1.6em;
+	font-weight: bold;
+	color: #3F529C;
+    margin-left: 8px;
+}
+
+.hs-inthistopic-list
+{
+	list-style-type: none;
+	padding-left: 0;
+    margin-left: 8px;
+}
+
+.hs-inthistopic-item
+{
+	color: #3F529C;
+	font-size: 1.2em;
+	line-height: 24px;
+    width: auto;
+	margin-left: 0;
+	text-indent: -10px;
+	padding-left: 10px;
+}
+/* End Widget Overrides */
+
+
+/* Community overrides */
+div.communityratingcontentcontainer {
+    font-size: 0.9em;
+}
+
+div.communityratingcontentcontainer img {
+    margin-bottom: -3px;
+}
+
+div#communityfooter {
+    font-size: 10pt;
+}
+
+.communityprivatecontentcontainer, 
+.communitypubliccontentcontainer {
+    padding: 2px;
+}
+
+.communityprivatecontentcommands,
+.communitypubliccontentcommands {
+    padding: 2px;
+}
+
+.communityTextBox {
+    width: 99%;
+}
+/* End Community overrides */
+
+
+/* Design Time */
+.DesignItemEdit, .DesignItemDelete, .DesignAddItem
+{
+    position: relative;
+    left: 5px;
+}
+.DesignItemEdit, .DesignItemDelete
+{
+    top: 2px;
+}
+.DesignTimeAddItem
+{
+	_position: inherit;
+	_margin-left: 5px;    
+    _left: 0px;
+}
+/* End Design Time */
+
+.Hidden
+{
+    display: none;
+}
+
+/* Quirks Mode fixes */
+table, caption, td , th{
+  font-size: 10pt;
+  font-weight: inherit;
+  font-style: inherit;
+  font-variant: inherit;
+}
+
+/*\*/ *  html #BodyContent { width: 99.9%; } /**/
+/*\*/ *  html #BodyContent table { width: 99.9%; } /**/
+/*\*/ *  html .SectionContent { width: 99.9%; } /**/
+/*\*/ *  a.GlossaryLink, a.GlossaryLink:link, a.GlossaryLink:visited, a.GlossaryLink:hover { display: inline-block; border: 0; text-decoration: underline; } /**/
+
+/* End Quirks Mode fixes */

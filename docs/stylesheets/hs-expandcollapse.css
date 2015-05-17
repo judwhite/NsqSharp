@@ -1,0 +1,18 @@
+/* This stylesheet is included only in online output and sets all exandable sections 
+     to invisible, and Show All link to visible */
+.hs-collapsed
+{
+    display: none;
+}
+.hs-expanded
+{
+    margin-left: 14px;
+}
+div#HSShowAll
+{
+    display: block;
+}
+div#HSHideAll
+{
+    display: none;  
+}

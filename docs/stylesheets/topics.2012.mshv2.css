@@ -1,0 +1,51 @@
+﻿/* Standard url() references in stylesheets don't work in MSHV 2 so we have to use an alternate syntax 
+    in this stylesheet, which is loaded only when the content runs under MSHV 2 */
+
+.SectionHeading .SectionHeadingIcon
+{
+    background-image: url('ms-xhelp:///?;/images/collapse.png');
+}
+
+.SectionHeading.SectionHeadingCollapsed .SectionHeadingIcon
+{
+    background-image: url('ms-xhelp:///?;/images/expand.png');
+}
+
+#BeforeHeaderContent .PopupLink, #BeforeHeaderContent .FunctionLink,
+#AfterHeaderContent .PopupLink, #AfterHeaderContent .FunctionLink
+{
+    background-image: url('ms-xhelp:///?;/images/dropdown.png');
+}
+
+.IsNew
+{
+    background-image: url('ms-xhelp:///?;/images/isnew.png');
+}
+
+.TabContainer .ui-state-active {
+    background: transparent url('ms-xhelp:///?;/images/uiTabsArrow.png') no-repeat bottom center;
+}
+
+.hs-toggler a
+{
+ background-image: url('ms-xhelp:///?;/images/hs-toggler-collapsed.png');
+}
+
+.hs-toggler a.open
+{
+ background-image: url('ms-xhelp:///?;/images/hs-toggler-expanded.png');
+} 
+
+div.OH_topic
+{
+	display: none;	
+}
+
+#lbCloseLink {
+	background-image: url('ms-xhelp:///?;/images/slimbox-closelabel.png');
+}
+
+span.CopyCode
+{
+    background-image: url('ms-xhelp:///?;/images/copycode.png');
+}

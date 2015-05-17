@@ -1,0 +1,25 @@
+.hs-toggler-container
+{
+	margin-left: 12px;
+}
+p.hs-toggler a
+{
+	text-decoration: none;
+}
+p.hs-toggler
+{
+	color: blue;
+}
+.hs-toggler a
+{
+	padding-left: 12px;
+	background-image: url('../images/hs-toggler-collapsed.png');
+	background-repeat: no-repeat;	
+	background-position-y: 3px;
+}
+.hs-toggler a.open
+{
+	background-image: url('../images/hs-toggler-expanded.png');
+	background-repeat: no-repeat;	
+	background-position-y: 2px;
+}

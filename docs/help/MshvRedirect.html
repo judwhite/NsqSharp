@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="mshvRedirectAliases.js" ></script>
+</head>
+    <script type="text/javascript">
+        function getQueryParameterByName(name) { 
+            var match = RegExp('[?&]' + name + '=([^&]*)')
+                            .exec(window.location.search); 
+            return match ?
+                decodeURIComponent(match[1].replace(/\+/g, ' '))
+                : null; 
+        }
+
+        var redirectRelativePath = '<!--DXMETADATA start type="HELP3REDIRECTRELATIVEPATH"--><!--DXMETADATA end-->';
+		var dotNetName = getQueryParameterByName("F1");
+		if (dotNetName != null && dotNetName in mshvRedirectAlias) {
+			window.location.replace(redirectRelativePath + mshvRedirectAlias[dotNetName]);
+		}
+		else{
+			document.write('Cannot find keyword: ' + dotNetName);
+		}
+    </script>
+	<noscript>Your browser does not support javascript or it has been disabled.</noscript>
+<body>    
+</body>
+</html>

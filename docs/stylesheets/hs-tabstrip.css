@@ -1,0 +1,92 @@
+﻿/* This StyleSheet contains custom styles for this project */
+
+/* Syntax Tab Strip */
+.HsTab
+{
+    border-right: 1px #BBBBBB solid;
+    border-top: 1px #BBBBBB solid;
+    border-bottom: 1px #BBBBBB solid;
+    background-color: #EFF5FF;
+    float: left;
+    height: 1.6em;
+    cursor: pointer;
+}
+.HsTabLeftEnd
+{
+    width: 5px;
+    float: left;
+    height: 1.6em;
+    background: url('../images/hs-tab-leftend.png') no-repeat;
+    border-top: 1px transparent solid;
+    border-bottom: 1px #BBBBBB solid;
+}
+.HsTabRightEnd
+{
+    width: 5px;
+    float: left;
+    height: 1.6em;
+    background: url('../images/hs-tab-rightend.png') no-repeat;
+    margin-left: -1px;
+    border-top: 1px transparent solid;
+    border-bottom: 1px #BBBBBB solid;
+}
+.HsTabContentArea
+{
+    clear: both;
+    min-height: 100px;
+    border-left: 1px #BBBBBB solid;
+    border-right: 1px #BBBBBB solid;
+    border-bottom: 1px #BBBBBB solid;
+    padding: 12px;
+    border-top: 1px #BBBBBB solid;
+	font-size: 0.75em;
+}
+.HsTab.HsTabActive
+{
+    background-color: white;
+    border-bottom: 1px white solid;
+}
+.HsTabRightEnd.HsTabRightEndActive
+{
+    background: url('../images/hs-tab-active-rightend.png') no-repeat;
+    height: 1.6em;
+    border-bottom: 1px white solid;
+}
+.HsTabLeftEnd.HsTabLeftEndActive
+{
+    background: url('../images/hs-tab-active-leftend.png') no-repeat;
+    height: 1.6em;
+    border-bottom: 1px white solid;
+}
+.HsTabStripContainer
+{
+    width: 100%;    
+    height: 1.78em;
+    position: relative;
+    top: 0.25em;
+    overflow: hidden;
+    margin-bottom: 0px;
+}
+.HsOuterTabContainer
+{
+	font-size: 1.3em;
+}
+.HsTabStripContainer, .TabContainer, .HsTab, .HsTabLeftEnd, .HsTabRightEnd
+{
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+.HsTabCaption
+{
+    line-height: 1.84em;
+    padding: 6px;
+    font-size: 0.75em;
+}
+.HsTabCommands
+{
+	float:right;
+	vertical-align:bottom;
+	line-height: 24px;
+}
+
+/* End Syntax Tab Strip */

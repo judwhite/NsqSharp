@@ -1,0 +1,139 @@
+﻿ul.hs-inthistopic-list
+{
+	list-style-type: none;
+	padding-left: 0px;
+}
+
+li.hs-inthistopic-item
+{
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+
+pre 
+{
+	white-space: pre-wrap;       /* css-3 */
+	white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+	white-space: -pre-wrap;      /* Opera 4-6 */
+	white-space: -o-pre-wrap;    /* Opera 7 */
+	word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+span.CopyCode
+{
+	padding-left: 6px;
+	background-image: none;
+}
+
+div#HSShowAll img, div#HSHideAll img
+{
+	display: none;
+}
+
+p.hs-toggler a, p.hs-toggler a.open
+{
+	background-image: none;
+}
+
+a.hs-thumbnail img
+{
+	max-width: 100%;
+}
+
+div.hs-toggler-container
+{
+	margin-bottom: 1.5em;
+}
+div#ProjectTitle
+{
+	text-align: center;
+	font-size: large;
+	margin-top: 8px;
+}
+
+div#PageTitle
+{
+	clear: both;
+	text-align: center;
+}
+
+div.SectionHeading
+{
+	margin-top: 16px;
+	padding-top: 6px;
+	padding-bottom: 6px;
+	clear: both;
+	display: block;
+}
+
+div.SectionContent
+{
+	clear: both;
+	padding-left: 8px;
+	padding-right: 8px;
+}
+
+span.SectionHeadingText
+{
+	color: #333333;
+}
+
+span.SectionHeadingIcon, div.BreadcrumbsContainer, div#seealsoSectionContent .subHeading, div#AfterHeaderContent
+{
+	display: none;
+}
+
+#AfterHeaderContent span.FunctionLink
+{
+	background-image: none;
+}
+
+div#seealsoSectionContent
+{
+	padding-left: 12px;
+	padding-top: 0px;
+}
+
+table.pivotTable
+{
+	margin-bottom: 1em;
+	margin-left: 1px;
+	display: none;
+	clear: both;
+}
+
+div.pivotTableContainer > span
+{
+	float: left;
+	clear: both;
+	margin-bottom: 1em;
+}
+
+div#seealsoSectionContent p a:nth-child(odd)
+{
+	margin-top: 6px;
+	margin-bottom: 6px;
+}
+
+div.communityratingcontainer, div#communityFooter, div#communityPhrases
+{
+	display: none;
+}
+
+div.glossaryheader
+{
+	display: none;
+}
+
+h1.glossaryletterheader
+{
+	display: block;
+	margin-top: 1.5em;
+}
+
+div.glossarytermcontainer
+{
+	padding-left: 8px;
+	padding-right: 8px;
+	display: none;
+}

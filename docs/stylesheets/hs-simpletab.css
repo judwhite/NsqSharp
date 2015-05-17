@@ -1,0 +1,80 @@
+/* End Widget Tab Strip */
+.SimpleTab
+{
+    border-right: 1px white solid;
+    border-top: 1px #BBBBBB solid;
+    border-bottom: 1px #BBBBBB solid;
+    background-color: white;
+    border-bottom: 1px white solid;
+    float: left;
+    height: 1.6em;
+}
+.SimpleTabLeftEnd
+{
+    width: 5px;
+    float: left;
+    height: 1.6em;
+    border-top: 1px transparent solid;
+    background: url('../images/hs-simpletableft.png') no-repeat;
+    border-bottom: 1px white solid;
+}
+.SimpleTabRightEnd
+{
+    width: 5px;
+    float: left;
+    height: 1.6em;
+    margin-left: -1px;
+    border-top: 1px transparent solid;
+    background: url('../images/hs-simpletabright.png') no-repeat;
+    border-bottom: 1px white solid;
+}
+.SimpleTabContentArea
+{
+    clear: both;
+    min-height: 75px;
+    border-left: 1px #BBBBBB solid;
+    border-right: 1px #BBBBBB solid;
+    border-bottom: 1px #BBBBBB solid;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top:    5px;
+    padding-bottom:    5px;
+    border-top: 1px #BBBBBB solid;
+}
+.SimpleTabContentArea pre
+{
+    padding: 0px;
+    margin: 0px;
+    font-size: 11pt;
+}
+.SimpleTabStripContainer
+{
+    width: 100%;    
+    height: 1.78em;
+    position: relative;
+    top: 0.25em;
+    overflow: hidden;
+    margin-bottom: 0px;
+}
+.SimpleTabContainer
+{
+    font-size: 1.3em;
+}
+.SimpleTabStripContainer, .TabContainer, .SimpleTab, .SimpleTabLeftEnd, .SimpleTabRightEnd
+{
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+.SimpleTabCaption
+{
+    line-height: 1.84em;
+    padding: 6px;
+    font-size: 0.75em;
+}
+.SimpleTabCommands
+{
+    float:right;
+    vertical-align:bottom;
+    line-height: 24px;
+}
+/* End Widget Tab Strip */

@@ -1,0 +1,18 @@
+/* This stylesheet is included only in booklet output and sets all exandable sections 
+     to visible, and Show All / Hide All links to hidden */
+.hs-collapsed
+{
+	display: inline;
+}
+.hs-expanded
+{
+	display: inline;
+}
+div#HSShowAll
+{
+	display: none;
+}
+div#HSHideAll
+{
+	display: none;	
+}

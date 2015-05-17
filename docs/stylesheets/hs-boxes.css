@@ -1,0 +1,24 @@
+body#hsbody table.hs-box, body#dxBody table.hs-box, div#mainBody table.hs-box
+{
+    border:             buttonshadow 1px solid; 
+    margin-top:         4px; 
+    margin-bottom:      4px; 
+    border-collapse:    collapse;
+    background-color:   infobackground;
+}
+body#hsbody table.hs-box td, body#dxBody table.hs-box td, div#mainBody table.hs-box td
+{
+    padding:            4px 4px 6px 4px;
+    vertical-align:     top;
+    background-color:   infobackground;
+    background-style:   solid;
+    border:             0px;
+}
+div#mainBody td.hs-box-icon
+{
+    padding-top:        6px;
+}
+body#hsbody td.hs-box-icon, body#dxBody td.hs-box-icon, div#mainBody td.hs-box-icon
+{
+    width:              12px;
+}
