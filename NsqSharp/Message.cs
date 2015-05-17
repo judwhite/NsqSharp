@@ -12,7 +12,7 @@ namespace NsqSharp
 
     /// <summary>
     ///     Message is the fundamental data type containing the <see cref="Id"/>, <see cref="Body"/>, and metadata of a
-    ///     message sent to or received from an nsqd instance.
+    ///     message received from an nsqd instance.
     /// </summary>
     [DebuggerDisplay("Id={Id}, Attempts={Attempts}, TS={Timestamp}, NSQD={NsqdAddress}")]
     public class Message
@@ -242,7 +242,13 @@ namespace NsqSharp
             }
         }
 
-        /// <summary>The message ID as a hexadecimal string.</summary>
+        /// <summary>
+        ///     <para>The message ID as a hexadecimal string.</para>
+        ///     
+        ///     <para>The message ID for a given message will be the same across channels; the message ID is created at the
+        ///     topic level. If the message is requeued or times out it will retain the same message ID on future
+        ///     attempts.</para>
+        /// </summary>
         /// <value>The message ID as a hexadecimal string.</value>
         public string Id
         {
