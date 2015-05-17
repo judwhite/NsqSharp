@@ -186,12 +186,12 @@ namespace NsqSharp.Tests
                              new instruction(0, FrameType.Response, "OK"),
                              // IDENTIFY
                              new instruction(0, FrameType.Response, "OK"),
-                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
-                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
-                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
-                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
+                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
+                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              // needed to exit test
-                             new instruction(500 * Time.Millisecond, -1, "exit")
+                             new instruction(1000 * Time.Millisecond, -1, "exit")
                          };
 
             var n = new mockNSQD(script, IPAddress.Loopback, 4154);
@@ -199,9 +199,9 @@ namespace NsqSharp.Tests
             var topicName = "test_backoff_disconnect" + DateTime.Now.Unix();
             var config = new Config();
             config.MaxInFlight = 5;
-            config.BackoffMultiplier = Time.Duration(10 * Time.Millisecond);
-            config.LookupdPollInterval = Time.Duration(10 * Time.Millisecond);
-            config.RDYRedistributeInterval = Time.Duration(10 * Time.Millisecond);
+            config.BackoffMultiplier = Time.Duration(20 * Time.Millisecond);
+            config.LookupdPollInterval = Time.Duration(20 * Time.Millisecond);
+            config.RDYRedistributeInterval = Time.Duration(20 * Time.Millisecond);
             var q = new Consumer(topicName, "ch", new ConsoleLogger(LogLevel.Debug), config);
             q.AddHandler(new testHandler());
             q.ConnectToNsqd(n.tcpAddr);
