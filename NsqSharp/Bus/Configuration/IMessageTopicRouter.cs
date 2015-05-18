@@ -24,7 +24,7 @@ namespace NsqSharp.Bus.Configuration
         /// the implementation of <see cref="GetMessageTopic&lt;T&gt;"/>.
         /// </summary>
         /// <param name="messageType">The message type. See <see cref="IHandleMessages&lt;T&gt;"/>.</param>
-        /// <returns>The topics the specified <paramref name="messageType"/> can be produced/published on. based on
+        /// <returns>The topics the specified <paramref name="messageType"/> can be produced/published on based on
         /// the implementation of <see cref="GetMessageTopic&lt;T&gt;"/>.</returns>
         string[] GetTopics(Type messageType);
     }

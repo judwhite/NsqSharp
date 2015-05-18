@@ -324,7 +324,7 @@ namespace NsqSharp.Tests.Utils.Channels
 
             var t1 = new Thread(() =>
             {
-                Thread.Sleep(100);
+                Thread.Sleep(150);
                 c1.Send(1);
             });
             t1.IsBackground = true;
@@ -342,8 +342,8 @@ namespace NsqSharp.Tests.Utils.Channels
 
             Select
                 .DebugName("SelectSendAndReceiveReceiveReady")
-                .CaseReceive("c1", c1, list.Add)
-                .CaseSend("c2", c2, 2, () => { })
+                .CaseReceive("c1", c1, func: list.Add)
+                .CaseSend("c2", c2, message: 2)
                 .NoDefault();
 
             Assert.AreEqual(1, list.Count, "list.Count");

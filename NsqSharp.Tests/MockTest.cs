@@ -252,10 +252,10 @@ namespace NsqSharp.Tests
                              new instruction(0, FrameType.Response, "OK"),
                              // IDENTIFY
                              new instruction(0, FrameType.Response, "OK"),
-                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
-                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              // needed to exit test
-                             new instruction(500 * Time.Millisecond, -1, "exit")
+                             new instruction(1000 * Time.Millisecond, -1, "exit")
                          };
 
             n = new mockNSQD(script, IPAddress.Loopback, 4154);
@@ -263,7 +263,7 @@ namespace NsqSharp.Tests
             bool timeout2 = false;
             Select
                 .CaseReceive(n.exitChan, o => { })
-                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(2000)), o => { timeout2 = true; })
+                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(2500)), o => { timeout2 = true; })
                 .NoDefault();
 
             Assert.IsFalse(timeout2, "timeout2");
