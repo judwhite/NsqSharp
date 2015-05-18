@@ -91,6 +91,7 @@
     <Compile Include="Bus\Logging\IMessageInformation.cs" />
     <Compile Include="Bus\MessageDistributor.cs" />
     <Compile Include="Bus\NsqBus.cs" />
+    <Compile Include="Bus\Utils\BusConfigurator.cs" />
     <Compile Include="Bus\Utils\InterfaceBuilder.cs" />
     <Compile Include="Bus\Utils\WindowsService.cs">
       <SubType>Component</SubType>
