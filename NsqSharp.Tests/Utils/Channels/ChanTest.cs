@@ -324,7 +324,7 @@ namespace NsqSharp.Tests.Utils.Channels
 
             var t1 = new Thread(() =>
             {
-                Thread.Sleep(50);
+                Thread.Sleep(100);
                 c1.Send(1);
             });
             t1.IsBackground = true;
