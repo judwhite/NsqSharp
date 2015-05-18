@@ -10,7 +10,7 @@ using NsqSharp.Bus.Utils;
 namespace NsqSharp.Bus
 {
     /// <summary>
-    /// Start the bus service.
+    /// Static class to start and stop the bus.
     /// </summary>
     public static class BusService
     {

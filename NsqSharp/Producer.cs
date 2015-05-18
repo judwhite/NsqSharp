@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using NsqSharp.Core;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Channels;
@@ -67,8 +68,8 @@ namespace NsqSharp
         private readonly Chan<byte[]> _errorChan;
         private Chan<int> _closeChan;
 
-        private readonly Chan<ProducerTransaction> _transactionChan;
-        private readonly Queue<ProducerTransaction> _transactions = new Queue<ProducerTransaction>();
+        private readonly Chan<ProducerResponse> _transactionChan;
+        private readonly Queue<ProducerResponse> _transactions = new Queue<ProducerResponse>();
         private int _state;
 
         private int _concurrentProducers;
@@ -81,14 +82,14 @@ namespace NsqSharp
     }
 
     /// <summary>
-    /// ProducerTransaction is returned by the async publish methods
+    /// ProducerResponse is returned by the async publish methods
     /// to retrieve metadata about the command after the
     /// response is received.
     /// </summary>
-    public class ProducerTransaction
+    public class ProducerResponse
     {
         internal Command _cmd;
-        internal Chan<ProducerTransaction> _doneChan;
+        internal Chan<ProducerResponse> _doneChan;
 
         /// <summary>
         /// the error (or nil) of the publish command
@@ -169,7 +170,7 @@ namespace NsqSharp
 
             _logger = logger;
 
-            _transactionChan = new Chan<ProducerTransaction>();
+            _transactionChan = new Chan<ProducerResponse>();
             _exitChan = new Chan<int>();
             _responseChan = new Chan<byte[]>();
             _errorChan = new Chan<byte[]>();
@@ -180,9 +181,7 @@ namespace NsqSharp
             _connFactory = connFactory;
         }
 
-        /// <summary>
-        /// String returns the address of the Producer.
-        /// </summary>
+        /// <summary>Returns the address of the Producer.</summary>
         /// <returns>The address of the Producer.</returns>
         public override string ToString()
         {
@@ -213,79 +212,104 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// PublishAsync publishes a message body to the specified topic
-        /// but does not wait for the response from `nsqd`.
-        ///
-        /// When the Producer eventually receives the response from `nsqd`,
-        /// the supplied `doneChan` (if specified)
-        /// will receive a `ProducerTransaction` instance with the supplied variadic arguments
-        /// and the response error if present
+        ///     <para>Publishes a message <paramref name="body"/> to the specified <paramref name="topic"/>
+        ///     but does not wait for the response from nsqd.</para>
+        ///     
+        ///     <para>When the Producer eventually receives the response from nsqd, the Task will return a
+        ///     <see cref="ProducerResponse"/> instance with the supplied <paramref name="args"/> and the response error if
+        ///     present.</para>
         /// </summary>
-        public void PublishAsync(string topic, byte[] body, Chan<ProducerTransaction> doneChan, params object[] args)
+        /// <param name="topic">The topic to publish to.</param>
+        /// <param name="body">The message body.</param>
+        /// <param name="args">A variable-length parameters list containing arguments. These arguments will be returned on
+        ///     <see cref="ProducerResponse.Args"/>.
+        /// </param>
+        /// <returns>A Task&lt;ProducerResponse&gt; which can be awaited.</returns>
+        public Task<ProducerResponse> PublishAsync(string topic, byte[] body, params object[] args)
         {
+            var doneChan = new Chan<ProducerResponse>();
             sendCommandAsync(Command.Publish(topic, body), doneChan, args);
+            return Task.Factory.StartNew(() => doneChan.Receive());
         }
 
         /// <summary>
-        /// PublishAsync publishes a message body to the specified topic
-        /// but does not wait for the response from `nsqd`.
-        ///
-        /// When the Producer eventually receives the response from `nsqd`,
-        /// the supplied `doneChan` (if specified)
-        /// will receive a `ProducerTransaction` instance with the supplied variadic arguments
-        /// and the response error if present
+        ///     <para>Publishes a string <paramref name="value"/> message to the specified <paramref name="topic"/>
+        ///     but does not wait for the response from nsqd.</para>
+        ///     
+        ///     <para>When the Producer eventually receives the response from nsqd, the Task will return a
+        ///     <see cref="ProducerResponse"/> instance with the supplied <paramref name="args"/> and the response error if
+        ///     present.</para>
         /// </summary>
-        public void PublishAsync(string topic, string value, Chan<ProducerTransaction> doneChan, params object[] args)
+        /// <param name="topic">The topic to publish to.</param>
+        /// <param name="value">The message body.</param>
+        /// <param name="args">A variable-length parameters list containing arguments. These arguments will be returned on
+        ///     <see cref="ProducerResponse.Args"/>.
+        /// </param>
+        /// <returns>A Task&lt;ProducerResponse&gt; which can be awaited.</returns>
+        public Task<ProducerResponse> PublishAsync(string topic, string value, params object[] args)
         {
-            sendCommandAsync(Command.Publish(topic, Encoding.UTF8.GetBytes(value)), doneChan, args);
+            return PublishAsync(topic, Encoding.UTF8.GetBytes(value), args);
         }
 
         /// <summary>
-        /// MultiPublishAsync publishes a slice of message bodies to the specified topic
-        /// but does not wait for the response from `nsqd`.
-        ///
-        /// When the Producer eventually receives the response from `nsqd`,
-        /// the supplied `doneChan` (if specified)
-        /// will receive a `ProducerTransaction` instance with the supplied variadic arguments
-        /// and the response error if present
+        ///     <para>Publishes a collection of message <paramref name="bodies"/> to the specified <paramref name="topic"/>
+        ///     but does not wait for the response from nsqd.</para>
+        ///     
+        ///     <para>When the Producer eventually receives the response from nsqd, the Task will return a
+        ///     <see cref="ProducerResponse"/> instance with the supplied <paramref name="args"/> and the response error if
+        ///     present.</para>
         /// </summary>
-        public void MultiPublishAsync(string topic, ICollection<byte[]> body, Chan<ProducerTransaction> doneChan, params object[] args)
+        /// <param name="topic">The topic to publish to.</param>
+        /// <param name="bodies">The collection of message bodies.</param>
+        /// <param name="args">A variable-length parameters list containing arguments. These arguments will be returned on
+        ///     <see cref="ProducerResponse.Args"/>.
+        /// </param>
+        /// <returns>A Task&lt;ProducerResponse&gt; which can be awaited.</returns>
+        public Task<ProducerResponse> MultiPublishAsync(string topic, ICollection<byte[]> bodies, params object[] args)
         {
-            var cmd = Command.MultiPublish(topic, body);
+            var doneChan = new Chan<ProducerResponse>();
+            var cmd = Command.MultiPublish(topic, bodies);
             sendCommandAsync(cmd, doneChan, args);
+            return Task.Factory.StartNew(() => doneChan.Receive());
         }
 
         /// <summary>
-        /// Publish synchronously publishes a message body to the specified topic, throwing
-        /// an exception if publish failed.
+        ///     Synchronously publishes a message <paramref name="body"/> to the specified <paramref name="topic"/>, throwing
+        ///     an exception if publish failed.
         /// </summary>
+        /// <param name="topic">The topic to publish to.</param>
+        /// <param name="body">The message body.</param>
         public void Publish(string topic, byte[] body)
         {
             sendCommand(Command.Publish(topic, body));
         }
 
         /// <summary>
-        /// Publish synchronously publishes a string to the specified topic, throwing
-        /// an exception if publish failed.
+        ///     Synchronously publishes string <paramref name="value"/> message to the specified <paramref name="topic"/>,
+        ///     throwing an exception if publish failed.
         /// </summary>
+        /// <param name="topic">The topic to publish to.</param>
+        /// <param name="value">The message body.</param>
         public void Publish(string topic, string value)
         {
             Publish(topic, Encoding.UTF8.GetBytes(value));
         }
 
         /// <summary>
-        /// MultiPublish synchronously publishes a collection of message bodies to the specified topic, throwing
-        /// an exception if publish failed.
+        ///     Synchronously publishes a collection of message <paramref name="bodies"/> to the specified
+        ///     <paramref name="topic"/>, throwing an exception if publish failed.
         /// </summary>
-        public void MultiPublish(string topic, ICollection<byte[]> body)
+        /// <param name="topic">The topic to publish to.</param>
+        /// <param name="bodies">The collection of message bodies.</param>
+        public void MultiPublish(string topic, ICollection<byte[]> bodies)
         {
-            var cmd = Command.MultiPublish(topic, body);
+            var cmd = Command.MultiPublish(topic, bodies);
             sendCommand(cmd);
         }
 
         private void sendCommand(Command cmd)
         {
-            var doneChan = new Chan<ProducerTransaction>();
+            var doneChan = new Chan<ProducerResponse>();
 
             try
             {
@@ -305,11 +329,11 @@ namespace NsqSharp
         private readonly Action _noopAction = () => { };
         private readonly Action<int> _throwErrStoppedAction = b => { throw new ErrStopped(); };
 
-        private void sendCommandAsync(Command cmd, Chan<ProducerTransaction> doneChan, params object[] args)
+        private void sendCommandAsync(Command cmd, Chan<ProducerResponse> doneChan, params object[] args)
         {
             Interlocked.Increment(ref _concurrentProducers);
 
-            var t = new ProducerTransaction
+            var t = new ProducerResponse
             {
                 _cmd = cmd,
                 _doneChan = doneChan,
@@ -331,7 +355,7 @@ namespace NsqSharp
             catch (Exception ex)
             {
                 t.Error = ex;
-                GoFunc.Run(() => doneChan.Send(t));
+                GoFunc.Run(() => t.finish());
             }
             finally
             {
@@ -340,9 +364,11 @@ namespace NsqSharp
         }
 
         /// <summary>
-        /// Connects to nsqd. Calling this method is optional; otherwise, Connect will
-        /// be lazy invoked when Publish is called.
+        ///     Connects to nsqd. Calling this method is optional; otherwise, Connect will be lazy invoked when Publish is
+        ///     called.
         /// </summary>
+        /// <exception cref="ErrStopped">Thrown if the Producer has been stopped.</exception>
+        /// <exception cref="ErrNotConnected">Thrown if the Producer is currently waiting to close and reconnect.</exception>
         public void Connect()
         {
             lock (_guard)

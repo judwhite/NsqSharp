@@ -433,7 +433,7 @@ namespace NsqSharp
         ///     <para>If it is the first to be added, it initiates an HTTP request to discover nsqd
         ///     producers for the configured topic.</para>
         ///     
-        ///     <para>A new thread is spawned to handle continual polling.</para>
+        ///     <para>A new thread is created to handle continual polling.</para>
         /// </summary>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="addresses"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when <paramref name="addresses"/> is empty.

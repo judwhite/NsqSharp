@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using NsqSharp.Core;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Channels;
@@ -109,21 +110,23 @@ namespace NsqSharp.Tests
             var w = new Producer("127.0.0.1:4150", new ConsoleLogger(LogLevel.Debug), config);
             try
             {
-                var responseChan = new Chan<ProducerTransaction>(msgCount);
-
+                var tasks = new List<Task<ProducerResponse>>();
                 for (int i = 0; i < msgCount; i++)
                 {
-                    w.PublishAsync(topicName, "publish_test_case", responseChan, "test");
+                    var task = w.PublishAsync(topicName, "publish_test_case", "test", i);
+                    tasks.Add(task);
                 }
 
                 for (int i = 0; i < msgCount; i++)
                 {
-                    var trans = responseChan.Receive();
+                    tasks[i].Wait();
+                    var trans = tasks[i].Result;
 
                     Assert.IsNull(trans.Error);
                     Assert.IsNotNull(trans.Args);
-                    Assert.AreEqual(1, trans.Args.Length);
+                    Assert.AreEqual(2, trans.Args.Length);
                     Assert.AreEqual("test", trans.Args[0]);
+                    Assert.AreEqual(i, trans.Args[1]);
                 }
 
                 w.Publish(topicName, "bad_test_case");
@@ -154,10 +157,10 @@ namespace NsqSharp.Tests
                     testData.Add(Encoding.UTF8.GetBytes("multipublish_test_case"));
                 }
 
-                var responseChan = new Chan<ProducerTransaction>(msgCount);
-                w.MultiPublishAsync(topicName, testData, responseChan, "test0", 1);
+                var responseTask = w.MultiPublishAsync(topicName, testData, "test0", 1);
 
-                var trans = responseChan.Receive();
+                responseTask.Wait();
+                var trans = responseTask.Result;
 
                 Assert.IsNull(trans.Error);
                 Assert.IsNotNull(trans.Args);
