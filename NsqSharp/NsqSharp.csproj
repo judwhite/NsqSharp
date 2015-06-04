@@ -61,6 +61,7 @@
     <Reference Include="System.Threading" Condition="'$(TargetFrameworkVersion)'=='v3.5'">
       <HintPath>..\packages\TaskParallelLibrary.1.0.2856.0\lib\Net35\System.Threading.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>

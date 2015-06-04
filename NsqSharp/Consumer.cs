@@ -198,6 +198,7 @@ namespace NsqSharp
         /// <summary>
         ///     <para>Creates a new instance of <see cref="Consumer"/> for the specified <paramref name="topic"/> and
         ///     <paramref name="channel"/>.</para>
+        ///
         ///     <para>Uses the default <see cref="Config"/> and <see cref="ConsoleLogger"/> with log level
         ///     <see cref="LogLevel.Info"/>.</para>
         /// </summary>

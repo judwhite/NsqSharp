@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Threading;
+using System.Web.Hosting;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Utils;
 
@@ -35,9 +36,14 @@ namespace NsqSharp.Bus
         private static AutoResetEvent _wait;
         private static HandlerRoutineCallback _onCloseCallback;
 
-        /// <summary>
-        /// Starts the bus service.
-        /// </summary>
+        /// <summary>Starts the bus service.</summary>
+        /// <remarks>
+        ///     Note: This is a blocking call for Console Applications running in interactive mode. This method will block
+        ///     until Ctrl+C is pressed and then initiate a clean shutdown.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="busConfiguration"/> is <c>null</c>.
+        /// </exception>
+        /// <param name="busConfiguration">The bus configuration.</param>
         public static void Start(BusConfiguration busConfiguration)
         {
             if (busConfiguration == null)
@@ -52,25 +58,48 @@ namespace NsqSharp.Bus
                 // invoked by unit test
                 _service.Start();
             }
-            else if (GetConsoleWindow() == IntPtr.Zero)
+            else if (HostingEnvironment.IsHosted)
             {
-                ServiceBase.Run(new ServiceBase[] { _service });
-            }
-            else
-            {
+                // Hosted in IIS
                 _service.Start();
-
-                Trace.WriteLine(string.Format("{0} bus started", Assembly.GetEntryAssembly().GetName().Name));
+                HostingEnvironment.RegisterObject(_service);
+            }
+            else if (GetConsoleWindow() != IntPtr.Zero)
+            {
+                // Console application
+                _service.Start();
 
                 _wait = new AutoResetEvent(initialState: false);
                 _onCloseCallback = ConsoleCtrlCheck; // prevent callback handler from being GC'd
                 SetConsoleCtrlHandler(_onCloseCallback, add: true);
                 _wait.WaitOne();
             }
+            else if (!Environment.UserInteractive)
+            {
+                // Windows service
+                ServiceBase.Run(new ServiceBase[] { _service });
+            }
+            else
+            {
+                // Windows application
+                _service.Start();
+
+                AppDomain.CurrentDomain.ProcessExit += (s, e) => Stop();
+            }
         }
 
         /// <summary>
-        /// Stops the bus. This method should only be invoked in unit tests for teardown.
+        ///     <para>Stops the bus permanently.</para>
+        ///     <para>Windows Services - This method is called when the service is stopped or restarted. You do not need to
+        ///     call it directly.</para>
+        ///     <para>ASP.NET Applications (including Web API and WCF) - May call this method directly if clean exit is a high
+        ///     priority. If not called directly it will be called automatically when the hosting enviroment shuts down the
+        ///     application (Application Pool stop/restart, Site stop/restart, etc), although the timeout period before a
+        ///     forced shutdown is not guaranteed.</para>
+        ///     <para>Console Applications - May call this method directly, otherwise it will be called automatically when the
+        ///     user presses Ctrl+C.</para>
+        ///     <para>Windows Forms/WPF Applications - May call this method directly if clean exit is necessary, otherwise it
+        ///     will be called with a short timeout (~3s) when the process exits normally (not force killed).</para>
         /// </summary>
         public static void Stop()
         {
