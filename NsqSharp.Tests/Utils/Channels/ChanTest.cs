@@ -319,6 +319,8 @@ namespace NsqSharp.Tests.Utils.Channels
         [Test]
         public void SelectSendAndReceiveReceiveReady()
         {
+            object listLocker = new object();
+
             var c1 = new Chan<int>();
             var c2 = new Chan<int>();
 
@@ -333,7 +335,11 @@ namespace NsqSharp.Tests.Utils.Channels
 
             var t2 = new Thread(() =>
             {
-                list.Add(c2.Receive());
+                var val = c2.Receive();
+                lock (listLocker)
+                {
+                    list.Add(val);
+                }
             });
             t2.IsBackground = true;
 
@@ -342,12 +348,23 @@ namespace NsqSharp.Tests.Utils.Channels
 
             Select
                 .DebugName("SelectSendAndReceiveReceiveReady")
-                .CaseReceive("c1", c1, func: list.Add)
+                .CaseReceive("c1", c1, func: o =>
+                                             {
+                                                 lock (listLocker)
+                                                 {
+                                                     list.Add(o);
+                                                 }
+                                             })
                 .CaseSend("c2", c2, message: 2)
                 .NoDefault();
 
-            Assert.AreEqual(1, list.Count, "list.Count");
-            Assert.AreEqual(2, list[0], "list[0]");
+            Thread.Sleep(20);
+
+            lock (listLocker)
+            {
+                Assert.AreEqual(1, list.Count, "list.Count");
+                Assert.AreEqual(2, list[0], "list[0]");
+            }
         }
 
         [Test]
