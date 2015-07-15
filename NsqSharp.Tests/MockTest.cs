@@ -116,9 +116,9 @@ namespace NsqSharp.Tests
                              new instruction(0, FrameType.Response, "OK"),
                              // IDENTIFY
                              new instruction(0, FrameType.Response, "OK"),
-                             new instruction(150 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
-                             new instruction(150 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeueNoBackoff)),
-                             new instruction(150 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(250 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
+                             new instruction(250 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeueNoBackoff)),
+                             new instruction(250 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              // needed to exit test
                              new instruction(1000 * Time.Millisecond, -1, "exit")
                          };
