@@ -1096,6 +1096,12 @@ namespace NsqSharp
                 {
                     // start or continue backoff
                     var backoffDuration = _config.BackoffStrategy.Calculate(_config, backoffCounter);
+
+                    if (backoffDuration > _config.MaxBackoffDuration)
+                    {
+                        backoffDuration = _config.MaxBackoffDuration;
+                    }
+
                     log(LogLevel.Warning,
                         string.Format("backing off for {0:0.0000} seconds (backoff level {1}), setting all to RDY 0",
                             backoffDuration.TotalSeconds, backoffCounter

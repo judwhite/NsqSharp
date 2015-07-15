@@ -31,8 +31,6 @@ namespace NsqSharp
     /// </summary>
     public interface IBackoffConfig
     {
-        /// <summary>Maximum amount of time to backoff when processing fails.</summary>
-        TimeSpan MaxBackoffDuration { get; }
         /// <summary>Unit of time for calculating consumer backoff.</summary>
         TimeSpan BackoffMultiplier { get; }
     }
@@ -65,8 +63,6 @@ namespace NsqSharp
         {
             var backoffDuration = new TimeSpan(backoffConfig.BackoffMultiplier.Ticks *
                 (long)Math.Pow(2, attempt));
-            if (backoffDuration > backoffConfig.MaxBackoffDuration)
-                backoffDuration = backoffConfig.MaxBackoffDuration;
             return backoffDuration;
         }
     }
@@ -99,8 +95,6 @@ namespace NsqSharp
 
             var backoffDuration = new TimeSpan(backoffConfig.BackoffMultiplier.Ticks *
                 (long)Math.Pow(2, attempt));
-            if (backoffDuration > backoffConfig.MaxBackoffDuration)
-                backoffDuration = backoffConfig.MaxBackoffDuration;
             return TimeSpan.FromMilliseconds(rng.Intn((int)backoffDuration.TotalMilliseconds));
         }
     }
