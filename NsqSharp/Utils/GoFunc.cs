@@ -33,6 +33,7 @@ namespace NsqSharp.Utils
                                    {
                                        var logger = new TraceLogger();
                                        logger.Output(LogLevel.Critical, string.Format("{0} - {1}", threadName, ex));
+                                       logger.Flush();
                                        throw;
                                    }
                                }
