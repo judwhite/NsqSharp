@@ -186,10 +186,10 @@ namespace NsqSharp.Tests
                              new instruction(0, FrameType.Response, "OK"),
                              // IDENTIFY
                              new instruction(0, FrameType.Response, "OK"),
-                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
-                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
-                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
-                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
+                             new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
+                             new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              // needed to exit test
                              new instruction(1000 * Time.Millisecond, -1, "exit")
                          };
@@ -199,9 +199,9 @@ namespace NsqSharp.Tests
             var topicName = "test_backoff_disconnect" + DateTime.Now.Unix();
             var config = new Config();
             config.MaxInFlight = 5;
-            config.BackoffMultiplier = Time.Duration(20 * Time.Millisecond);
-            config.LookupdPollInterval = Time.Duration(20 * Time.Millisecond);
-            config.RDYRedistributeInterval = Time.Duration(20 * Time.Millisecond);
+            config.BackoffMultiplier = Time.Duration(50 * Time.Millisecond);
+            config.LookupdPollInterval = Time.Duration(10 * Time.Millisecond);
+            config.RDYRedistributeInterval = Time.Duration(50 * Time.Millisecond);
             var q = new Consumer(topicName, "ch", new ConsoleLogger(LogLevel.Debug), config);
             q.AddHandler(new testHandler());
             q.ConnectToNsqd(n.tcpAddr);
@@ -209,7 +209,7 @@ namespace NsqSharp.Tests
             bool timeout = false;
             Select
                 .CaseReceive(n.exitChan, o => { })
-                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(2500)), o => { timeout = true; })
+                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(3000)), o => { timeout = true; })
                 .NoDefault();
 
             Assert.IsFalse(timeout, "timeout");
