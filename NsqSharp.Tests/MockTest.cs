@@ -136,7 +136,7 @@ namespace NsqSharp.Tests
             bool timeout = false;
             Select
                 .CaseReceive(n.exitChan, o => { })
-                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(2500)), o => { timeout = true; })
+                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(3500)), o => { timeout = true; })
                 .NoDefault();
 
             Assert.IsFalse(timeout, "timeout");
