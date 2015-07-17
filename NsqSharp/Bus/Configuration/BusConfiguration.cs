@@ -215,7 +215,7 @@ namespace NsqSharp.Bus.Configuration
         )
             where THandler : IHandleMessages<TMessage>
         {
-            AddMessageHandler(typeof(THandler), typeof(Message), topic, channel,
+            AddMessageHandler(typeof(THandler), typeof(TMessage), topic, channel,
                 messageSerializer, config, threadsPerHandler, nsqLookupdHttpAddresses);
         }
 
