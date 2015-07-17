@@ -14,7 +14,7 @@ namespace NsqSharp.Bus
         /// <summary>The channel the message was delivered on.</summary>
         string Channel { get; }
         /// <summary>The message.</summary>
-        Message Message { get; }
+        IMessage Message { get; }
         /// <summary>The deserialized message body (can be <c>null</c>).</summary>
         object DeserializedMessageBody { get; }
     }

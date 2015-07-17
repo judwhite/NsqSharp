@@ -217,7 +217,7 @@ namespace NsqSharp.Bus
             }
         }
 
-        public Message CurrentThreadMessage
+        public IMessage CurrentThreadMessage
         {
             get
             {
@@ -234,7 +234,7 @@ namespace NsqSharp.Bus
             return _threadMessage;
         }
 
-        public Message CurrentMessage
+        public IMessage CurrentMessage
         {
             get { return CurrentThreadMessage; }
         }

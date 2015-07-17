@@ -27,14 +27,14 @@ namespace NsqSharp
     {
         /// <summary>Handles a message.</summary>
         /// <param name="message">The message.</param>
-        void HandleMessage(Message message);
+        void HandleMessage(IMessage message);
 
         /// <summary>
         ///     Called when a <see cref="Message"/> has exceeded the <see cref="Consumer"/> specified
         ///     <see cref="Config.MaxAttempts"/>.
         /// </summary>
         /// <param name="message">The failed message.</param>
-        void LogFailedMessage(Message message);
+        void LogFailedMessage(IMessage message);
     }
 
     /// <summary>

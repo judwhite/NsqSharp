@@ -302,7 +302,7 @@ namespace NsqSharp.Tests
 
     public class testHandler : IHandler
     {
-        public void HandleMessage(Message message)
+        public void HandleMessage(IMessage message)
         {
             string body = Encoding.UTF8.GetString(message.Body);
             Console.WriteLine(body);
@@ -326,7 +326,7 @@ namespace NsqSharp.Tests
             }
         }
 
-        public void LogFailedMessage(Message message)
+        public void LogFailedMessage(IMessage message)
         {
         }
     }

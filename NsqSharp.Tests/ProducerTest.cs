@@ -316,13 +316,13 @@ namespace NsqSharp.Tests
         public int messagesGood { get; set; }
         public int messagesFailed { get; set; }
 
-        public void LogFailedMessage(Message message)
+        public void LogFailedMessage(IMessage message)
         {
             messagesFailed++;
             q.StopAsync();
         }
 
-        public void HandleMessage(Message message)
+        public void HandleMessage(IMessage message)
         {
             var msg = Encoding.UTF8.GetString(message.Body);
             if (msg == "bad_test_case")

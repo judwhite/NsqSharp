@@ -44,7 +44,7 @@ namespace Echo.Primitives
         /// Handles a message.
         /// </summary>
         /// <param name="message">The message.</param>
-        public void HandleMessage(Message message)
+        public void HandleMessage(IMessage message)
         {
             string msg = Encoding.UTF8.GetString(message.Body);
             Console.WriteLine(string.Format("Echo: {0}", msg));
@@ -54,7 +54,7 @@ namespace Echo.Primitives
         /// Called when a <see cref="Message"/> has exceeded the Consumer specified <see cref="Config.MaxAttempts"/>.
         /// </summary>
         /// <param name="message">The failed message.</param>
-        public void LogFailedMessage(Message message)
+        public void LogFailedMessage(IMessage message)
         {
             string msg = Encoding.UTF8.GetString(message.Body);
             Console.WriteLine(string.Format("Message Failed: {0}", msg));

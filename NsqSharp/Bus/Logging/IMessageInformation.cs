@@ -10,7 +10,7 @@ namespace NsqSharp.Bus.Logging
         public string Channel { get; set; }
         public Type HandlerType { get; set; }
         public Type MessageType { get; set; }
-        public Message Message { get; set; }
+        public IMessage Message { get; set; }
         public object DeserializedMessageBody { get; set; }
         public DateTime Started { get; set; }
         public DateTime? Finished { get; set; }
@@ -51,7 +51,7 @@ namespace NsqSharp.Bus.Logging
         public string Channel { get { return _info.Channel; } }
         public Type HandlerType { get { return _info.HandlerType; } }
         public Type MessageType { get { return _info.MessageType; } }
-        public Message Message { get { return _info.Message; } }
+        public IMessage Message { get { return _info.Message; } }
         public object DeserializedMessageBody { get { return _info.DeserializedMessageBody; } }
         public DateTime Started { get { return _info.Started; } }
         public DateTime? Finished { get { return _info.Finished; } }
@@ -74,7 +74,7 @@ namespace NsqSharp.Bus.Logging
         /// <summary>The message .NET type.</summary>
         Type MessageType { get; }
         /// <summary>The message.</summary>
-        Message Message { get; }
+        IMessage Message { get; }
         /// <summary>The deserialized message body (can be <c>null</c>).</summary>
         object DeserializedMessageBody { get; }
         /// <summary>The <see cref="DateTime"/> the handler started processing this message.</summary>

@@ -181,7 +181,7 @@ namespace NsqSharp.Tests.Bus
 
         private class TestMessageHandler : IHandleMessages<TestMessage>
         {
-            private static readonly List<Message> _messages = new List<Message>();
+            private static readonly List<IMessage> _messages = new List<IMessage>();
             private static readonly List<ICurrentMessageInformation> _messagesInfos = new List<ICurrentMessageInformation>();
             private static readonly object _messagesLocker = new object();
             private static readonly AutoResetEvent _wait = new AutoResetEvent(initialState: false);
@@ -205,7 +205,7 @@ namespace NsqSharp.Tests.Bus
                 }
             }
 
-            public static Tuple<Message, ICurrentMessageInformation> GetMessageInfo()
+            public static Tuple<IMessage, ICurrentMessageInformation> GetMessageInfo()
             {
                 bool signaled = _wait.WaitOne(TimeSpan.FromSeconds(10));
                 if (!signaled)
@@ -213,7 +213,7 @@ namespace NsqSharp.Tests.Bus
                 Assert.AreEqual(1, _messages.Count, "_messages.Count");
                 Assert.AreEqual(1, _messagesInfos.Count, "_messagesInfos.Count");
 
-                return new Tuple<Message, ICurrentMessageInformation>(_messages[0], _messagesInfos[0]);
+                return new Tuple<IMessage, ICurrentMessageInformation>(_messages[0], _messagesInfos[0]);
             }
         }
     }

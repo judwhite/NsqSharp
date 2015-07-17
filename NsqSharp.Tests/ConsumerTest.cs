@@ -223,13 +223,13 @@ namespace NsqSharp.Tests
             public int messagesReceived { get; set; }
             public int messagesFailed { get; set; }
 
-            public void LogFailedMessage(Message message)
+            public void LogFailedMessage(IMessage message)
             {
                 messagesFailed++;
                 q.StopAsync();
             }
 
-            public void HandleMessage(Message message)
+            public void HandleMessage(IMessage message)
             {
                 string body = Encoding.UTF8.GetString(message.Body);
 

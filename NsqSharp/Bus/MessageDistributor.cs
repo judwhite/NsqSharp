@@ -73,7 +73,7 @@ namespace NsqSharp.Bus
             }
         }
 
-        public void HandleMessage(Message message)
+        public void HandleMessage(IMessage message)
         {
             var messageInformation = new MessageInformation
                                      {
@@ -175,7 +175,7 @@ namespace NsqSharp.Bus
             _messageAuditor.TryOnSucceeded(_logger, _bus, messageInformation);
         }
 
-        public void LogFailedMessage(Message message)
+        public void LogFailedMessage(IMessage message)
         {
             var messageInformation = new MessageInformation
             {
