@@ -1,1 +1,0 @@
- "%ProgramFiles(x86)%\Microsoft Help Viewer\v2.0\hlpctntmgr" /silent /operation install /catalogName "VisualStudio11" /locale en-US /sourceUri "%CD%\helpcontentsetup.msha"
