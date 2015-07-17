@@ -217,7 +217,7 @@ namespace NsqSharp.Bus
             }
         }
 
-        public Message CurrentMessage
+        public Message CurrentThreadMessage
         {
             get
             {
@@ -229,9 +229,19 @@ namespace NsqSharp.Bus
             }
         }
 
-        public ICurrentMessageInformation GetCurrentMessageInformation()
+        public ICurrentMessageInformation GetCurrentThreadMessageInformation()
         {
             return _threadMessage;
+        }
+
+        public Message CurrentMessage
+        {
+            get { return CurrentThreadMessage; }
+        }
+
+        public ICurrentMessageInformation GetCurrentMessageInformation()
+        {
+            return GetCurrentThreadMessageInformation();
         }
 
         private T CreateInstance<T>()

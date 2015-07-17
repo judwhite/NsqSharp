@@ -141,12 +141,12 @@ namespace NsqSharp.Tests.Bus
                 var delta = message.DeferUntil - DateTime.UtcNow;
                 if (delta > TimeSpan.Zero)
                 {
-                    _bus.CurrentMessage.RequeueWithoutBackoff(delta);
+                    _bus.CurrentThreadMessage.RequeueWithoutBackoff(delta);
                 }
 
                 lock (_queueLocker)
                 {
-                    var originalTimestamp = _bus.CurrentMessage.Timestamp;
+                    var originalTimestamp = _bus.CurrentThreadMessage.Timestamp;
                     _queue.Add(new MessageInfo
                     {
                         Received = DateTime.UtcNow,

@@ -201,7 +201,7 @@ namespace NsqSharp.Tests.Bus
                 bool done = false;
                 lock (_receivedLocker)
                 {
-                    _received.Add(_bus.GetCurrentMessageInformation(), message);
+                    _received.Add(_bus.GetCurrentThreadMessageInformation(), message);
                     if (_received.Count == 3)
                         done = true;
                 }

@@ -55,7 +55,7 @@ namespace NsqSharp.Tests.Bus
 
                 var bus = container.GetInstance<IBus>();
 
-                Assert.IsNull(bus.CurrentMessage, "bus.CurrentMessage");
+                Assert.IsNull(bus.CurrentThreadMessage, "bus.CurrentThreadMessage");
             }
             finally
             {
@@ -99,7 +99,7 @@ namespace NsqSharp.Tests.Bus
 
                 var bus = container.GetInstance<IBus>();
 
-                Assert.IsNull(bus.GetCurrentMessageInformation(), "bus.GetCurrentMessageInformation()");
+                Assert.IsNull(bus.GetCurrentThreadMessageInformation(), "bus.GetCurrentThreadMessageInformation()");
             }
             finally
             {
@@ -195,8 +195,8 @@ namespace NsqSharp.Tests.Bus
 
             public void Handle(TestMessage message)
             {
-                var currentMessageInformation = _bus.GetCurrentMessageInformation();
-                var currentMessage = _bus.CurrentMessage;
+                var currentMessageInformation = _bus.GetCurrentThreadMessageInformation();
+                var currentMessage = _bus.CurrentThreadMessage;
                 lock (_messagesLocker)
                 {
                     _messagesInfos.Add(currentMessageInformation);

@@ -123,7 +123,7 @@ namespace NsqSharp.Tests.Bus
         {
             public T GetMutatedMessage<T>(IBus bus, T sentMessage)
             {
-                var currentMessageInfo = bus.GetCurrentMessageInformation();
+                var currentMessageInfo = bus.GetCurrentThreadMessageInformation();
 
                 IMessageWithParentId messageWithParentId = sentMessage as IMessageWithParentId;
                 if (messageWithParentId != null)
@@ -166,7 +166,7 @@ namespace NsqSharp.Tests.Bus
                 bool done = false;
                 lock (_receivedLocker)
                 {
-                    _received.Add(_bus.GetCurrentMessageInformation(), message);
+                    _received.Add(_bus.GetCurrentThreadMessageInformation(), message);
                     if (_received.Count == 2)
                         done = true;
                     else
@@ -451,7 +451,7 @@ namespace NsqSharp.Tests.Bus
                 bool done = false;
                 lock (_receivedLocker)
                 {
-                    _received.Add(_bus.GetCurrentMessageInformation(), message);
+                    _received.Add(_bus.GetCurrentThreadMessageInformation(), message);
                     _bus.Send(new MyMutatedRoutedMessage { Text = message.Text + " Child" });
                     if (_received.Count == 3)
                         done = true;
@@ -490,7 +490,7 @@ namespace NsqSharp.Tests.Bus
                 bool done = false;
                 lock (_receivedLocker)
                 {
-                    _received.Add(_bus.GetCurrentMessageInformation(), message);
+                    _received.Add(_bus.GetCurrentThreadMessageInformation(), message);
                     if (_received.Count == 3)
                         done = true;
                 }

@@ -240,7 +240,7 @@ namespace NsqSharp.Tests.Bus
                 while (stopwatch.Elapsed < TimeSpan.FromSeconds(7))
                 {
                     Thread.Sleep(50);
-                    _bus.CurrentMessage.Touch();
+                    _bus.CurrentThreadMessage.Touch();
                 }
 
                 _wait.Set();
