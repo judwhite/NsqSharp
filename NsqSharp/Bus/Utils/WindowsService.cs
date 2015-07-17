@@ -61,7 +61,7 @@ namespace NsqSharp.Bus.Utils
 
             _busConfiguration.StartBus();
 
-            Trace.WriteLine(string.Format("{0} bus started", Assembly.GetEntryAssembly().GetName().Name));
+            Trace.WriteLine(string.Format("{0} bus started", entryAssembly != null ? entryAssembly.GetName().Name : "Test"));
         }
 
         private void StopBus()
