@@ -41,22 +41,22 @@ namespace NsqSharp.Tests
                              new instruction(0, FrameType.Response, "OK"),
                              // IDENTIFY
                              new instruction(0, FrameType.Response, "OK"),
-                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
-                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
-                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
-                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgBad)),
-                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgBad)),
-                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
-                             new instruction(50 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgBad)),
+                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgBad)),
+                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              // needed to exit test
-                             new instruction(500 * Time.Millisecond, -1, "exit")
+                             new instruction(1000 * Time.Millisecond, -1, "exit")
                          };
             var n = new mockNSQD(script, IPAddress.Loopback, 4152);
 
             var topicName = "test_consumer_commands" + DateTime.Now.Unix();
             var config = new Config();
             config.MaxInFlight = 5;
-            config.BackoffMultiplier = Time.Duration(20 * Time.Millisecond);
+            config.BackoffMultiplier = Time.Duration(40 * Time.Millisecond);
             var q = new Consumer(topicName, "ch", new ConsoleLogger(LogLevel.Debug), config);
             q.AddHandler(new testHandler());
             q.ConnectToNsqd(n.tcpAddr);
