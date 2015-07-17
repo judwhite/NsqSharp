@@ -252,8 +252,8 @@ namespace NsqSharp.Tests
                              new instruction(0, FrameType.Response, "OK"),
                              // IDENTIFY
                              new instruction(0, FrameType.Response, "OK"),
-                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
-                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              // needed to exit test
                              new instruction(1000 * Time.Millisecond, -1, "exit")
                          };
@@ -263,7 +263,7 @@ namespace NsqSharp.Tests
             bool timeout2 = false;
             Select
                 .CaseReceive(n.exitChan, o => { })
-                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(2500)), o => { timeout2 = true; })
+                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(3000)), o => { timeout2 = true; })
                 .NoDefault();
 
             Assert.IsFalse(timeout2, "timeout2");
