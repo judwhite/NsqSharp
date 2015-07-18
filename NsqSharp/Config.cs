@@ -95,7 +95,10 @@ namespace NsqSharp
 
             var backoffDuration = new TimeSpan(backoffConfig.BackoffMultiplier.Ticks *
                 (long)Math.Pow(2, attempt));
-            return TimeSpan.FromMilliseconds(rng.Intn((int)backoffDuration.TotalMilliseconds));
+
+            int maxBackoffMilliseconds = (int)backoffDuration.TotalMilliseconds;
+            int backoffMilliseconds = maxBackoffMilliseconds == 0 ? 0 : rng.Intn(maxBackoffMilliseconds);
+            return TimeSpan.FromMilliseconds(backoffMilliseconds);
         }
     }
 

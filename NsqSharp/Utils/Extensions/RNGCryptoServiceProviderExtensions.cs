@@ -29,7 +29,7 @@ namespace NsqSharp.Utils.Extensions
         public static int Intn(this RNGCryptoServiceProvider rng, int n)
         {
             if (n <= 0)
-                throw new ArgumentOutOfRangeException("n", n, "n must be > 0");
+                throw new ArgumentOutOfRangeException("n", n, string.Format("n must be > 0; actual: {0}", n));
 
             return Int(rng) % n;
         }
