@@ -9,7 +9,7 @@ namespace NsqSharp.Utils.Channels
     /// Channel for synchronizing communication between threads. Supports foreach to read from the channel until it's closed. See also <see cref="Select"/>.
     /// </summary>
     /// <typeparam name="T">The message type communicated over the channel.</typeparam>
-    public class Chan<T> : IReceiveOnlyChan<T>, ISendOnlyChan<T>, IEnumerable<T>
+    public sealed class Chan<T> : IReceiveOnlyChan<T>, ISendOnlyChan<T>, IEnumerable<T>
     {
         private readonly object _sendLocker = new object();
         private readonly object _receiveLocker = new object();

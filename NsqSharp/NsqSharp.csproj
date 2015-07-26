@@ -93,6 +93,7 @@
     <Compile Include="Bus\MessageDistributor.cs" />
     <Compile Include="Bus\NsqBus.cs" />
     <Compile Include="Bus\Utils\InterfaceBuilder.cs" />
+    <Compile Include="Bus\Utils\NativeMethods.cs" />
     <Compile Include="Bus\Utils\WindowsService.cs">
       <SubType>Component</SubType>
     </Compile>

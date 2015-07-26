@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -221,6 +222,7 @@ namespace NsqSharp
         /// <exception cref="ArgumentNullException">Thrown <paramref name="data"/> is <c>null</c>.</exception>
         /// <param name="data">The fully encoded message.</param>
         /// <returns>The decoded message.</returns>
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
         public static Message DecodeMessage(byte[] data)
         {
             if (data == null)

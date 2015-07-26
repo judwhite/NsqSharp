@@ -120,14 +120,14 @@ namespace NsqSharp
     ///     public class MessageHandler : IHandler
     ///     {
     ///         // Handles a message.
-    ///         public void HandleMessage(Message message)
+    ///         public void HandleMessage(IMessage message)
     ///         {
     ///             string msg = Encoding.UTF8.GetString(message.Body);
     ///             Console.WriteLine(msg);
     ///         }
     ///     
     ///         // Called when a message has exceeded the specified MaxAttempts.
-    ///         public void LogFailedMessage(Message message)
+    ///         public void LogFailedMessage(IMessage message)
     ///         {
     ///             // Log failed messages
     ///         }
@@ -138,7 +138,7 @@ namespace NsqSharp
     /// <seealso cref="ConnectToNsqd"/>
     /// <seealso cref="ConnectToNsqLookupd"/>
     /// <seealso cref="Stop()"/>
-    public class Consumer : IConnDelegate
+    public sealed class Consumer : IConnDelegate
     {
         private static readonly byte[] CLOSE_WAIT_BYTES = Encoding.UTF8.GetBytes("CLOSE_WAIT");
 
@@ -200,7 +200,7 @@ namespace NsqSharp
         ///     <paramref name="channel"/>.</para>
         ///
         ///     <para>Uses the default <see cref="Config"/> and <see cref="ConsoleLogger"/> with log level
-        ///     <see cref="LogLevel.Info"/>.</para>
+        ///     <see cref="F:LogLevel.Info"/>.</para>
         /// </summary>
         /// <exception cref="ArgumentNullException">Thrown when one or more required arguments are null.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="topic"/> or <paramref name="channel"/>
@@ -208,7 +208,7 @@ namespace NsqSharp
         ///     less than or equal to 64 characters longer and must match the pattern "^[\.a-zA-Z0-9_-]+(#ephemeral)?$".
         /// </exception>
         /// <remarks>
-        ///     <para>Uses <see cref="ConsoleLogger"/> with <see cref="LogLevel.Info"/> to log messages.</para>
+        ///     <para>Uses <see cref="ConsoleLogger"/> with <see cref="F:LogLevel.Info"/> to log messages.</para>
         ///     <para>Uses the default <see cref="Config"/> to configure this <see cref="Consumer"/>.</para>
         /// </remarks>
         /// <param name="topic">The topic name.</param>
@@ -240,14 +240,14 @@ namespace NsqSharp
         /// <summary>
         ///     <para>Creates a new instance of <see cref="Consumer"/> for the specified <paramref name="topic"/> and
         ///     <paramref name="channel"/>, using the specified <paramref name="config"/>.</para>
-        ///     <para>Uses <see cref="ConsoleLogger"/> with log level <see cref="LogLevel.Info"/>.</para>
+        ///     <para>Uses <see cref="ConsoleLogger"/> with log level <see cref="F:LogLevel.Info"/>.</para>
         /// </summary>
         /// <exception cref="ArgumentNullException">Thrown when one or more required arguments are null.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="topic"/> or <paramref name="channel"/>
         ///     exceed the maximum length or contain invalid characters. Topic and channel names must be greater than 0 and
         ///     less than or equal to 64 characters longer and must match the pattern "^[\.a-zA-Z0-9_-]+(#ephemeral)?$".
         /// </exception>
-        /// <remarks>Uses <see cref="ConsoleLogger"/> with <see cref="LogLevel.Info"/> to log messages.</remarks>
+        /// <remarks>Uses <see cref="ConsoleLogger"/> with <see cref="F:LogLevel.Info"/> to log messages.</remarks>
         /// <param name="topic">The topic name.</param>
         /// <param name="channel">The channel name.</param>
         /// <param name="config">The <see cref="Config"/> settings. After config is passed in the values are no longer mutable

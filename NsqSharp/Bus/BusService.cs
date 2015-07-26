@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Threading;
 using System.Web.Hosting;
@@ -15,23 +14,6 @@ namespace NsqSharp.Bus
     /// </summary>
     public static class BusService
     {
-        [DllImport("kernel32.dll")]
-        internal static extern IntPtr GetConsoleWindow();
-
-        [DllImport("Kernel32")]
-        internal static extern bool SetConsoleCtrlHandler(HandlerRoutineCallback handler, bool add);
-
-        internal delegate bool HandlerRoutineCallback(CtrlType dwCtrlType);
-
-        internal enum CtrlType
-        {
-            CTRL_C_EVENT = 0,
-            CTRL_BREAK_EVENT,
-            CTRL_CLOSE_EVENT,
-            CTRL_LOGOFF_EVENT = 5,
-            CTRL_SHUTDOWN_EVENT
-        }
-
         private static WindowsService _service;
         private static AutoResetEvent _wait;
         private static HandlerRoutineCallback _onCloseCallback;
@@ -64,14 +46,14 @@ namespace NsqSharp.Bus
                 _service.Start();
                 HostingEnvironment.RegisterObject(_service);
             }
-            else if (GetConsoleWindow() != IntPtr.Zero)
+            else if (NativeMethods.GetConsoleWindow() != IntPtr.Zero)
             {
                 // Console application
                 _service.Start();
 
                 _wait = new AutoResetEvent(initialState: false);
                 _onCloseCallback = ConsoleCtrlCheck; // prevent callback handler from being GC'd
-                SetConsoleCtrlHandler(_onCloseCallback, add: true);
+                NativeMethods.SetConsoleCtrlHandler(_onCloseCallback, add: true);
                 _wait.WaitOne();
             }
             else if (!Environment.UserInteractive)

@@ -161,6 +161,7 @@ namespace NsqSharp.Utils
         /// Gets the data at the specified index.
         /// </summary>
         /// <param name="index">The index of the data to return.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations")]
         public T this[int index]
         {
             get

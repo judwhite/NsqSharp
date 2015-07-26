@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -79,6 +80,7 @@ namespace NsqSharp
         /// <param name="topic">The topic.</param>
         /// <param name="messages">The messages.</param>
         /// <returns>The response from the nsqd HTTP server.</returns>
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
         public static string PublishMultiple(string nsqdHttpAddress, string topic, IEnumerable<byte[]> messages)
         {
             CheckArguments(nsqdHttpAddress, topic);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -234,6 +235,7 @@ namespace NsqSharp.Core
         /// MultiPublish creates a new Command to write more than one message to a given topic.
         /// This is useful for high-throughput situations to avoid roundtrips and saturate the pipe.
         /// </summary>
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
         public static Command MultiPublish(string topic, ICollection<byte[]> bodies)
         {
             if (bodies == null)

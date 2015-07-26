@@ -5,6 +5,7 @@ using System.Linq;
 using NsqSharp.Bus.Configuration.BuiltIn;
 using NsqSharp.Bus.Configuration.Providers;
 using NsqSharp.Bus.Logging;
+using NsqSharp.Bus.Utils;
 using NsqSharp.Core;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Loggers;
@@ -400,7 +401,7 @@ namespace NsqSharp.Bus.Configuration
         /// </summary>
         public bool IsConsoleMode
         {
-            get { return (BusService.GetConsoleWindow() != IntPtr.Zero); }
+            get { return (NativeMethods.GetConsoleWindow() != IntPtr.Zero); }
         }
     }
 

@@ -55,7 +55,7 @@ namespace NsqSharp
     /// <seealso cref="Publish(string, byte[])"/>
     /// <seealso cref="Stop"/>
     /// </summary>
-    public partial class Producer
+    public sealed partial class Producer
     {
         internal long _id;
         private readonly string _addr;
@@ -108,7 +108,7 @@ namespace NsqSharp
         }
     }
 
-    public partial class Producer : IConnDelegate
+    public sealed partial class Producer : IConnDelegate
     {
         /// <summary>
         /// Initializes a new instance of the Producer class.
