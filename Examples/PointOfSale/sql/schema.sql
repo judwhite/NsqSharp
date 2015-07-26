@@ -63,9 +63,9 @@ as
   declare @ProcessTime time(3)
 
   set @TimeInQueueMilliseconds = datediff(millisecond, @PublishTimestamp, @HandlerStarted)
-  if @TimeInQueueMilliseconds > 86400000
+  if @TimeInQueueMilliseconds >= 86400000
   begin
-    set @DequeueTime = cast('24:00:00' as time(3))
+    set @DequeueTime = cast('23:59:59.999' as time(3))
   end
   else
   begin
@@ -75,9 +75,9 @@ as
   if @HandlerFinished is not null
   begin
     set @ProcessingMilliseconds = datediff(millisecond, @HandlerStarted, @HandlerFinished)
-    if @ProcessingMilliseconds > 86400000
+    if @ProcessingMilliseconds >= 86400000
     begin
-      set @ProcessTime = cast('24:00:00' as time(3))
+      set @ProcessTime = cast('23:59:59.999' as time(3))
     end
     else
     begin
