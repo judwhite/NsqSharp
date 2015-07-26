@@ -834,9 +834,8 @@ namespace NsqSharp.Core
         internal void onMessageTouch(Message m)
         {
             Select
-                .DebugName("Conn:onMessageTouch")
-                .CaseSend("_cmdChan", _cmdChan, Command.Touch(m.ID), () => { })
-                .CaseReceive("_exitChan", _exitChan, o => { })
+                .CaseSend(_cmdChan, Command.Touch(m.ID), () => { })
+                .CaseReceive(_exitChan, o => { })
                 .NoDefault();
         }
 

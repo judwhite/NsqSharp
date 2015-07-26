@@ -138,9 +138,8 @@ namespace NsqSharp.Tests.Utils.Channels
             t1.Start();
 
             Select
-                .DebugName("SelectTwoChannels")
-                .CaseReceive("c1", c1, list.Add)
-                .CaseReceive("c2", c2, list.Add)
+                .CaseReceive(c1, list.Add)
+                .CaseReceive(c2, list.Add)
                 .NoDefault();
 
             Assert.AreEqual(1, list.Count, "list.Count");
@@ -164,9 +163,8 @@ namespace NsqSharp.Tests.Utils.Channels
             t1.Start();
 
             Select
-                .DebugName("SelectNullChannel")
-                .CaseReceive("c2", (Chan<int>)null, list.Add)
-                .CaseReceive("c1", c1, list.Add)
+                .CaseReceive((Chan<int>)null, list.Add)
+                .CaseReceive(c1, list.Add)
                 .NoDefault();
 
             Assert.AreEqual(1, list.Count, "list.Count");
@@ -199,9 +197,8 @@ namespace NsqSharp.Tests.Utils.Channels
             t2.Start();
 
             Select
-                .DebugName("SelectDefaultCaseNoChannelsReady")
-                .CaseReceive("c1", c1, list.Add)
-                .CaseReceive("c2", c2, list.Add)
+                .CaseReceive(c1, list.Add)
+                .CaseReceive(c2, list.Add)
                 .Default(() => list.Add(3));
 
             Assert.AreEqual(1, list.Count, "list.Count");
@@ -232,9 +229,8 @@ namespace NsqSharp.Tests.Utils.Channels
             Thread.Sleep(50);
 
             Select
-                .DebugName("SelectDefaultCaseChannelReady")
-                .CaseReceive("c1", c1, list.Add)
-                .CaseReceive("c2", c2, list.Add)
+                .CaseReceive(c1, list.Add)
+                .CaseReceive(c2, list.Add)
                 .Default(() => list.Add(3));
 
             Assert.AreEqual(1, list.Count, "list.Count");
@@ -282,9 +278,8 @@ namespace NsqSharp.Tests.Utils.Channels
             t2.Start();
 
             Select
-                .DebugName("SelectSendsOnly")
-                .CaseSend("c1", c1, 1, () => list.Add(1))
-                .CaseSend("c2", c2, 2, () => list.Add(2))
+                .CaseSend(c1, 1, () => list.Add(1))
+                .CaseSend(c2, 2, () => list.Add(2))
                 .NoDefault();
 
             Assert.AreEqual(1, list.Count, "list.Count");
@@ -347,15 +342,14 @@ namespace NsqSharp.Tests.Utils.Channels
             t2.Start();
 
             Select
-                .DebugName("SelectSendAndReceiveReceiveReady")
-                .CaseReceive("c1", c1, func: o =>
-                                             {
-                                                 lock (listLocker)
-                                                 {
-                                                     list.Add(o);
-                                                 }
-                                             })
-                .CaseSend("c2", c2, message: 2)
+                .CaseReceive(c1, func: o =>
+                                       {
+                                           lock (listLocker)
+                                           {
+                                               list.Add(o);
+                                           }
+                                       })
+                .CaseSend(c2, message: 2)
                 .NoDefault();
 
             Thread.Sleep(20);
@@ -389,9 +383,8 @@ namespace NsqSharp.Tests.Utils.Channels
             t2.Start();
 
             Select
-                .DebugName("SelectSendAndReceiveSendReady")
-                .CaseReceive("c1", c1, list.Add)
-                .CaseSend("c2", c2, 2, () => { })
+                .CaseReceive(c1, list.Add)
+                .CaseSend(c2, 2, () => { })
                 .NoDefault();
 
             Assert.AreEqual(1, list.Count, "list.Count");
@@ -411,8 +404,7 @@ namespace NsqSharp.Tests.Utils.Channels
             GoFunc.Run(() =>
             {
                 Select
-                    .DebugName("TwoSelectsSendAndReceiveCanTalk.Send")
-                    .CaseSend("c", c, 7)
+                    .CaseSend(c, 7)
                     .NoDefault();
 
                 wg.Done();
@@ -421,8 +413,7 @@ namespace NsqSharp.Tests.Utils.Channels
             GoFunc.Run(() =>
             {
                 Select
-                    .DebugName("TwoSelectsSendAndReceiveCanTalk.Receive")
-                    .CaseReceive("c", c, o => actual = o)
+                    .CaseReceive(c, o => actual = o)
                     .NoDefault();
 
                 wg.Done();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace NsqSharp.Utils.Channels
@@ -64,57 +65,6 @@ namespace NsqSharp.Utils.Channels
     public static class Select
     {
         /// <summary>
-        /// Creates a case for receiving from the specific channel and assigns the Select a name for debugging.
-        /// </summary>
-        /// <param name="debugName">The select's name for debugging</param>
-        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to 
-        /// Default or NoDefault.</returns>
-        public static SelectCase DebugName(string debugName)
-        {
-            return new SelectCase { DebugName = debugName };
-        }
-
-        /// <summary>
-        /// Creates a case for receiving from the specific channel.
-        /// </summary>
-        /// <param name="debugName">The channel's name for debugging.</param>
-        /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
-        /// <param name="func">The function to execute with the data received from the channel. Can be <c>null</c></param>
-        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to 
-        /// Default or NoDefault.</returns>
-        public static SelectCase CaseReceive<T>(string debugName, IReceiveOnlyChan<T> c, Action<T> func = null)
-        {
-            return new SelectCase().CaseReceive(debugName, c, func);
-        }
-
-        /// <summary>
-        /// Creates a case for receiving from the specific channel.
-        /// </summary>
-        /// <param name="debugName">The channel's name for debugging.</param>
-        /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
-        /// <param name="func">The function to execute with the data received from the channel.</param>
-        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to 
-        /// Default or NoDefault.</returns>
-        public static SelectCase CaseReceiveOk<T>(string debugName, IReceiveOnlyChan<T> c, Action<T, bool> func)
-        {
-            return new SelectCase().CaseReceiveOk(debugName, c, func);
-        }
-
-        /// <summary>
-        /// Creates a case for sending to the specific channel.
-        /// </summary>
-        /// <param name="debugName">The channel's name for debugging.</param>
-        /// <param name="c">The channel to send to. Can be <c>null</c>.</param>
-        /// <param name="message">The message to send.</param>
-        /// <param name="func">The callback function to execute once the message has been sent. Can be <c>null</c>.</param>
-        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
-        /// Default or NoDefault.</returns>
-        public static SelectCase CaseSend<T>(string debugName, ISendOnlyChan<T> c, T message, Action func = null)
-        {
-            return new SelectCase().CaseSend(debugName, c, message, func);
-        }
-
-        /// <summary>
         /// Creates a case for receiving from the specific channel.
         /// </summary>
         /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
@@ -123,7 +73,7 @@ namespace NsqSharp.Utils.Channels
         /// Default or NoDefault.</returns>
         public static SelectCase CaseReceive<T>(IReceiveOnlyChan<T> c, Action<T> func = null)
         {
-            return CaseReceive(null, c, func);
+            return new SelectCase().CaseReceive(c, func);
         }
 
         /// <summary>
@@ -133,9 +83,9 @@ namespace NsqSharp.Utils.Channels
         /// <param name="func">The function to execute with the data received from the channel.</param>
         /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to 
         /// Default or NoDefault.</returns>
-        public static SelectCase CaseReceiveOk<T>(IReceiveOnlyChan<T> c, Action<T, bool> func = null)
+        public static SelectCase CaseReceiveOk<T>(IReceiveOnlyChan<T> c, Action<T, bool> func)
         {
-            return CaseReceiveOk(null, c, func);
+            return new SelectCase().CaseReceiveOk(c, func);
         }
 
         /// <summary>
@@ -148,7 +98,7 @@ namespace NsqSharp.Utils.Channels
         /// Default or NoDefault.</returns>
         public static SelectCase CaseSend<T>(ISendOnlyChan<T> c, T message, Action func = null)
         {
-            return CaseSend(null, c, message, func);
+            return new SelectCase().CaseSend(c, message, func);
         }
     }
 
@@ -156,17 +106,16 @@ namespace NsqSharp.Utils.Channels
     /// Control structure to send or receive from the first available channel. Chain Case methods and end with a call to
     /// Default or NoDefault.
     /// </summary>
+    [SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly")]
     public class SelectCase : IDisposable
     {
         private class ReceiveCase
         {
-            public string DebugName { get; set; }
             public IReceiveOnlyChan Chan { get; set; }
         }
 
         private class SendCase
         {
-            public string DebugName { get; set; }
             public ISendOnlyChan Chan { get; set; }
         }
 
@@ -188,19 +137,13 @@ namespace NsqSharp.Utils.Channels
         private bool _isExecuteCalled;
 
         /// <summary>
-        /// Name used for debugging
-        /// </summary>
-        public string DebugName { get; set; }
-
-        /// <summary>
         /// Creates a case for receiving from the specific channel.
         /// </summary>
-        /// <param name="debugName">The name of the channel.</param>
         /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
         /// <param name="func">The function to execute with the data received from the channel.</param>
         /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
         /// Default or NoDefault.</returns>
-        public SelectCase CaseReceiveOk<T>(string debugName, IReceiveOnlyChan<T> c, Action<T, bool> func)
+        public SelectCase CaseReceiveOk<T>(IReceiveOnlyChan<T> c, Action<T, bool> func)
         {
             if (_isExecuteCalled)
                 throw new Exception("select already executed");
@@ -210,71 +153,11 @@ namespace NsqSharp.Utils.Channels
                 _receiveFuncs.Add(
                     new ReceiveCase
                     {
-                        Chan = c,
-                        DebugName = (debugName != null ? "<-" + DebugName + "::" + debugName : null)
+                        Chan = c
                     },
                     func == null
                         ? (Action<object, bool>)null
                         : (v, ok) => func((T)v, ok)
-                );
-            }
-
-            return this;
-        }
-
-        /// <summary>
-        /// Creates a case for receiving from the specific channel.
-        /// </summary>
-        /// <param name="debugName">The name of the channel.</param>
-        /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
-        /// <param name="func">The function to execute with the data received from the channel. Can be <c>null</c></param>
-        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
-        /// Default or NoDefault.</returns>
-        public SelectCase CaseReceive<T>(string debugName, IReceiveOnlyChan<T> c, Action<T> func = null)
-        {
-            if (_isExecuteCalled)
-                throw new Exception("select already executed");
-
-            if (c != null)
-            {
-                _receiveFuncs.Add(
-                    new ReceiveCase
-                    {
-                        Chan = c,
-                        DebugName = (debugName != null ? "<-" + DebugName + "::" + debugName : null)
-                    },
-                    func == null
-                        ? (Action<object, bool>)null
-                        : (v, ok) => func((T)v)
-                );
-            }
-
-            return this;
-        }
-
-        /// <summary>
-        /// Creates a case for sending to the specific channel.
-        /// </summary>
-        /// <param name="debugName">The name of the channel.</param>
-        /// <param name="c">The channel to send to. Can be <c>null</c>.</param>
-        /// <param name="message">The message to send.</param>
-        /// <param name="func">The callback function to execute once the message has been sent. Can be <c>null</c>.</param>
-        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
-        /// Default or NoDefault.</returns>
-        public SelectCase CaseSend<T>(string debugName, ISendOnlyChan<T> c, T message, Action func = null)
-        {
-            if (_isExecuteCalled)
-                throw new Exception("select already executed");
-
-            if (c != null)
-            {
-                _sendFuncs.Add(
-                    new SendCase
-                    {
-                        Chan = c,
-                        DebugName = (debugName != null ? DebugName + "::" + debugName + "<-" : null)
-                    }
-                    , new Tuple<Action, object>(func, message)
                 );
             }
 
@@ -293,22 +176,20 @@ namespace NsqSharp.Utils.Channels
             if (_isExecuteCalled)
                 throw new Exception("select already executed");
 
-            return CaseReceive(null, c, func);
-        }
+            if (c != null)
+            {
+                _receiveFuncs.Add(
+                    new ReceiveCase
+                    {
+                        Chan = c
+                    },
+                    func == null
+                        ? (Action<object, bool>)null
+                        : (v, ok) => func((T)v)
+                );
+            }
 
-        /// <summary>
-        /// Creates a case for receiving from the specific channel.
-        /// </summary>
-        /// <param name="c">The channel to receive from. Can be <c>null</c>.</param>
-        /// <param name="func">The function to execute with the data received from the channel.</param>
-        /// <returns>An instance to append another Case, Default, or NoDefault. Select must end with a call to
-        /// Default or NoDefault.</returns>
-        public SelectCase CaseReceiveOk<T>(IReceiveOnlyChan<T> c, Action<T, bool> func)
-        {
-            if (_isExecuteCalled)
-                throw new Exception("select already executed");
-
-            return CaseReceiveOk(null, c, func);
+            return this;
         }
 
         /// <summary>
@@ -324,7 +205,18 @@ namespace NsqSharp.Utils.Channels
             if (_isExecuteCalled)
                 throw new Exception("select already executed");
 
-            return CaseSend(null, c, message, func);
+            if (c != null)
+            {
+                _sendFuncs.Add(
+                    new SendCase
+                    {
+                        Chan = c
+                    }
+                    , new Tuple<Action, object>(func, message)
+                );
+            }
+
+            return this;
         }
 
         /// <summary>
@@ -535,6 +427,7 @@ namespace NsqSharp.Utils.Channels
         /// <summary>
         /// Clean up references. Only necessary if defer = <c>true</c> was passed to <see cref="NoDefault"/>.
         /// </summary>
+        [SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly")]
         public void Dispose()
         {
             if (_ready != null)
@@ -549,7 +442,6 @@ namespace NsqSharp.Utils.Channels
                     c.Chan.RemoveListenForReceive(_ready);
                 }
 
-                //_ready.Dispose();
                 _ready.Close();
                 _ready = null;
             }
