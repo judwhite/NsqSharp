@@ -64,7 +64,7 @@ namespace PointOfSale.Messages
 
             // Check for missed types
             var missingTypes = new List<Type>();
-            foreach (var messageType in typeof(Topics).Assembly.GetTypes())
+            foreach (var messageType in typeof(Topics).Assembly.GetExportedTypes())
             {
                 if (messageType == typeof(Topics))
                     continue;

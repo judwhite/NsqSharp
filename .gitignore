@@ -3,6 +3,7 @@
 *.ReSharper.user
 *.sln.DotSettings
 *.sln.DotSettings.user
+*.csproj.DotSettings
 *.fpr
 *.nupkg
 TestResult.xml
