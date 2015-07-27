@@ -30,7 +30,7 @@ namespace PointOfSale.Common.Nsq
                 defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
                 busStateChangedHandler: busStateChangedHandler,
                 preCreateTopicsAndChannels: true,
-                defaultConsumerNsqConfig:
+                nsqConfig:
                     new NsqSharp.Config
                     {
                         BackoffStrategy = new FullJitterStrategy(),

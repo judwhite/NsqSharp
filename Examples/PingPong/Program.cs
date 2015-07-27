@@ -30,13 +30,13 @@ namespace PingPong
                 busStateChangedHandler: new BusStateChangedHandler(), // bus starting/started/stopping/stopped
                 defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" }, // nsqlookupd address
                 defaultThreadsPerHandler: 1, // threads per handler. tweak based on use case, see handlers in this project.
-                defaultConsumerNsqConfig: new Config
-                                          {
-                                              // optional override of default config values
-                                              MaxRequeueDelay = TimeSpan.FromSeconds(15),
-                                              MaxBackoffDuration = TimeSpan.FromSeconds(2),
-                                              MaxAttempts = 2
-                                          },
+                nsqConfig: new Config
+                {
+                    // optional override of default config values
+                    MaxRequeueDelay = TimeSpan.FromSeconds(15),
+                    MaxBackoffDuration = TimeSpan.FromSeconds(2),
+                    MaxAttempts = 2
+                },
                 nsqLogger: new TraceLogger(), // logger for NSQ events (see also ConsoleLogger, or implement your own)
                 preCreateTopicsAndChannels: true // pre-create topics so we dont have to wait for an nsqlookupd cycle
             ));
