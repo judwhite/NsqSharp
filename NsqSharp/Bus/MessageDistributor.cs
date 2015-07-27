@@ -5,7 +5,6 @@ using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Logging;
 using NsqSharp.Bus.Utils;
 using NsqSharp.Core;
-using NsqSharp.Logging;
 
 namespace NsqSharp.Bus
 {
@@ -13,7 +12,6 @@ namespace NsqSharp.Bus
     {
         private readonly NsqBus _bus;
         private readonly IObjectBuilder _objectBuilder;
-        private static readonly ILog _logger = LogProvider.For<MessageDistributor>();
         private readonly IMessageSerializer _serializer;
         private readonly MethodInfo _handleMethod;
         private readonly Type _handlerType;

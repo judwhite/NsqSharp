@@ -18,7 +18,6 @@ namespace NsqSharp.Bus
         private readonly IMessageTypeToTopicProvider _messageTypeToTopicProvider;
         private readonly IMessageSerializer _sendMessageSerializer;
         private readonly string[] _defaultProducerNsqdHttpEndpoints;
-        private readonly ILog _nsqLogger;
         private readonly IMessageMutator _messageMutator;
         private readonly IMessageTopicRouter _messageTopicRouter;
 
@@ -52,7 +51,6 @@ namespace NsqSharp.Bus
             _dependencyInjectionContainer = dependencyInjectionContainer;
             _messageTypeToTopicProvider = messageTypeToTopicProvider;
             _sendMessageSerializer = sendMessageSerializer;
-            _nsqLogger = LogProvider.For<NsqBus>();
             _messageMutator = messageMutator;
             _messageTopicRouter = messageTopicRouter;
 

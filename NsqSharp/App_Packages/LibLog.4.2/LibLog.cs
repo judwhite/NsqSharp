@@ -37,6 +37,7 @@
 // LibLog providers internally to provide built in support for popular logging frameworks.
 
 #pragma warning disable 1591
+#pragma warning disable 414
 
 // If you copied this file manually, you need to change all "YourRootNameSpace" so not to clash with other libraries
 // that use LibLog

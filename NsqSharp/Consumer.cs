@@ -158,7 +158,9 @@ namespace NsqSharp
 
         private IDiscoveryFilter _behaviorDelegate;
 
-        private readonly long _id;
+#pragma warning disable 414
+    private readonly long _id;
+
         private readonly string _topic;
         private readonly string _channel;
         private readonly Config _config;
