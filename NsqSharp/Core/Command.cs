@@ -25,6 +25,7 @@ namespace NsqSharp.Core
         private static readonly byte[] UNREGISTER_BYTES = Encoding.UTF8.GetBytes("UNREGISTER");
         private static readonly byte[] PING_BYTES = Encoding.UTF8.GetBytes("PING");
         private static readonly byte[] PUB_BYTES = Encoding.UTF8.GetBytes("PUB");
+        //private static readonly byte[] DPUB_BYTES = Encoding.UTF8.GetBytes("DPUB"); // TODO
         private static readonly byte[] MPUB_BYTES = Encoding.UTF8.GetBytes("MPUB");
         private static readonly byte[] SUB_BYTES = Encoding.UTF8.GetBytes("SUB");
         private static readonly byte[] RDY_BYTES = Encoding.UTF8.GetBytes("RDY");
@@ -236,12 +237,14 @@ namespace NsqSharp.Core
         /// This is useful for high-throughput situations to avoid roundtrips and saturate the pipe.
         /// </summary>
         [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
-        public static Command MultiPublish(string topic, ICollection<byte[]> bodies)
+        public static Command MultiPublish(string topic, IEnumerable<byte[]> bodies)
         {
             if (bodies == null)
                 throw new ArgumentNullException("bodies");
 
-            int num = bodies.Count;
+            var bodiesCollection = bodies as ICollection<byte[]> ?? bodies.ToList();
+
+            int num = bodiesCollection.Count;
             byte[] body;
 
             using (var memoryStream = new MemoryStream())
@@ -249,7 +252,7 @@ namespace NsqSharp.Core
                 using (var binaryWriter = new BinaryWriter(memoryStream))
                 {
                     Binary.BigEndian.PutUint32(binaryWriter, num);
-                    foreach (var b in bodies)
+                    foreach (var b in bodiesCollection)
                     {
                         Binary.BigEndian.PutUint32(binaryWriter, b.Length);
                         binaryWriter.Write(b);

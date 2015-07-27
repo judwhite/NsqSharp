@@ -65,17 +65,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Api\NsqdHttpClient.cs" />
+    <Compile Include="Api\NsqLookupdHttpClient.cs" />
     <Compile Include="Bus\BusService.cs" />
     <Compile Include="Bus\Configuration\BuiltIn\ConsoleMessageAuditor.cs" />
     <Compile Include="Bus\Configuration\BuiltIn\HandlerTypeToChannelDictionary.cs" />
     <Compile Include="Bus\Configuration\BuiltIn\MessageTypeToTopicDictionary.cs" />
     <Compile Include="Bus\Configuration\BuiltIn\NewtonsoftJsonSerializer.cs" />
+    <Compile Include="Bus\Configuration\BuiltIn\NsqdHttpPublisher.cs" />
+    <Compile Include="Bus\Configuration\BuiltIn\NsqdTcpPublisher.cs" />
     <Compile Include="Bus\Configuration\BuiltIn\StructureMapObjectBuilder.cs" />
     <Compile Include="Bus\Configuration\BusConfiguration.cs" />
     <Compile Include="Bus\Configuration\IBusStateChangedHandler.cs" />
     <Compile Include="Bus\Configuration\IMessageMutator.cs" />
     <Compile Include="Bus\Configuration\IMessageTopicRouter.cs" />
     <Compile Include="Bus\Configuration\IMessageSerializer.cs" />
+    <Compile Include="Bus\Configuration\INsqdPublisher.cs" />
     <Compile Include="Bus\Configuration\IObjectBuilder.cs" />
     <Compile Include="Bus\Configuration\MessageHandlerMetadata.cs" />
     <Compile Include="Bus\Configuration\Providers\IHandlerTypeToChannelProvider.cs" />
@@ -109,7 +114,7 @@
     <Compile Include="Core\Protocol.cs" />
     <Compile Include="Core\State.cs" />
     <Compile Include="Core\Version.cs" />
-    <Compile Include="NsqdHttpApi.cs" />
+    <Compile Include="Api\NsqHttpApi.cs" />
     <Compile Include="Utils\Attributes\DefaultAttribute.cs" />
     <Compile Include="Utils\Attributes\MaxAttribute.cs" />
     <Compile Include="Utils\Attributes\MinAttribute.cs" />

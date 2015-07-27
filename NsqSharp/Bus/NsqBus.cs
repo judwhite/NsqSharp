@@ -16,10 +16,10 @@ namespace NsqSharp.Bus
         private readonly IObjectBuilder _dependencyInjectionContainer;
         private readonly IMessageTypeToTopicProvider _messageTypeToTopicProvider;
         private readonly IMessageSerializer _sendMessageSerializer;
-        private readonly string[] _defaultProducerNsqdHttpEndpoints;
         private readonly ILogger _nsqLogger;
         private readonly IMessageMutator _messageMutator;
         private readonly IMessageTopicRouter _messageTopicRouter;
+        private readonly INsqdPublisher _nsqdPublisher;
 
         [ThreadStatic]
         private static ICurrentMessageInformation _threadMessage;
@@ -29,10 +29,10 @@ namespace NsqSharp.Bus
             IObjectBuilder dependencyInjectionContainer,
             IMessageTypeToTopicProvider messageTypeToTopicProvider,
             IMessageSerializer sendMessageSerializer,
-            string[] defaultProducerNsqdHttpEndpoints,
             ILogger nsqLogger,
             IMessageMutator messageMutator,
-            IMessageTopicRouter messageTopicRouter
+            IMessageTopicRouter messageTopicRouter,
+            INsqdPublisher nsqdPublisher
         )
         {
             if (topicChannelHandlers == null)
@@ -43,10 +43,8 @@ namespace NsqSharp.Bus
                 throw new ArgumentNullException("messageTypeToTopicProvider");
             if (sendMessageSerializer == null)
                 throw new ArgumentNullException("sendMessageSerializer");
-            if (defaultProducerNsqdHttpEndpoints == null)
-                throw new ArgumentNullException("defaultProducerNsqdHttpEndpoints");
-            if (defaultProducerNsqdHttpEndpoints.Length == 0)
-                throw new ArgumentException("must contain elements", "defaultProducerNsqdHttpEndpoints");
+            if (nsqdPublisher == null)
+                throw new ArgumentNullException("nsqdPublisher");
             if (nsqLogger == null)
                 throw new ArgumentNullException("nsqLogger");
 
@@ -57,30 +55,7 @@ namespace NsqSharp.Bus
             _nsqLogger = nsqLogger;
             _messageMutator = messageMutator;
             _messageTopicRouter = messageTopicRouter;
-
-            _defaultProducerNsqdHttpEndpoints = new string[defaultProducerNsqdHttpEndpoints.Length];
-            for (int i = 0; i < defaultProducerNsqdHttpEndpoints.Length; i++)
-            {
-                string endpoint = defaultProducerNsqdHttpEndpoints[i];
-                if (!endpoint.StartsWith("http://"))
-                    endpoint = string.Format("http://{0}", endpoint);
-
-                try
-                {
-                    string result = NsqdHttpApi.Ping(endpoint);
-
-                    if (result != "OK")
-                    {
-                        throw new Exception(string.Format("{0}/ping returned {1}", endpoint, result));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(string.Format("Error connecting to {0}/ping", endpoint), ex);
-                }
-
-                _defaultProducerNsqdHttpEndpoints[i] = endpoint;
-            }
+            _nsqdPublisher = nsqdPublisher;
 
             _dependencyInjectionContainer.Inject((IBus)this);
         }
@@ -111,7 +86,7 @@ namespace NsqSharp.Bus
             Send(message);
         }
 
-        private void Send<T>(T message, string topic, params string[] nsqdHttpAddresses)
+        private void Send<T>(T message, string topic)
         {
             if (message == null)
                 throw new ArgumentNullException("message");
@@ -134,15 +109,7 @@ namespace NsqSharp.Bus
             byte[] serializedMessage = _sendMessageSerializer.Serialize(message);
 
             // send
-            if (nsqdHttpAddresses == null || nsqdHttpAddresses.Length == 0)
-            {
-                nsqdHttpAddresses = _defaultProducerNsqdHttpEndpoints;
-            }
-
-            foreach (var nsqdHttpAddress in nsqdHttpAddresses)
-            {
-                NsqdHttpApi.Publish(nsqdHttpAddress, topic, serializedMessage);
-            }
+            _nsqdPublisher.Publish(topic, serializedMessage);
         }
 
         public void SendMulti<T>(IEnumerable<T> messages)
@@ -198,7 +165,6 @@ namespace NsqSharp.Bus
             }
 
             // iterate on topic/message partition
-            var nsqdHttpAddresses = _defaultProducerNsqdHttpEndpoints;
             foreach (var kvp in topicMessages)
             {
                 var thisTopic = kvp.Key;
@@ -210,10 +176,7 @@ namespace NsqSharp.Bus
                     continue;
 
                 // send
-                foreach (var nsqdAddress in nsqdHttpAddresses)
-                {
-                    NsqdHttpApi.PublishMultiple(nsqdAddress, thisTopic, msgByteList);
-                }
+                _nsqdPublisher.MultiPublish(thisTopic, msgByteList);
             }
         }
 
@@ -271,6 +234,7 @@ namespace NsqSharp.Bus
 
                     item.Consumer = consumer;
 
+                    // TODO: needs to be async, cannot block Windows Service from starting.
                     consumer.ConnectToNsqLookupd(item.NsqLookupdHttpAddresses);
                 }
             }
@@ -303,6 +267,8 @@ namespace NsqSharp.Bus
             }
 
             wg.Wait();
+
+            _nsqdPublisher.Stop();
 
             Trace.WriteLine("Stopped.");
         }

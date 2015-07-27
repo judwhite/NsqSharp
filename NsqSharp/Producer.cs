@@ -145,8 +145,8 @@ namespace NsqSharp
         /// </summary>
         /// <param name="nsqdAddress">The nsqd address.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="config">The config. After Config is passed into NewProducer the values are
-        /// no longer mutable (they are copied).</param>
+        /// <param name="config">The config. Values are copied, changing the properties on <paramref name="config"/>
+        /// after the constructor is called will have no effect on the <see cref="Producer"/>.</param>
         public Producer(string nsqdAddress, ILogger logger, Config config)
             : this(nsqdAddress, logger, config, null)
         {
@@ -265,7 +265,7 @@ namespace NsqSharp
         ///     <see cref="ProducerResponse.Args"/>.
         /// </param>
         /// <returns>A Task&lt;ProducerResponse&gt; which can be awaited.</returns>
-        public Task<ProducerResponse> MultiPublishAsync(string topic, ICollection<byte[]> bodies, params object[] args)
+        public Task<ProducerResponse> MultiPublishAsync(string topic, IEnumerable<byte[]> bodies, params object[] args)
         {
             var doneChan = new Chan<ProducerResponse>();
             var cmd = Command.MultiPublish(topic, bodies);
@@ -301,7 +301,7 @@ namespace NsqSharp
         /// </summary>
         /// <param name="topic">The topic to publish to.</param>
         /// <param name="bodies">The collection of message bodies.</param>
-        public void MultiPublish(string topic, ICollection<byte[]> bodies)
+        public void MultiPublish(string topic, IEnumerable<byte[]> bodies)
         {
             var cmd = Command.MultiPublish(topic, bodies);
             sendCommand(cmd);

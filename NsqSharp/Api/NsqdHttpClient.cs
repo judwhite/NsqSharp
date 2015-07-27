@@ -3,63 +3,68 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
-using NsqSharp.Core;
 using NsqSharp.Utils;
 
-namespace NsqSharp
+namespace NsqSharp.Api
 {
-    /// <summary>
-    /// HTTP API for interacting with nsqd. See http://nsq.io/components/nsqd.html#pub.
-    /// </summary>
-    public static class NsqdHttpApi
+    /// <summary>An nsqd HTTP client.</summary>
+    public class NsqdHttpClient : NsqHttpApi
     {
-        /// <summary>
-        /// Publishes a message.
-        /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
-        /// <param name="topic">The topic.</param>
-        /// <param name="message">The message.</param>
-        /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string Publish(string nsqdHttpAddress, string topic, string message)
-        {
-            CheckArguments(nsqdHttpAddress, topic);
-            if (message == null)
-                throw new ArgumentNullException("message");
+        private readonly int _timeoutMilliseconds;
 
-            return Publish(nsqdHttpAddress, topic, Encoding.UTF8.GetBytes(message));
+        /// <summary>Initializes a new instance of <see cref="NsqLookupdHttpClient" /> class.</summary>
+        /// <param name="nsqdHttpAddress">The nsqlookupd HTTP address.</param>
+        /// <param name="httpRequestTimeout">The HTTP request timeout.</param>
+        public NsqdHttpClient(string nsqdHttpAddress, TimeSpan httpRequestTimeout)
+            : base(nsqdHttpAddress, httpRequestTimeout)
+        {
+            _timeoutMilliseconds = (int)httpRequestTimeout.TotalMilliseconds;
         }
 
         /// <summary>
         /// Publishes a message.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <param name="message">The message.</param>
         /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string Publish(string nsqdHttpAddress, string topic, byte[] message)
+        public string Publish(string topic, string message)
         {
-            CheckArguments(nsqdHttpAddress, topic);
+            ValidateTopic(topic);
             if (message == null)
                 throw new ArgumentNullException("message");
 
-            return Post(GetEndpoint(nsqdHttpAddress, string.Format("/pub?topic={0}", topic)), message);
+            return Publish(topic, Encoding.UTF8.GetBytes(message));
+        }
+
+        /// <summary>
+        /// Publishes a message.
+        /// </summary>
+        /// <param name="topic">The topic.</param>
+        /// <param name="message">The message.</param>
+        /// <returns>The response from the nsqd HTTP server.</returns>
+        public string Publish(string topic, byte[] message)
+        {
+            ValidateTopic(topic);
+            if (message == null)
+                throw new ArgumentNullException("message");
+
+            string route = string.Format("/pub?topic={0}", topic);
+            return Post(route, message);
         }
 
         /// <summary>
         /// Publishes multiple messages. More efficient than calling Publish several times for the same message type.
         /// See http://nsq.io/components/nsqd.html#mpub.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <param name="messages">The messages.</param>
         /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string PublishMultiple(string nsqdHttpAddress, string topic, IEnumerable<string> messages)
+        public string PublishMultiple(string topic, IEnumerable<string> messages)
         {
-            CheckArguments(nsqdHttpAddress, topic);
+            ValidateTopic(topic);
             if (messages == null)
                 throw new ArgumentNullException("messages");
 
@@ -69,21 +74,21 @@ namespace NsqSharp
 
             string body = string.Join("\n", messagesArray);
 
-            return Post(GetEndpoint(nsqdHttpAddress, string.Format("/mpub?topic={0}", topic)), Encoding.UTF8.GetBytes(body));
+            string route = string.Format("/mpub?topic={0}", topic);
+            return Post(route, Encoding.UTF8.GetBytes(body));
         }
 
         /// <summary>
         /// Publishes multiple messages. More efficient than calling Publish several times for the same message type.
         /// See http://nsq.io/components/nsqd.html#mpub.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <param name="messages">The messages.</param>
         /// <returns>The response from the nsqd HTTP server.</returns>
         [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
-        public static string PublishMultiple(string nsqdHttpAddress, string topic, IEnumerable<byte[]> messages)
+        public string PublishMultiple(string topic, IEnumerable<byte[]> messages)
         {
-            CheckArguments(nsqdHttpAddress, topic);
+            ValidateTopic(topic);
             if (messages == null)
                 throw new ArgumentNullException("messages");
 
@@ -109,166 +114,99 @@ namespace NsqSharp
                 body = memoryStream.ToArray();
             }
 
-            return Post(GetEndpoint(nsqdHttpAddress, string.Format("/mpub?topic={0}&binary=true", topic)), body);
-        }
-
-        /// <summary>
-        /// Create a topic. Topic creation happens automatically on publish, use this method to pre-create a topic.
-        /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
-        /// <param name="topic">The topic.</param>
-        /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string CreateTopic(string nsqdHttpAddress, string topic)
-        {
-            CheckArguments(nsqdHttpAddress, topic);
-
-            string route = string.Format("/topic/create?topic={0}", topic);
-            return Post(GetEndpoint(nsqdHttpAddress, route));
-        }
-
-        /// <summary>
-        /// Delete a topic.
-        /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
-        /// <param name="topic">The topic.</param>
-        /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string DeleteTopic(string nsqdHttpAddress, string topic)
-        {
-            CheckArguments(nsqdHttpAddress, topic);
-
-            string route = string.Format("/topic/delete?topic={0}", topic);
-            return Post(GetEndpoint(nsqdHttpAddress, route));
-        }
-
-        /// <summary>
-        /// Create a channel. Channel creation happens automatically on subscribe, use this method to pre-create a channel.
-        /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
-        /// <param name="topic">The topic.</param>
-        /// <param name="channel">The channel.</param>
-        /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string CreateChannel(string nsqdHttpAddress, string topic, string channel)
-        {
-            CheckArguments(nsqdHttpAddress, topic, channel);
-
-            string route = string.Format("/channel/create?topic={0}&channel={1}", topic, channel);
-            return Post(GetEndpoint(nsqdHttpAddress, route));
-        }
-
-        /// <summary>
-        /// Delete a channel.
-        /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
-        /// <param name="topic">The topic.</param>
-        /// <param name="channel">The channel.</param>
-        /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string DeleteChannel(string nsqdHttpAddress, string topic, string channel)
-        {
-            CheckArguments(nsqdHttpAddress, topic, channel);
-
-            string route = string.Format("/channel/delete?topic={0}&channel={1}", topic, channel);
-            return Post(GetEndpoint(nsqdHttpAddress, route));
+            string route = string.Format("/mpub?topic={0}&binary=true", topic);
+            return Post(route, body);
         }
 
         /// <summary>
         /// Empty a topic.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string EmptyTopic(string nsqdHttpAddress, string topic)
+        public string EmptyTopic(string topic)
         {
-            CheckArguments(nsqdHttpAddress, topic);
+            ValidateTopic(topic);
 
             string route = string.Format("/topic/empty?topic={0}", topic);
-            return Post(GetEndpoint(nsqdHttpAddress, route));
+            return Post(route);
         }
 
         /// <summary>
         /// Empty a channel.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <param name="channel">The channel.</param>
         /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string EmptyChannel(string nsqdHttpAddress, string topic, string channel)
+        public string EmptyChannel(string topic, string channel)
         {
-            CheckArguments(nsqdHttpAddress, topic, channel);
+            ValidateTopicAndChannel(topic, channel);
 
             string route = string.Format("/channel/empty?topic={0}&channel={1}", topic, channel);
-            return Post(GetEndpoint(nsqdHttpAddress, route));
+            return Post(route);
         }
 
         /// <summary>
         /// Pause a topic.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string PauseTopic(string nsqdHttpAddress, string topic)
+        public string PauseTopic(string topic)
         {
-            CheckArguments(nsqdHttpAddress, topic);
+            ValidateTopic(topic);
 
             string route = string.Format("/topic/pause?topic={0}", topic);
-            return Post(GetEndpoint(nsqdHttpAddress, route));
+            return Post(route);
         }
 
         /// <summary>
         /// Unpause a topic.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string UnpauseTopic(string nsqdHttpAddress, string topic)
+        public string UnpauseTopic(string topic)
         {
-            CheckArguments(nsqdHttpAddress, topic);
+            ValidateTopic(topic);
 
-            string route = string.Format("topic={0}", topic);
-            return Post(GetEndpoint(nsqdHttpAddress, route));
+            string route = string.Format("/topic/unpause?topic={0}", topic);
+            return Post(route);
         }
 
         /// <summary>
         /// Pause a channel.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <param name="channel">The channel.</param>
         /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string PauseChannel(string nsqdHttpAddress, string topic, string channel)
+        public string PauseChannel(string topic, string channel)
         {
-            CheckArguments(nsqdHttpAddress, topic, channel);
+            ValidateTopicAndChannel(topic, channel);
 
             string route = string.Format("/channel/pause?topic={0}&channel={1}", topic, channel);
-            return Post(GetEndpoint(nsqdHttpAddress, route));
+            return Post(route);
         }
 
         /// <summary>
         /// Unpause a channel.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <param name="topic">The topic.</param>
         /// <param name="channel">The channel.</param>
         /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string UnpauseChannel(string nsqdHttpAddress, string topic, string channel)
+        public string UnpauseChannel(string topic, string channel)
         {
-            CheckArguments(nsqdHttpAddress, topic, channel);
+            ValidateTopicAndChannel(topic, channel);
 
             string route = string.Format("/channel/unpause?topic={0}&channel={1}", topic, channel);
-            return Post(GetEndpoint(nsqdHttpAddress, route));
+            return Post(route);
         }
 
         /// <summary>
         /// Returns internal instrumented statistics.
         /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
         /// <returns>The response from the nsqd HTTP server.</returns>
-        public static NsqdStats Stats(string nsqdHttpAddress)
+        public NsqdStats GetStats()
         {
-            if (string.IsNullOrEmpty(nsqdHttpAddress))
-                throw new ArgumentNullException("nsqdHttpAddress");
-
-            string endpoint = GetEndpoint(nsqdHttpAddress, "/stats?format=json");
-            byte[] respBody = Request(endpoint, "GET");
+            string endpoint = GetFullUrl("/stats?format=json");
+            byte[] respBody = Request(endpoint, HttpMethod.Get, _timeoutMilliseconds);
 
             var serializer = new DataContractJsonSerializer(typeof(NsqdStatsResponse));
             using (var memoryStream = new MemoryStream(respBody))
@@ -276,145 +214,10 @@ namespace NsqSharp
                 return ((NsqdStatsResponse)serializer.ReadObject(memoryStream)).Data;
             }
         }
-
-        /// <summary>
-        /// Returns version information.
-        /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
-        /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string Info(string nsqdHttpAddress)
-        {
-            if (string.IsNullOrEmpty(nsqdHttpAddress))
-                throw new ArgumentNullException("nsqdHttpAddress");
-
-            return Get(GetEndpoint(nsqdHttpAddress, "/info"));
-        }
-
-        /// <summary>
-        /// Monitoring endpoint, should return OK. It returns a 500 if it is not healthy. At the moment, the only unhealthy
-        /// state would be if it failed to write messages to disk when overflow occurred.
-        /// </summary>
-        /// <param name="nsqdHttpAddress">The nsqd HTTP address.</param>
-        /// <returns>The response from the nsqd HTTP server.</returns>
-        public static string Ping(string nsqdHttpAddress)
-        {
-            if (string.IsNullOrEmpty(nsqdHttpAddress))
-                throw new ArgumentNullException("nsqdHttpAddress");
-
-            return Get(GetEndpoint(nsqdHttpAddress, "/ping"));
-        }
-
-        private static void CheckArguments(string nsqdHttpAddress, string topic)
-        {
-            if (string.IsNullOrEmpty(nsqdHttpAddress))
-                throw new ArgumentNullException("nsqdHttpAddress");
-            if (string.IsNullOrEmpty(topic))
-                throw new ArgumentNullException("topic");
-            if (!Protocol.IsValidTopicName(topic))
-                throw new ArgumentException(string.Format("'{0}' is an invalid topic name", topic), "topic");
-        }
-
-        private static void CheckArguments(string nsqdHttpAddress, string topic, string channel)
-        {
-            if (string.IsNullOrEmpty(nsqdHttpAddress))
-                throw new ArgumentNullException("nsqdHttpAddress");
-            if (string.IsNullOrEmpty(topic))
-                throw new ArgumentNullException("topic");
-            if (string.IsNullOrEmpty(channel))
-                throw new ArgumentNullException("channel");
-            if (!Protocol.IsValidTopicName(topic))
-                throw new ArgumentException(string.Format("'{0}' is an invalid topic name", topic), "topic");
-            if (!Protocol.IsValidTopicName(channel))
-                throw new ArgumentException(string.Format("'{0}' is an invalid channel name", channel), "channel");
-        }
-
-        private static string GetEndpoint(string nsqdHttpAddress, string route)
-        {
-            if (string.IsNullOrEmpty(nsqdHttpAddress))
-                throw new ArgumentNullException("nsqdHttpAddress");
-            if (string.IsNullOrEmpty(route))
-                throw new ArgumentNullException("route");
-
-            if (!nsqdHttpAddress.StartsWith("http"))
-                nsqdHttpAddress = "http://" + nsqdHttpAddress;
-            nsqdHttpAddress = nsqdHttpAddress.TrimEnd(new[] { '/' });
-            route = route.TrimStart(new[] { '/' });
-
-            return string.Format("{0}/{1}", nsqdHttpAddress, route);
-        }
-
-        private static string Post(string endpoint, byte[] body = null)
-        {
-            var bytes = Request(endpoint, "POST", body);
-            return Encoding.UTF8.GetString(bytes);
-        }
-
-        private static string Get(string endpoint)
-        {
-            var bytes = Request(endpoint, "GET");
-            return Encoding.UTF8.GetString(bytes);
-        }
-
-        private static byte[] Request(string endpoint, string method, byte[] body = null)
-        {
-            const int timeoutMilliseconds = 2000;
-
-            var webRequest = (HttpWebRequest)WebRequest.Create(endpoint);
-            webRequest.Proxy = WebRequest.DefaultWebProxy;
-            webRequest.Method = method;
-            webRequest.Timeout = timeoutMilliseconds;
-            webRequest.Accept = "text/html,application/vnd.nsq; version=1.0";
-            webRequest.UserAgent = string.Format("{0}/{1}", ClientInfo.ClientName, ClientInfo.Version);
-
-            if (method == "POST" && body != null && body.Length != 0)
-            {
-                webRequest.ContentType = "application/x-www-form-urlencoded";
-                webRequest.ContentLength = body.Length;
-
-                using (var request = webRequest.GetRequestStream())
-                {
-                    request.Write(body, 0, body.Length);
-                }
-            }
-
-            using (var httpResponse = (HttpWebResponse)webRequest.GetResponse())
-            using (var responseStream = httpResponse.GetResponseStream())
-            {
-                if (responseStream == null)
-                    throw new Exception("responseStream is null");
-
-                int contentLength = (int)httpResponse.ContentLength;
-                byte[] responseBytes;
-
-                var buf = new byte[256];
-                using (MemoryStream memoryStream = new MemoryStream())
-                {
-                    int bytesRead;
-                    do
-                    {
-                        bytesRead = responseStream.Read(buf, 0, 256);
-                        memoryStream.Write(buf, 0, bytesRead);
-                    } while (bytesRead > 0);
-
-                    responseBytes = memoryStream.ToArray();
-                }
-
-                if (responseBytes.Length < contentLength)
-                    throw new Exception(string.Format("premature end of response stream {0}", endpoint));
-
-                if (httpResponse.StatusCode != HttpStatusCode.OK)
-                {
-                    throw new Exception(string.Format("got response {0} {1} {2}",
-                        httpResponse.StatusDescription, endpoint, Encoding.UTF8.GetString(responseBytes)));
-                }
-
-                return responseBytes;
-            }
-        }
     }
 
     /// <summary>
-    /// Statistics information response wrapper for nsqd. See <see cref="NsqdHttpApi.Stats"/>.
+    /// Statistics information response wrapper for nsqd. See <see cref="NsqdHttpClient.GetStats"/>.
     /// </summary>
     [DataContract]
     public class NsqdStatsResponse
@@ -431,7 +234,7 @@ namespace NsqSharp
     }
 
     /// <summary>
-    /// Statistics information for nsqd. See <see cref="NsqdHttpApi.Stats"/>.
+    /// Statistics information for nsqd. See <see cref="NsqdHttpClient.GetStats"/>.
     /// </summary>
     [DataContract]
     public class NsqdStats
@@ -448,7 +251,7 @@ namespace NsqSharp
     }
 
     /// <summary>
-    /// Topic information for nsqd. See <see cref="NsqdHttpApi.Stats"/>.
+    /// Topic information for nsqd. See <see cref="NsqdHttpClient.GetStats"/>.
     /// </summary>
     [DataContract]
     public class NsqdStatsTopic
@@ -477,7 +280,7 @@ namespace NsqSharp
     }
 
     /// <summary>
-    /// Channel information for nsqd. See <see cref="NsqdHttpApi.Stats"/>.
+    /// Channel information for nsqd. See <see cref="NsqdHttpClient.GetStats"/>.
     /// </summary>
     [DataContract]
     public class NsqdStatsChannel
@@ -518,7 +321,7 @@ namespace NsqSharp
     }
 
     /// <summary>
-    /// Client information for nsqd. See <see cref="NsqdHttpApi.Stats"/>.
+    /// Client information for nsqd. See <see cref="NsqdHttpClient.GetStats"/>.
     /// </summary>
     [DataContract]
     public class NsqdStatsClient
