@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NsqSharp.Api;
 using NsqSharp.Core;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Channels;
@@ -21,6 +22,15 @@ namespace NsqSharp.Tests
 #endif
     public class ProducerTest
     {
+        private static readonly NsqdHttpClient _nsqdHttpClient;
+        private static readonly NsqLookupdHttpClient _nsqLookupdHttpClient;
+
+        static ProducerTest()
+        {
+            _nsqdHttpClient = new NsqdHttpClient("127.0.0.1:4151", TimeSpan.FromSeconds(5));
+            _nsqLookupdHttpClient = new NsqLookupdHttpClient("127.0.0.1:4161", TimeSpan.FromSeconds(5));
+        }
+
         [Test]
         public void TestProducerConnection()
         {
@@ -39,8 +49,8 @@ namespace NsqSharp.Tests
             }
             finally
             {
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
+                _nsqdHttpClient.DeleteTopic(topicName);
+                _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
         }
 
@@ -66,8 +76,8 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
+                _nsqdHttpClient.DeleteTopic(topicName);
+                _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
         }
 
@@ -95,8 +105,8 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
+                _nsqdHttpClient.DeleteTopic(topicName);
+                _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
         }
 
@@ -136,8 +146,8 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
+                _nsqdHttpClient.DeleteTopic(topicName);
+                _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
         }
 
@@ -175,8 +185,8 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
+                _nsqdHttpClient.DeleteTopic(topicName);
+                _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
         }
 
@@ -225,8 +235,8 @@ namespace NsqSharp.Tests
             finally
             {
                 w.Stop();
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
+                _nsqdHttpClient.DeleteTopic(topicName);
+                _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
         }
 

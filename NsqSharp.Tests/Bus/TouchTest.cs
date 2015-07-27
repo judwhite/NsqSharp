@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Newtonsoft.Json;
+using NsqSharp.Api;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.BuiltIn;
@@ -21,6 +22,15 @@ namespace NsqSharp.Tests.Bus
 #endif
     public class TouchTest
     {
+        private static readonly NsqdHttpClient _nsqdHttpClient;
+        private static readonly NsqLookupdHttpClient _nsqLookupdHttpClient;
+
+        static TouchTest()
+        {
+            _nsqdHttpClient = new NsqdHttpClient("127.0.0.1:4151", TimeSpan.FromSeconds(5));
+            _nsqLookupdHttpClient = new NsqLookupdHttpClient("127.0.0.1:4161", TimeSpan.FromSeconds(5));
+        }
+
         [Test]
         public void Given_A_Timeout_Of_3_Seconds_When_Touch_Not_Executed_Then_Nsqd_Should_Requeue()
         {
@@ -29,9 +39,8 @@ namespace NsqSharp.Tests.Bus
 
             var container = new Container();
 
-            NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", topicName);
-            NsqdHttpApi.CreateTopic("http://127.0.0.1:4161", topicName);
-            NsqdHttpApi.CreateChannel("http://127.0.0.1:4161", topicName, channelName);
+            _nsqdHttpClient.CreateTopic(topicName);
+            _nsqLookupdHttpClient.CreateTopic(topicName);
 
             try
             {
@@ -39,20 +48,20 @@ namespace NsqSharp.Tests.Bus
                     new StructureMapObjectBuilder(container),
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                     new MessageAuditorStub(),
-                    new MessageTypeToTopicDictionary(new Dictionary<Type, string> { 
-                        { typeof(TouchTestMessage), topicName } 
+                    new MessageTypeToTopicDictionary(new Dictionary<Type, string> {
+                        { typeof(TouchTestMessage), topicName }
                     }),
-                    new HandlerTypeToChannelDictionary(new Dictionary<Type, string> { 
-                        { typeof(BlockingNoTouchTestHandler), channelName } 
+                    new HandlerTypeToChannelDictionary(new Dictionary<Type, string> {
+                        { typeof(BlockingNoTouchTestHandler), channelName }
                     }),
                     defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
                     defaultThreadsPerHandler: 1,
-                    defaultConsumerNsqConfig: new Config
+                    nsqConfig: new Config
                     {
-                        MessageTimeout = TimeSpan.FromSeconds(3),
+                        MessageTimeout = TimeSpan.FromSeconds(3.5),
                         MaxRequeueDelay = TimeSpan.Zero,
                         LookupdPollJitter = 0,
-                        LookupdPollInterval = TimeSpan.FromSeconds(5)
+                        LookupdPollInterval = TimeSpan.FromSeconds(1)
                     },
                     preCreateTopicsAndChannels: true
                 ));
@@ -68,16 +77,16 @@ namespace NsqSharp.Tests.Bus
                 Assert.IsTrue(signaled, "signaled");
 
                 int count = BlockingNoTouchTestHandler.GetCount();
-                Assert.AreEqual(2, count);
+                Assert.AreEqual(2, count, "first count check");
 
                 // give it a chance to possibly requeue/reprocess again
                 Thread.Sleep(100);
 
                 count = BlockingNoTouchTestHandler.GetCount();
-                Assert.AreEqual(2, count);
+                Assert.AreEqual(2, count, "second count check");
 
                 // checks stats from http server
-                var stats = NsqdHttpApi.Stats("http://127.0.0.1:4151");
+                var stats = _nsqdHttpClient.GetStats();
                 var topic = stats.Topics.Single(p => p.TopicName == topicName);
                 var channel = topic.Channels.Single(p => p.ChannelName == channelName);
 
@@ -96,8 +105,8 @@ namespace NsqSharp.Tests.Bus
             finally
             {
                 BusService.Stop();
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4151", topicName);
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", topicName);
+                _nsqdHttpClient.DeleteTopic(topicName);
+                _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
         }
 
@@ -109,9 +118,8 @@ namespace NsqSharp.Tests.Bus
 
             var container = new Container();
 
-            NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", topicName);
-            NsqdHttpApi.CreateTopic("http://127.0.0.1:4161", topicName);
-            NsqdHttpApi.CreateChannel("http://127.0.0.1:4161", topicName, channelName);
+            _nsqdHttpClient.CreateTopic(topicName);
+            _nsqLookupdHttpClient.CreateTopic(topicName);
 
             try
             {
@@ -119,20 +127,20 @@ namespace NsqSharp.Tests.Bus
                     new StructureMapObjectBuilder(container),
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                     new MessageAuditorStub(),
-                    new MessageTypeToTopicDictionary(new Dictionary<Type, string> { 
-                        { typeof(TouchTestMessage), topicName } 
+                    new MessageTypeToTopicDictionary(new Dictionary<Type, string> {
+                        { typeof(TouchTestMessage), topicName }
                     }),
-                    new HandlerTypeToChannelDictionary(new Dictionary<Type, string> { 
-                        { typeof(BlockingTouchTestHandler), channelName } 
+                    new HandlerTypeToChannelDictionary(new Dictionary<Type, string> {
+                        { typeof(BlockingTouchTestHandler), channelName }
                     }),
                     defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
                     defaultThreadsPerHandler: 1,
-                    defaultConsumerNsqConfig: new Config
+                    nsqConfig: new Config
                     {
                         MessageTimeout = TimeSpan.FromSeconds(3),
                         MaxRequeueDelay = TimeSpan.Zero,
                         LookupdPollJitter = 0,
-                        LookupdPollInterval = TimeSpan.FromSeconds(5)
+                        LookupdPollInterval = TimeSpan.FromSeconds(1)
                     },
                     preCreateTopicsAndChannels: true
                 ));
@@ -157,7 +165,7 @@ namespace NsqSharp.Tests.Bus
                 Assert.AreEqual(1, count);
 
                 // checks stats from http server
-                var stats = NsqdHttpApi.Stats("http://127.0.0.1:4151");
+                var stats = _nsqdHttpClient.GetStats();
                 var topic = stats.Topics.Single(p => p.TopicName == topicName);
                 var channel = topic.Channels.Single(p => p.ChannelName == channelName);
 
@@ -176,8 +184,8 @@ namespace NsqSharp.Tests.Bus
             finally
             {
                 BusService.Stop();
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4151", topicName);
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", topicName);
+                _nsqdHttpClient.DeleteTopic(topicName);
+                _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
         }
 

@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using NsqSharp.Core;
+using NsqSharp.Tests.Utils.Extensions;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Channels;
 using NsqSharp.Utils.Extensions;
@@ -65,7 +66,7 @@ namespace NsqSharp.Tests
 
             for (int i = 0; i < n.got.Count; i++)
             {
-                Console.WriteLine("{0}: {1}", i, Encoding.UTF8.GetString(n.got[i]));
+                Console.WriteLine("[{0}] {1}: {2}", n.gotTime[i].Formatted(), i, Encoding.UTF8.GetString(n.got[i]));
             }
 
             var expected = new[]
@@ -143,7 +144,7 @@ namespace NsqSharp.Tests
 
             for (int i = 0; i < n.got.Count; i++)
             {
-                Console.WriteLine("{0}: {1}", i, Encoding.UTF8.GetString(n.got[i]));
+                Console.WriteLine("[{0}] {1}: {2}", n.gotTime[i].Formatted(), i, Encoding.UTF8.GetString(n.got[i]));
             }
 
             var expected = new[]
@@ -216,7 +217,7 @@ namespace NsqSharp.Tests
 
             for (int i = 0; i < n.got.Count; i++)
             {
-                Console.WriteLine("{0}: {1}", i, Encoding.UTF8.GetString(n.got[i]));
+                Console.WriteLine("[{0}] {1}: {2}", n.gotTime[i].Formatted(), i, Encoding.UTF8.GetString(n.got[i]));
             }
 
             var expected = new[]
@@ -255,7 +256,7 @@ namespace NsqSharp.Tests
                              new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              // needed to exit test
-                             new instruction(500 * Time.Millisecond, -1, "exit")
+                             new instruction(1000 * Time.Millisecond, -1, "exit")
                          };
 
             n = new mockNSQD(script, IPAddress.Loopback, 4154);
@@ -270,7 +271,7 @@ namespace NsqSharp.Tests
 
             for (int i = 0; i < n.got.Count; i++)
             {
-                Console.WriteLine("{0}: {1}", i, Encoding.UTF8.GetString(n.got[i]));
+                Console.WriteLine("[{0}] {1}: {2}", DateTime.Now.Formatted(), i, Encoding.UTF8.GetString(n.got[i]));
             }
 
             expected = new[]
@@ -305,7 +306,7 @@ namespace NsqSharp.Tests
         public void HandleMessage(IMessage message)
         {
             string body = Encoding.UTF8.GetString(message.Body);
-            Console.WriteLine(body);
+            Console.WriteLine("[{0}] {1}", DateTime.Now.Formatted(), body);
 
             switch (body)
             {
@@ -367,6 +368,7 @@ namespace NsqSharp.Tests
         private IPAddress ipAddr { get; set; }
 
         public List<byte[]> got { get; set; }
+        public List<DateTime> gotTime { get; set; }
         public string tcpAddr { get; set; }
         private int listenPort { get; set; }
         public Chan<int> exitChan { get; set; }
@@ -376,6 +378,7 @@ namespace NsqSharp.Tests
             this.script = script;
             exitChan = new Chan<int>();
             got = new List<byte[]>();
+            gotTime = new List<DateTime>();
             ipAddr = addr;
             listenPort = port;
             GoFunc.Run(listen, "mockNSQD:listen");
@@ -387,7 +390,7 @@ namespace NsqSharp.Tests
             tcpAddr = tcpListener.LocalEndpoint.ToString();
             tcpListener.Start();
 
-            Console.WriteLine("TCP: listening on {0}", tcpListener.LocalEndpoint);
+            Console.WriteLine("[{0}] TCP: listening on {1}", DateTime.Now.Formatted(), tcpListener.LocalEndpoint);
 
             while (true)
             {
@@ -404,7 +407,7 @@ namespace NsqSharp.Tests
                 GoFunc.Run(() => handle(conn, remoteEndPoint), "mockNSQD:handle");
             }
 
-            Console.WriteLine("TCP: closing {0}", tcpListener.LocalEndpoint);
+            Console.WriteLine("[{0}] TCP: closing {1}", DateTime.Now.Formatted(), tcpListener.LocalEndpoint);
             exitChan.Close();
         }
 
@@ -412,7 +415,7 @@ namespace NsqSharp.Tests
         {
             int idx = 0;
 
-            Console.WriteLine("TCP: new client({0})", remoteEndPoint);
+            Console.WriteLine("[{0}] TCP: new client({1})", DateTime.Now.Formatted(), remoteEndPoint);
 
             using (var rdr = new BinaryReader(conn.GetStream()))
             using (var connw = new BinaryWriter(conn.GetStream()))
@@ -451,8 +454,9 @@ namespace NsqSharp.Tests
                         .CaseReceive(readChan, line =>
                         {
                             string strLine = Encoding.UTF8.GetString(line);
-                            Console.WriteLine("mock: '{0}'", strLine);
+                            Console.WriteLine("[{0}] mock: '{1}'", DateTime.Now.Formatted(), strLine);
                             got.Add(line);
+                            gotTime.Add(DateTime.Now);
                             var args = strLine.Split(' ');
                             switch (args[0])
                             {
@@ -462,7 +466,9 @@ namespace NsqSharp.Tests
                                         byte[] l = rdr.ReadBytes(4);
                                         int size = Binary.BigEndian.Int32(l);
                                         byte[] b = rdr.ReadBytes(size);
-                                        Console.WriteLine(Encoding.UTF8.GetString(b));
+
+                                        Console.WriteLine(string.Format("[{0}] {1}",
+                                            DateTime.Now.Formatted(), Encoding.UTF8.GetString(b)));
                                     }
                                     catch (Exception ex)
                                     {
@@ -491,7 +497,7 @@ namespace NsqSharp.Tests
                             {
                                 if (rdyCount == 0)
                                 {
-                                    Console.WriteLine("!!! RDY == 0");
+                                    Console.WriteLine("[{0}] !!! RDY == 0", DateTime.Now.Formatted());
                                     scriptTime = Time.After(script[idx + 1].delay);
                                     doWrite = false;
                                 }

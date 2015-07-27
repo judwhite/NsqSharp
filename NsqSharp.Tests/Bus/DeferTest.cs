@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Newtonsoft.Json;
+using NsqSharp.Api;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.BuiltIn;
@@ -20,6 +21,15 @@ namespace NsqSharp.Tests.Bus
 #endif
     public class DeferTest
     {
+        private static readonly NsqdHttpClient _nsqdHttpClient;
+        private static readonly NsqLookupdHttpClient _nsqLookupdHttpClient;
+
+        static DeferTest()
+        {
+            _nsqdHttpClient = new NsqdHttpClient("127.0.0.1:4151", TimeSpan.FromSeconds(5));
+            _nsqLookupdHttpClient = new NsqLookupdHttpClient("127.0.0.1:4161", TimeSpan.FromSeconds(5));
+        }
+
         [Test]
         public void Given_A_Default_Requeue_Of_90s_When_Requeued_For_3s_Then_Message_Should_Be_Reprocessed_Within_Tolerance()
         {
@@ -28,9 +38,8 @@ namespace NsqSharp.Tests.Bus
 
             var container = new Container();
 
-            NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", topicName);
-            NsqdHttpApi.CreateTopic("http://127.0.0.1:4161", topicName);
-            NsqdHttpApi.CreateChannel("http://127.0.0.1:4161", topicName, channelName);
+            _nsqdHttpClient.CreateTopic(topicName);
+            _nsqLookupdHttpClient.CreateTopic(topicName);
 
             try
             {
@@ -46,10 +55,10 @@ namespace NsqSharp.Tests.Bus
                     }),
                     defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
                     defaultThreadsPerHandler: 1,
-                    defaultConsumerNsqConfig: new Config
+                    nsqConfig: new Config
                     {
                         LookupdPollJitter = 0,
-                        LookupdPollInterval = TimeSpan.FromSeconds(5),
+                        LookupdPollInterval = TimeSpan.FromMilliseconds(10),
                         DefaultRequeueDelay = TimeSpan.FromSeconds(90)
                     },
                     preCreateTopicsAndChannels: true
@@ -88,7 +97,7 @@ namespace NsqSharp.Tests.Bus
                 Assert.Less(deferDelta, TimeSpan.FromSeconds(0.5), "deferDelta");
 
                 // checks stats from http server
-                var stats = NsqdHttpApi.Stats("http://127.0.0.1:4151");
+                var stats = _nsqdHttpClient.GetStats();
                 var topic = stats.Topics.Single(p => p.TopicName == topicName);
                 var channel = topic.Channels.Single(p => p.ChannelName == channelName);
 
@@ -107,8 +116,8 @@ namespace NsqSharp.Tests.Bus
             finally
             {
                 BusService.Stop();
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4151", topicName);
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", topicName);
+                _nsqdHttpClient.DeleteTopic(topicName);
+                _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
         }
 

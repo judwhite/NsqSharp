@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using NsqSharp.Api;
 using NsqSharp.Core;
 using NsqSharp.Utils.Extensions;
 using NUnit.Framework;
@@ -17,6 +18,15 @@ namespace NsqSharp.Tests
 #endif
     public class ConsumerTest
     {
+        private static readonly NsqdHttpClient _nsqdHttpClient;
+        private static readonly NsqLookupdHttpClient _nsqLookupdHttpClient;
+
+        static ConsumerTest()
+        {
+            _nsqdHttpClient = new NsqdHttpClient("127.0.0.1:4151", TimeSpan.FromSeconds(5));
+            _nsqLookupdHttpClient = new NsqLookupdHttpClient("127.0.0.1:4161", TimeSpan.FromSeconds(5));
+        }
+
         [Test]
         public void TestConsumer()
         {
@@ -176,8 +186,8 @@ namespace NsqSharp.Tests
             }
             finally
             {
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
+                _nsqdHttpClient.DeleteTopic(topicName);
+                _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
         }
 

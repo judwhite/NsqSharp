@@ -90,6 +90,7 @@
     <Compile Include="Core\CommandTest.cs" />
     <Compile Include="ConfigTest.cs" />
     <Compile Include="ConsumerTest.cs" />
+    <Compile Include="Utils\Extensions\DateTimeExtensions.cs" />
     <Compile Include="Utils\Extensions\ObjectExtensionsTest.cs" />
     <Compile Include="Utils\Extensions\OptAttributeExtensionsTest.cs" />
     <Compile Include="Utils\Extensions\PropertyInfoExtensionsTest.cs" />

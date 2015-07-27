@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Newtonsoft.Json;
+using NsqSharp.Api;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.BuiltIn;
@@ -21,6 +22,15 @@ namespace NsqSharp.Tests.Bus
 #endif
     public class MessageMutatorTest
     {
+        private static readonly NsqdHttpClient _nsqdHttpClient;
+        private static readonly NsqLookupdHttpClient _nsqLookupdHttpClient;
+
+        static MessageMutatorTest()
+        {
+            _nsqdHttpClient = new NsqdHttpClient("127.0.0.1:4151", TimeSpan.FromSeconds(5));
+            _nsqLookupdHttpClient = new NsqLookupdHttpClient("127.0.0.1:4161", TimeSpan.FromSeconds(5));
+        }
+
         [Test]
         public void SetParentIdInMessageMutator()
         {
@@ -29,8 +39,8 @@ namespace NsqSharp.Tests.Bus
 
             var container = new Container();
 
-            NsqdHttpApi.CreateTopic("http://127.0.0.1:4161", topicName);
-            NsqdHttpApi.CreateChannel("http://127.0.0.1:4161", topicName, channelName);
+            _nsqLookupdHttpClient.CreateTopic(topicName);
+            _nsqLookupdHttpClient.CreateChannel(topicName, channelName);
 
             try
             {
@@ -46,7 +56,7 @@ namespace NsqSharp.Tests.Bus
                     }),
                     defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
                     defaultThreadsPerHandler: 1,
-                    defaultConsumerNsqConfig: new Config
+                    nsqConfig: new Config
                     {
                         MaxRequeueDelay = TimeSpan.Zero,
                         LookupdPollJitter = 0,
@@ -81,7 +91,7 @@ namespace NsqSharp.Tests.Bus
                 Assert.AreEqual("Two", dict[secondMessage].Text, "dict[secondMessage].Text");
 
                 // get stats from http server
-                var stats = NsqdHttpApi.Stats("http://127.0.0.1:4151");
+                var stats = _nsqdHttpClient.GetStats();
 
                 // assert stats from http server
                 var topic = stats.Topics.Single(p => p.TopicName == topicName);
@@ -103,8 +113,8 @@ namespace NsqSharp.Tests.Bus
             {
                 BusService.Stop();
 
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4151", topicName);
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", topicName);
+                _nsqdHttpClient.DeleteTopic(topicName);
+                _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
         }
 
@@ -208,23 +218,23 @@ namespace NsqSharp.Tests.Bus
             Console.WriteLine(childTopicName1);
             Console.WriteLine(childTopicName2);
 
-            NsqdHttpApi.CreateTopic("http://127.0.0.1:4161", originalTopicName);
-            NsqdHttpApi.CreateChannel("http://127.0.0.1:4161", originalTopicName, channelName);
+            _nsqLookupdHttpClient.CreateTopic(originalTopicName);
+            _nsqLookupdHttpClient.CreateChannel(originalTopicName, channelName);
 
-            NsqdHttpApi.CreateTopic("http://127.0.0.1:4161", topicName1);
-            NsqdHttpApi.CreateChannel("http://127.0.0.1:4161", topicName1, channelName);
+            _nsqLookupdHttpClient.CreateTopic(topicName1);
+            _nsqLookupdHttpClient.CreateChannel(topicName1, channelName);
 
-            NsqdHttpApi.CreateTopic("http://127.0.0.1:4161", topicName2);
-            NsqdHttpApi.CreateChannel("http://127.0.0.1:4161", topicName2, channelName);
+            _nsqLookupdHttpClient.CreateTopic(topicName2);
+            _nsqLookupdHttpClient.CreateChannel(topicName2, channelName);
 
-            NsqdHttpApi.CreateTopic("http://127.0.0.1:4161", childOriginalTopicName);
-            NsqdHttpApi.CreateChannel("http://127.0.0.1:4161", childOriginalTopicName, channelName);
+            _nsqLookupdHttpClient.CreateTopic(childOriginalTopicName);
+            _nsqLookupdHttpClient.CreateChannel(childOriginalTopicName, channelName);
 
-            NsqdHttpApi.CreateTopic("http://127.0.0.1:4161", childTopicName1);
-            NsqdHttpApi.CreateChannel("http://127.0.0.1:4161", childTopicName1, channelName);
+            _nsqLookupdHttpClient.CreateTopic(childTopicName1);
+            _nsqLookupdHttpClient.CreateChannel(childTopicName1, channelName);
 
-            NsqdHttpApi.CreateTopic("http://127.0.0.1:4161", childTopicName2);
-            NsqdHttpApi.CreateChannel("http://127.0.0.1:4161", childTopicName2, channelName);
+            _nsqLookupdHttpClient.CreateTopic(childTopicName2);
+            _nsqLookupdHttpClient.CreateChannel(childTopicName2, channelName);
 
             try
             {
@@ -244,7 +254,7 @@ namespace NsqSharp.Tests.Bus
                     }),
                     defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
                     defaultThreadsPerHandler: 1,
-                    defaultConsumerNsqConfig: new Config
+                    nsqConfig: new Config
                     {
                         MaxRequeueDelay = TimeSpan.Zero,
                         LookupdPollJitter = 0,
@@ -304,7 +314,7 @@ namespace NsqSharp.Tests.Bus
                 Assert.AreEqual("Three Child", childThirdMessage.Value.Text, "childThirdMessage.Value.Text");
 
                 // get stats from http server
-                var stats = NsqdHttpApi.Stats("http://127.0.0.1:4151");
+                var stats = _nsqdHttpClient.GetStats();
 
                 foreach (var topicName in new[] { 
                     originalTopicName, topicName1, topicName2,
@@ -349,23 +359,23 @@ namespace NsqSharp.Tests.Bus
             {
                 BusService.Stop();
 
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4151", originalTopicName);
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", originalTopicName);
+                _nsqdHttpClient.DeleteTopic(originalTopicName);
+                _nsqLookupdHttpClient.DeleteTopic(originalTopicName);
 
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4151", topicName1);
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", topicName1);
+                _nsqdHttpClient.DeleteTopic(topicName1);
+                _nsqLookupdHttpClient.DeleteTopic(topicName1);
 
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4151", topicName2);
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", topicName2);
+                _nsqdHttpClient.DeleteTopic(topicName2);
+                _nsqLookupdHttpClient.DeleteTopic(topicName2);
 
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4151", childOriginalTopicName);
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", childOriginalTopicName);
+                _nsqdHttpClient.DeleteTopic(childOriginalTopicName);
+                _nsqLookupdHttpClient.DeleteTopic(childOriginalTopicName);
 
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4151", childTopicName1);
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", childTopicName1);
+                _nsqdHttpClient.DeleteTopic(childTopicName1);
+                _nsqLookupdHttpClient.DeleteTopic(childTopicName1);
 
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4151", childTopicName2);
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", childTopicName2);
+                _nsqdHttpClient.DeleteTopic(childTopicName2);
+                _nsqLookupdHttpClient.DeleteTopic(childTopicName2);
             }
         }
 

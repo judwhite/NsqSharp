@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Newtonsoft.Json;
+using NsqSharp.Api;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.BuiltIn;
@@ -16,6 +17,15 @@ namespace NsqSharp.Tests.Bus
     [TestFixture]
     public class MultiImplementIHandleMessagesTest
     {
+        private static readonly NsqdHttpClient _nsqdHttpClient;
+        private static readonly NsqLookupdHttpClient _nsqLookupdHttpClient;
+
+        static MultiImplementIHandleMessagesTest()
+        {
+            _nsqdHttpClient = new NsqdHttpClient("127.0.0.1:4151", TimeSpan.FromSeconds(5));
+            _nsqLookupdHttpClient = new NsqLookupdHttpClient("127.0.0.1:4161", TimeSpan.FromSeconds(5));
+        }
+
 #if !RUN_INTEGRATION_TESTS
         [Ignore("NSQD Integration Test")]
 #endif
@@ -50,10 +60,10 @@ namespace NsqSharp.Tests.Bus
                     }),
                     defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
                     defaultThreadsPerHandler: 4,
-                    defaultConsumerNsqConfig: new Config
+                    nsqConfig: new Config
                     {
                         LookupdPollJitter = 0,
-                        LookupdPollInterval = TimeSpan.FromSeconds(5),
+                        LookupdPollInterval = TimeSpan.FromSeconds(1),
                     }
                 ));
 
@@ -108,7 +118,7 @@ namespace NsqSharp.Tests.Bus
                 Assert.Less(highIndex, lowCountAtSendHigh + 50, "highIndex");
 
                 // checks stats from http server
-                var stats = NsqdHttpApi.Stats("http://127.0.0.1:4151");
+                var stats = _nsqdHttpClient.GetStats();
 
                 // assert high priority stats
                 var highTopic = stats.Topics.Single(p => p.TopicName == highPriorityTopicName);
@@ -145,10 +155,10 @@ namespace NsqSharp.Tests.Bus
             finally
             {
                 BusService.Stop();
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4151", highPriorityTopicName);
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", highPriorityTopicName);
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4151", lowPriorityTopicName);
-                NsqdHttpApi.DeleteTopic("http://127.0.0.1:4161", lowPriorityTopicName);
+                _nsqdHttpClient.DeleteTopic(highPriorityTopicName);
+                _nsqLookupdHttpClient.DeleteTopic(highPriorityTopicName);
+                _nsqdHttpClient.DeleteTopic(lowPriorityTopicName);
+                _nsqLookupdHttpClient.DeleteTopic(lowPriorityTopicName);
             }
         }
 
@@ -181,10 +191,10 @@ namespace NsqSharp.Tests.Bus
                     }),
                 defaultNsqLookupdHttpEndpoints: new[] { "0.0.0.0:0" },
                 defaultThreadsPerHandler: 4,
-                defaultConsumerNsqConfig: new Config
+                nsqConfig: new Config
                 {
                     LookupdPollJitter = 0,
-                    LookupdPollInterval = TimeSpan.FromSeconds(5),
+                    LookupdPollInterval = TimeSpan.FromSeconds(1),
                 }
             )));
 
@@ -210,10 +220,10 @@ namespace NsqSharp.Tests.Bus
                     }),
                 defaultNsqLookupdHttpEndpoints: new[] { "0.0.0.0:0" },
                 defaultThreadsPerHandler: 4,
-                defaultConsumerNsqConfig: new Config
+                nsqConfig: new Config
                 {
                     LookupdPollJitter = 0,
-                    LookupdPollInterval = TimeSpan.FromSeconds(5),
+                    LookupdPollInterval = TimeSpan.FromSeconds(1),
                 }
             ));
         }

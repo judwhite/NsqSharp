@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using NsqSharp.Api;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Channels;
 using NsqSharp.Utils.Extensions;
@@ -14,6 +15,15 @@ namespace NsqSharp.Tests
 #endif
     public class ProducerBenchmarkTest
     {
+        private static readonly NsqdHttpClient _nsqdHttpClient;
+        private static readonly NsqLookupdHttpClient _nsqLookupdHttpClient;
+
+        static ProducerBenchmarkTest()
+        {
+            _nsqdHttpClient = new NsqdHttpClient("127.0.0.1:4151", TimeSpan.FromSeconds(5));
+            _nsqLookupdHttpClient = new NsqLookupdHttpClient("127.0.0.1:4161", TimeSpan.FromSeconds(5));
+        }
+
         [Test]
         public void BenchmarkTcp1()
         {
@@ -121,8 +131,8 @@ namespace NsqSharp.Tests
             }
             finally
             {
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
+                _nsqdHttpClient.DeleteTopic(topicName);
+                _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
         }
 
@@ -147,7 +157,7 @@ namespace NsqSharp.Tests
                         startCh.Receive();
                         for (int i = 0; i < benchmarkNum / parallel; i++)
                         {
-                            NsqdHttpApi.Publish("127.0.0.1:4151", topicName, body);
+                            _nsqdHttpClient.Publish(topicName, body);
                         }
                         wg.Done();
                     }, "ProducerBenchmarkHttpTest: sendLoop");
@@ -163,8 +173,8 @@ namespace NsqSharp.Tests
             }
             finally
             {
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4151", topicName);
-                NsqdHttpApi.DeleteTopic("127.0.0.1:4161", topicName);
+                _nsqdHttpClient.DeleteTopic(topicName);
+                _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
         }
     }
