@@ -9,7 +9,6 @@ using NsqSharp.Core;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Channels;
 using NsqSharp.Utils.Extensions;
-using NsqSharp.Utils.Loggers;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests
@@ -29,7 +28,7 @@ namespace NsqSharp.Tests
             try
             {
                 var config = new Config();
-                var w = new Producer("127.0.0.1:4150", new ConsoleLogger(LogLevel.Debug), config);
+                var w = new Producer("127.0.0.1:4150", config);
 
                 w.Publish(topicName, "test");
 
@@ -51,7 +50,7 @@ namespace NsqSharp.Tests
             const int msgCount = 10;
 
             var config = new Config();
-            var w = new Producer("127.0.0.1:4150", new ConsoleLogger(LogLevel.Debug), config);
+            var w = new Producer("127.0.0.1:4150", config);
             try
             {
                 for (int i = 0; i < msgCount; i++)
@@ -78,7 +77,7 @@ namespace NsqSharp.Tests
             const int msgCount = 10;
 
             var config = new Config();
-            var w = new Producer("127.0.0.1:4150", new ConsoleLogger(LogLevel.Debug), config);
+            var w = new Producer("127.0.0.1:4150", config);
             try
             {
                 var testData = new List<byte[]>();
@@ -107,7 +106,7 @@ namespace NsqSharp.Tests
             const int msgCount = 10;
 
             var config = new Config();
-            var w = new Producer("127.0.0.1:4150", new ConsoleLogger(LogLevel.Debug), config);
+            var w = new Producer("127.0.0.1:4150", config);
             try
             {
                 var tasks = new List<Task<ProducerResponse>>();
@@ -148,7 +147,7 @@ namespace NsqSharp.Tests
             const int msgCount = 10;
 
             var config = new Config();
-            var w = new Producer("127.0.0.1:4150", new ConsoleLogger(LogLevel.Debug), config);
+            var w = new Producer("127.0.0.1:4150", config);
             try
             {
                 var testData = new List<byte[]>();
@@ -187,7 +186,7 @@ namespace NsqSharp.Tests
 
             var config = new Config();
             config.HeartbeatInterval = TimeSpan.FromMilliseconds(100);
-            var w = new Producer("127.0.0.1:4150", new ConsoleLogger(LogLevel.Debug), config);
+            var w = new Producer("127.0.0.1:4150", config);
 
             try
             {
@@ -205,7 +204,7 @@ namespace NsqSharp.Tests
             {
                 config = new Config();
                 config.HeartbeatInterval = TimeSpan.FromMilliseconds(1000);
-                w = new Producer("127.0.0.1:4150", new ConsoleLogger(LogLevel.Debug), config);
+                w = new Producer("127.0.0.1:4150", config);
 
                 w.Publish(topicName, "publish_test_case");
 
@@ -235,7 +234,7 @@ namespace NsqSharp.Tests
             var config = new Config();
             config.DefaultRequeueDelay = TimeSpan.Zero;
             config.MaxBackoffDuration = TimeSpan.FromMilliseconds(50);
-            var q = new Consumer(topicName, "ch", new ConsoleLogger(LogLevel.Debug), config);
+            var q = new Consumer(topicName, "ch", config);
 
             var h = new ConsumerHandler { q = q };
             q.AddHandler(h);
@@ -268,10 +267,6 @@ namespace NsqSharp.Tests
         public override string ToString()
         {
             return "127.0.0.1:0";
-        }
-
-        public void SetLogger(ILogger l, string format)
-        {
         }
 
         public IdentifyResponse Connect()

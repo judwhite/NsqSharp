@@ -7,7 +7,6 @@ using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.BuiltIn;
 using NsqSharp.Core;
-using NsqSharp.Utils.Loggers;
 using StructureMap;
 
 namespace Echo.Bus
@@ -38,7 +37,6 @@ namespace Echo.Bus
                 ),
                 busStateChangedHandler: new BusStateChangedHandler(),
                 defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
-                nsqLogger: new ConsoleLogger(LogLevel.Info), // default = TraceLogger
                 defaultThreadsPerHandler: 1, // threads per handler. tweak based on use case.
                 preCreateTopicsAndChannels: true // pre-create topics so we dont have to wait for an nsqlookupd cycle
             ));

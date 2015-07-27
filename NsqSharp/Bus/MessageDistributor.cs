@@ -12,7 +12,6 @@ namespace NsqSharp.Bus
     {
         private readonly NsqBus _bus;
         private readonly IObjectBuilder _objectBuilder;
-        private readonly ILogger _logger;
         private readonly IMessageSerializer _serializer;
         private readonly MethodInfo _handleMethod;
         private readonly Type _handlerType;
@@ -25,7 +24,6 @@ namespace NsqSharp.Bus
         public MessageDistributor(
             NsqBus bus,
             IObjectBuilder objectBuilder,
-            ILogger logger,
             MessageHandlerMetadata messageHandlerMetadata
         )
         {
@@ -33,14 +31,12 @@ namespace NsqSharp.Bus
                 throw new ArgumentNullException("bus");
             if (objectBuilder == null)
                 throw new ArgumentNullException("objectBuilder");
-            if (logger == null)
-                throw new ArgumentNullException("logger");
+
             if (messageHandlerMetadata == null)
                 throw new ArgumentNullException("messageHandlerMetadata");
 
             _bus = bus;
             _objectBuilder = objectBuilder;
-            _logger = logger;
 
             _serializer = messageHandlerMetadata.Serializer;
             _handlerType = messageHandlerMetadata.HandlerType;
@@ -100,7 +96,7 @@ namespace NsqSharp.Bus
             {
                 messageInformation.Finished = DateTime.UtcNow;
 
-                _messageAuditor.TryOnFailed(_logger, _bus,
+                _messageAuditor.TryOnFailed(_bus,
                     new FailedMessageInformation
                     (
                         messageInformation,
@@ -124,7 +120,7 @@ namespace NsqSharp.Bus
             {
                 messageInformation.Finished = DateTime.UtcNow;
 
-                _messageAuditor.TryOnFailed(_logger, _bus,
+                _messageAuditor.TryOnFailed(_bus,
                     new FailedMessageInformation
                     (
                         messageInformation,
@@ -140,7 +136,7 @@ namespace NsqSharp.Bus
 
             // Handle message
             messageInformation.DeserializedMessageBody = value;
-            _messageAuditor.TryOnReceived(_logger, _bus, messageInformation);
+            _messageAuditor.TryOnReceived(_bus, messageInformation);
 
             try
             {
@@ -157,7 +153,7 @@ namespace NsqSharp.Bus
                 else
                     message.Finish();
 
-                _messageAuditor.TryOnFailed(_logger, _bus,
+                _messageAuditor.TryOnFailed(_bus,
                     new FailedMessageInformation
                     (
                         messageInformation,
@@ -172,7 +168,7 @@ namespace NsqSharp.Bus
 
             messageInformation.Finished = DateTime.UtcNow;
 
-            _messageAuditor.TryOnSucceeded(_logger, _bus, messageInformation);
+            _messageAuditor.TryOnSucceeded(_bus, messageInformation);
         }
 
         public void LogFailedMessage(IMessage message)
@@ -189,7 +185,7 @@ namespace NsqSharp.Bus
                 Started = DateTime.UtcNow
             };
 
-            _messageAuditor.TryOnFailed(_logger, _bus,
+            _messageAuditor.TryOnFailed(_bus,
                 new FailedMessageInformation
                 (
                     messageInformation,
