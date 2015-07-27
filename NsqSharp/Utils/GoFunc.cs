@@ -1,49 +1,52 @@
 ﻿using System;
-using System.Threading;
-using NsqSharp.Core;
-using NsqSharp.Utils.Loggers;
 
 namespace NsqSharp.Utils
 {
+  using System.Threading;
+  using NsqSharp.Logging;
+
+  /// <summary>
+  /// Go routines
+  /// </summary>
+  public static class GoFunc
+  {
     /// <summary>
-    /// Go routines
+    /// Run a new "goroutine".
     /// </summary>
-    public static class GoFunc
+    /// <param name="action">The method to execute.</param>
+    /// <param name="threadName">The name to assign to the thread (optional).</param>
+    public static void Run(Action action, string threadName = null)
     {
-        /// <summary>
-        /// Run a new "goroutine".
-        /// </summary>
-        /// <param name="action">The method to execute.</param>
-        /// <param name="threadName">The name to assign to the thread (optional).</param>
-        public static void Run(Action action, string threadName = null)
+      if (action == null)
+      {
+        throw new ArgumentNullException("action");
+      }
+
+      var t = new Thread(() =>
+      {
+        try
         {
-            if (action == null)
-                throw new ArgumentNullException("action");
-
-            var t = new Thread(() =>
-                               {
-                                   try
-                                   {
-                                       action();
-                                   }
-                                   catch (ThreadAbortException)
-                                   {
-                                   }
-                                   catch (Exception ex)
-                                   {
-                                       var logger = new TraceLogger();
-                                       logger.Output(LogLevel.Critical, string.Format("{0} - {1}", threadName, ex));
-                                       logger.Flush();
-                                       throw;
-                                   }
-                               }
-                );
-
-            if (threadName != null)
-                t.Name = threadName;
-
-            t.IsBackground = true;
-            t.Start();
+          action();
         }
+        catch (ThreadAbortException)
+        {
+        }
+        catch (Exception ex)
+        {
+          var logger = LogProvider.GetCurrentClassLogger();
+          logger.Fatal(string.Format("{0} - {1}", threadName, ex));
+          throw;
+        }
+      }
+        );
+
+      if (threadName != null)
+      {
+        t.Name = threadName;
+      }
+
+      t.IsBackground = true;
+      t.Start();
     }
+  }
 }

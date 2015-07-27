@@ -2,7 +2,6 @@
 using NsqSharp;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
-using NsqSharp.Utils.Loggers;
 using PingPong.Configuration;
 using PingPong.Configuration.Audit;
 using PingPong.Configuration.Mappings;
@@ -37,7 +36,6 @@ namespace PingPong
                                               MaxBackoffDuration = TimeSpan.FromSeconds(2),
                                               MaxAttempts = 2
                                           },
-                nsqLogger: new TraceLogger(), // logger for NSQ events (see also ConsoleLogger, or implement your own)
                 preCreateTopicsAndChannels: true // pre-create topics so we dont have to wait for an nsqlookupd cycle
             ));
 

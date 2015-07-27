@@ -173,11 +173,11 @@ namespace NsqSharp.Core
         /// See http://bitly.github.io/nsq/clients/tcp_protocol_spec.html#identify for information
         /// on the supported options
         /// </summary>
-        public static Command Identify(IdentifyRequest request)
+        public static Command Identify(Conn.IdentifyRequest request)
         {
             byte[] body;
 
-            var serializer = new DataContractJsonSerializer(typeof(IdentifyRequest));
+            var serializer = new DataContractJsonSerializer(typeof(Conn.IdentifyRequest));
 
             using (var memoryStream = new MemoryStream())
             {

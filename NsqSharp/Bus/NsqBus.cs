@@ -7,6 +7,7 @@ using NsqSharp.Bus.Configuration.Providers;
 using NsqSharp.Bus.Utils;
 using NsqSharp.Core;
 using NsqSharp.Utils;
+using NsqSharp.Logging;
 
 namespace NsqSharp.Bus
 {
@@ -17,7 +18,7 @@ namespace NsqSharp.Bus
         private readonly IMessageTypeToTopicProvider _messageTypeToTopicProvider;
         private readonly IMessageSerializer _sendMessageSerializer;
         private readonly string[] _defaultProducerNsqdHttpEndpoints;
-        private readonly ILogger _nsqLogger;
+        private readonly ILog _nsqLogger;
         private readonly IMessageMutator _messageMutator;
         private readonly IMessageTopicRouter _messageTopicRouter;
 
@@ -30,7 +31,6 @@ namespace NsqSharp.Bus
             IMessageTypeToTopicProvider messageTypeToTopicProvider,
             IMessageSerializer sendMessageSerializer,
             string[] defaultProducerNsqdHttpEndpoints,
-            ILogger nsqLogger,
             IMessageMutator messageMutator,
             IMessageTopicRouter messageTopicRouter
         )
@@ -47,14 +47,12 @@ namespace NsqSharp.Bus
                 throw new ArgumentNullException("defaultProducerNsqdHttpEndpoints");
             if (defaultProducerNsqdHttpEndpoints.Length == 0)
                 throw new ArgumentException("must contain elements", "defaultProducerNsqdHttpEndpoints");
-            if (nsqLogger == null)
-                throw new ArgumentNullException("nsqLogger");
 
             _topicChannelHandlers = topicChannelHandlers;
             _dependencyInjectionContainer = dependencyInjectionContainer;
             _messageTypeToTopicProvider = messageTypeToTopicProvider;
             _sendMessageSerializer = sendMessageSerializer;
-            _nsqLogger = nsqLogger;
+            _nsqLogger = LogProvider.For<NsqBus>();
             _messageMutator = messageMutator;
             _messageTopicRouter = messageTopicRouter;
 
@@ -259,8 +257,8 @@ namespace NsqSharp.Bus
             {
                 foreach (var item in topicChannelHandler.Value)
                 {
-                    var consumer = new Consumer(item.Topic, item.Channel, _nsqLogger, item.Config);
-                    var distributor = new MessageDistributor(this, _dependencyInjectionContainer, _nsqLogger, item);
+                    var consumer = new Consumer(item.Topic, item.Channel, item.Config);
+                    var distributor = new MessageDistributor(this, _dependencyInjectionContainer, item);
                     consumer.AddHandler(distributor, item.InstanceCount);
 
                     // TODO: max_in_flight vs item.InstanceCount

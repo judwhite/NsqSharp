@@ -1,59 +1,59 @@
 ﻿using System;
-using NsqSharp.Core;
 
 namespace NsqSharp.Bus.Logging
 {
-    internal static class IMessageAuditorExtensions
+  using NsqSharp.Logging;
+
+  internal static class IMessageAuditorExtensions
+  {
+    private static readonly ILog Log = LogProvider.GetCurrentClassLogger();
+
+    public static void TryOnReceived(
+      this IMessageAuditor messageAuditor,
+      IBus bus,
+      MessageInformation messageInformation
+      )
     {
-        public static void TryOnReceived(
-            this IMessageAuditor messageAuditor,
-            ILogger logger,
-            IBus bus,
-            MessageInformation messageInformation
-        )
-        {
-            try
-            {
-                messageAuditor.OnReceived(bus, messageInformation);
-            }
-            catch (Exception ex)
-            {
-                logger.Output(LogLevel.Error, string.Format("messageAuditor.OnReceived - {0}", ex));
-            }
-        }
-
-        public static void TryOnSucceeded(
-            this IMessageAuditor messageAuditor,
-            ILogger logger,
-            IBus bus,
-            MessageInformation messageInformation
-        )
-        {
-            try
-            {
-                messageAuditor.OnSucceeded(bus, messageInformation);
-            }
-            catch (Exception ex)
-            {
-                logger.Output(LogLevel.Error, string.Format("messageAuditor.OnSucceeded - {0}", ex));
-            }
-        }
-
-        public static void TryOnFailed(
-            this IMessageAuditor messageAuditor,
-            ILogger logger,
-            IBus bus,
-            FailedMessageInformation failedMessageInformation
-        )
-        {
-            try
-            {
-                messageAuditor.OnFailed(bus, failedMessageInformation);
-            }
-            catch (Exception ex)
-            {
-                logger.Output(LogLevel.Error, string.Format("messageAuditor.OnFailed - {0}", ex));
-            }
-        }
+      try
+      {
+        messageAuditor.OnReceived(bus, messageInformation);
+      }
+      catch (Exception ex)
+      {
+        Log.ErrorException("messageAuditor.OnReceived", ex);
+      }
     }
+
+    public static void TryOnSucceeded(
+      this IMessageAuditor messageAuditor,
+      IBus bus,
+      MessageInformation messageInformation
+      )
+    {
+      try
+      {
+        messageAuditor.OnSucceeded(bus, messageInformation);
+      }
+      catch (Exception ex)
+      {
+        Log.ErrorException("messageAuditor.OnSucceeded", ex);
+      }
+    }
+
+    public static void TryOnFailed(
+      this IMessageAuditor messageAuditor,
+      IBus bus,
+      FailedMessageInformation failedMessageInformation
+      )
+    {
+      try
+      {
+        messageAuditor.OnFailed(bus, failedMessageInformation);
+      }
+      catch (Exception ex)
+      {
+        Log.ErrorException("messageAuditor.OnFailed", ex);
+      }
+    }
+  }
 }

@@ -8,7 +8,7 @@ using NsqSharp.Bus.Logging;
 using NsqSharp.Bus.Utils;
 using NsqSharp.Core;
 using NsqSharp.Utils;
-using NsqSharp.Utils.Loggers;
+using NsqSharp.Logging;
 
 namespace NsqSharp.Bus.Configuration
 {
@@ -29,7 +29,7 @@ namespace NsqSharp.Bus.Configuration
         private readonly IHandlerTypeToChannelProvider _handlerTypeToChannelProvider;
         private readonly string[] _defaultNsqdHttpEndpoints;
         private readonly IBusStateChangedHandler _busStateChangedHandler;
-        private readonly ILogger _nsqLogger;
+        private readonly ILog _nsqLogger;
         private readonly bool _preCreateTopicsAndChannels;
         private readonly IMessageMutator _messageMutator;
         private readonly IMessageTopicRouter _messageTopicRouter;
@@ -51,8 +51,6 @@ namespace NsqSharp.Bus.Configuration
         /// <param name="defaultThreadsPerHandler">The default number of threads per message handler.</param>
         /// <param name="defaultConsumerNsqConfig">The default NSQ Consumer <see cref="Config"/> (optional).</param>
         /// <param name="busStateChangedHandler">Handle bus start and stop events (optional).</param>
-        /// <param name="nsqLogger">The <see cref="ILogger"/> used by NsqSharp when communicating with nsqd/nsqlookupd.
-        /// (default = <see cref="TraceLogger"/>).</param>
         /// <param name="preCreateTopicsAndChannels">Set to <c>true</c> to pre-create all registered topics and channels
         /// on the local nsqd instance listening on 127.0.0.1:4151; useful for self-contained clusters (default =
         /// <c>false</c>).</param>
@@ -69,7 +67,6 @@ namespace NsqSharp.Bus.Configuration
             int defaultThreadsPerHandler,
             Config defaultConsumerNsqConfig = null,
             IBusStateChangedHandler busStateChangedHandler = null,
-            ILogger nsqLogger = null,
             bool preCreateTopicsAndChannels = false,
             IMessageMutator messageMutator = null,
             IMessageTopicRouter messageTopicRouter = null
@@ -105,7 +102,7 @@ namespace NsqSharp.Bus.Configuration
             _defaultThreadsPerHandler = defaultThreadsPerHandler;
             _defaultNsqdHttpEndpoints = new[] { "127.0.0.1:4151" };
             _busStateChangedHandler = busStateChangedHandler;
-            _nsqLogger = nsqLogger ?? new TraceLogger();
+            _nsqLogger = LogProvider.For<BusConfiguration>();
             _preCreateTopicsAndChannels = preCreateTopicsAndChannels;
             _messageMutator = messageMutator;
             _messageTopicRouter = messageTopicRouter;
@@ -331,8 +328,7 @@ namespace NsqSharp.Bus.Configuration
                                 }
                                 catch (Exception ex)
                                 {
-                                    _nsqLogger.Output(LogLevel.Error,
-                                        string.Format("error creating topic/channel on {0} - {1}", localNsqdHttpAddress, ex));
+                                    _nsqLogger.ErrorException(string.Format("error creating topic/channel on {0}", localNsqdHttpAddress), ex);
                                 }
 
                                 wg.Done();
@@ -353,7 +349,6 @@ namespace NsqSharp.Bus.Configuration
                 _messageTypeToTopicProvider,
                 _defaultMessageSerializer,
                 _defaultNsqdHttpEndpoints,
-                _nsqLogger,
                 _messageMutator,
                 _messageTopicRouter
             );

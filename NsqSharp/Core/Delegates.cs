@@ -5,67 +5,6 @@ namespace NsqSharp.Core
     // https://github.com/bitly/go-nsq/blob/master/delegates.go#L50
 
     /// <summary>
-    /// LogLevel specifies the severity of a given log message
-    /// </summary>
-    public enum LogLevel
-    {
-        /// <summary>Debug</summary>
-        Debug = 0,
-        /// <summary>Info</summary>
-        Info = 1,
-        /// <summary>Warning</summary>
-        Warning = 2,
-        /// <summary>Error</summary>
-        Error = 3,
-        /// <summary>Critical</summary>
-        Critical = 4,
-    }
-
-    /// <summary>
-    /// Logging constants
-    /// </summary>
-    internal static class Log
-    {
-        /// <summary>LogLevelDebugPrefix</summary>
-        public const string DebugPrefix = "DBG";
-        /// <summary>LogLevelInfoPrefix</summary>
-        public const string InfoPrefix = "INF";
-        /// <summary>LogLevelWarningPrefix</summary>
-        public const string WarningPrefix = "WRN";
-        /// <summary>LogLevelErrorPrefix</summary>
-        public const string ErrorPrefix = "ERR";
-        /// <summary>LogLevelCriticalPrefix</summary>
-        public const string CriticalPrefix = "FAT";
-
-        /// <summary>LogPrefix Resolution</summary>
-        internal static string Prefix(LogLevel lvl)
-        {
-            string prefix = string.Empty;
-
-            switch (lvl)
-            {
-                case LogLevel.Debug:
-                    prefix = DebugPrefix;
-                    break;
-                case LogLevel.Info:
-                    prefix = InfoPrefix;
-                    break;
-                case LogLevel.Warning:
-                    prefix = WarningPrefix;
-                    break;
-                case LogLevel.Error:
-                    prefix = ErrorPrefix;
-                    break;
-                case LogLevel.Critical:
-                    prefix = CriticalPrefix;
-                    break;
-            }
-
-            return prefix;
-        }
-    }
-
-    /// <summary>
     /// MessageDelegate is an interface of methods that are used as
     /// callbacks in Message
     /// </summary>
