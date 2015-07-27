@@ -255,7 +255,7 @@ namespace NsqSharp.Tests
                              new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              // needed to exit test
-                             new instruction(1000 * Time.Millisecond, -1, "exit")
+                             new instruction(500 * Time.Millisecond, -1, "exit")
                          };
 
             n = new mockNSQD(script, IPAddress.Loopback, 4154);
