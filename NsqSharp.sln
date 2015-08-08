@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp", "NsqSharp\NsqSharp.csproj", "{7327244D-E163-4C35-9C1A-8DBDF06B9408}"
 EndProject
@@ -46,6 +46,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Echo.Bus", "Examples\Echo.Bus\Echo.Bus.csproj", "{37AE967D-CBF2-4233-A0BF-ABF00395AD41}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp.Tests", "NsqSharp.Tests\NsqSharp.Tests.csproj", "{6962DA1C-5532-4C12-B2A3-36B53877A1FB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LogProcessCrash", "LogProcessCrash", "{836ECD8F-C1DC-466B-839D-3D4607F5C837}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogProcessCrash", "Examples\LogProcessCrash\LogProcessCrash.csproj", "{438C8E35-46DD-4136-8BBB-40082B305C8D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -132,6 +136,12 @@ Global
 		{6962DA1C-5532-4C12-B2A3-36B53877A1FB}.Integration Tests|Any CPU.Build.0 = Integration Tests|Any CPU
 		{6962DA1C-5532-4C12-B2A3-36B53877A1FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6962DA1C-5532-4C12-B2A3-36B53877A1FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{438C8E35-46DD-4136-8BBB-40082B305C8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{438C8E35-46DD-4136-8BBB-40082B305C8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{438C8E35-46DD-4136-8BBB-40082B305C8D}.Integration Tests|Any CPU.ActiveCfg = Release|Any CPU
+		{438C8E35-46DD-4136-8BBB-40082B305C8D}.Integration Tests|Any CPU.Build.0 = Release|Any CPU
+		{438C8E35-46DD-4136-8BBB-40082B305C8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{438C8E35-46DD-4136-8BBB-40082B305C8D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -154,5 +164,7 @@ Global
 		{D3CEFEEE-D22A-4DF2-A490-B060F248204B} = {B2B89447-9D7D-45B3-A275-640F948FC856}
 		{37AE967D-CBF2-4233-A0BF-ABF00395AD41} = {8D49FFDD-038E-4E35-A67B-EDC2BBEA7FDC}
 		{6962DA1C-5532-4C12-B2A3-36B53877A1FB} = {AEA8D8ED-997C-429D-8555-50020C9CC570}
+		{836ECD8F-C1DC-466B-839D-3D4607F5C837} = {0FB50390-80AC-4487-BC62-C9311FD60D4D}
+		{438C8E35-46DD-4136-8BBB-40082B305C8D} = {836ECD8F-C1DC-466B-839D-3D4607F5C837}
 	EndGlobalSection
 EndGlobal
