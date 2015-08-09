@@ -61,8 +61,11 @@ namespace NsqSharp.Bus.Configuration
         /// <param name="messageTopicRouter">The message router used to specify custom message-to-topic routing logic; used
         /// to override <paramref name="messageTypeToTopicProvider"/> (optional).</param>
         /// <param name="nsqdPublisher">The implementation responsible for handling <see cref="M:IBus.Send"/> calls (optional;
-        /// default = <see cref="NsqdTcpPublisher"/> using 127.0.0.1:4150 and the specified <paramref name="nsqLogger"/>)
-        /// and <paramref name="nsqConfig"/>.</param>
+        /// default = <see cref="NsqdTcpPublisher"/> using 127.0.0.1:4150 and the specified <paramref name="nsqLogger"/>
+        /// and <paramref name="nsqConfig"/>).</param>
+        /// <param name="logOnProcessCrash"><c>true</c> to log <see cref="E:AppDomain.CurrentDomain.UnhandledException" /> using
+        /// <paramref name="nsqLogger"/> (default = <c>true</c>).
+        /// </param>
         public BusConfiguration(
             IObjectBuilder dependencyInjectionContainer,
             IMessageSerializer defaultMessageSerializer,
@@ -77,9 +80,16 @@ namespace NsqSharp.Bus.Configuration
             bool preCreateTopicsAndChannels = false,
             IMessageMutator messageMutator = null,
             IMessageTopicRouter messageTopicRouter = null,
-            INsqdPublisher nsqdPublisher = null
+            INsqdPublisher nsqdPublisher = null,
+            bool logOnProcessCrash = true
         )
         {
+            _nsqLogger = nsqLogger ?? new TraceLogger();
+            if (logOnProcessCrash)
+            {
+                AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            }
+
             if (dependencyInjectionContainer == null)
                 throw new ArgumentNullException("dependencyInjectionContainer");
             if (defaultMessageSerializer == null)
@@ -109,7 +119,6 @@ namespace NsqSharp.Bus.Configuration
             _nsqConfig = nsqConfig ?? new Config();
             _defaultThreadsPerHandler = defaultThreadsPerHandler;
             _busStateChangedHandler = busStateChangedHandler;
-            _nsqLogger = nsqLogger ?? new TraceLogger();
             _preCreateTopicsAndChannels = preCreateTopicsAndChannels;
             _messageMutator = messageMutator;
             _messageTopicRouter = messageTopicRouter;
@@ -117,6 +126,18 @@ namespace NsqSharp.Bus.Configuration
 
             var handlerTypes = _handlerTypeToChannelProvider.GetHandlerTypes();
             AddMessageHandlers(handlerTypes);
+        }
+
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            string message;
+            if (e.ExceptionObject != null)
+                message = e.ExceptionObject.ToString();
+            else
+                message = "Process Crash";
+
+            _nsqLogger.Output(LogLevel.Critical, message);
+            _nsqLogger.Flush();
         }
 
         /// <summary>

@@ -234,7 +234,6 @@ namespace NsqSharp.Bus
 
                     item.Consumer = consumer;
 
-                    // TODO: needs to be async, cannot block Windows Service from starting.
                     consumer.ConnectToNsqLookupd(item.NsqLookupdHttpAddresses);
                 }
             }
