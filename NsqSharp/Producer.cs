@@ -57,6 +57,8 @@ namespace NsqSharp
     /// </summary>
     public sealed partial class Producer
     {
+        private static long _instCount;
+
         internal long _id;
         private readonly string _addr;
         private IConn _conn;
@@ -161,7 +163,7 @@ namespace NsqSharp
             if (config == null)
                 throw new ArgumentNullException("config");
 
-            _id = (long)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds % 10000; // TODO: Remove
+            _id = Interlocked.Increment(ref _instCount);
 
             config.Validate();
 
