@@ -15,7 +15,6 @@ namespace LogProcessCrash
 {
     class Program
     {
-        private static readonly TraceSource _traceSource = new TraceSource("LogProcessCrash");
         private static IContainer _structureMapContainer;
 
         static void Main()
