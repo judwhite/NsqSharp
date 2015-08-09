@@ -20,8 +20,6 @@ namespace LogProcessCrash
 
         static void Main()
         {
-            AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
-
             _structureMapContainer = new Container();
             _structureMapContainer.Configure(p => p.Scan(x => x.TheCallingAssembly()));
 
@@ -45,14 +43,9 @@ namespace LogProcessCrash
                 busStateChangedHandler: new BusStateChangedHandler(), // bus starting/started/stopping/stopped
                 preCreateTopicsAndChannels: true, // pre-create topics so we dont have to wait for an nsqlookupd cycle
                 defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" }, // nsqlookupd address
-                defaultThreadsPerHandler: 1 // threads per handler. tweak based on use case, see handlers in this project.
+                defaultThreadsPerHandler: 1, // threads per handler. tweak based on use case, see handlers in this project.
+                logOnProcessCrash: true
             ));
-        }
-
-        private static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
-        {
-            _traceSource.TraceEvent(TraceEventType.Critical, 0, e.ExceptionObject.ToString());
-            Environment.Exit(1);
         }
     }
 

@@ -9,10 +9,20 @@ namespace PingPong.Services
     {
         private readonly Stopwatch _stopwatch;
         private int _count;
-        
-        public Counter() { _stopwatch = Stopwatch.StartNew(); }
-        
-        public int Next() { return Interlocked.Increment(ref _count); }
+
+        public Counter()
+        {
+            _stopwatch = new Stopwatch();
+        }
+
+        public int Next()
+        {
+            int num = Interlocked.Increment(ref _count);
+            if (num == 1)
+                _stopwatch.Start();
+            return num;
+        }
+
         public int Current { get { return _count; } }
         public TimeSpan Elapsed { get { return _stopwatch.Elapsed; } }
     }
