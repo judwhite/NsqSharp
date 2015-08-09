@@ -88,6 +88,12 @@ echo "*** .NET 3.5 All tests passed."
 
 ### Build Nuget DLL's
 
+msbuild NsqSharp/NsqSharp.csproj /p:TargetFrameworkVersion=v4.6 /p:Configuration="Integration Tests" /t:Clean /t:Rebuild /tv:4.0 /p:OutputPath="../nuget/lib/net46"
+if ($LastExitCode -ne 0) {
+    echo ".NET 4.6 Build failed. Process exited with error code $LastExitCode."
+    Return
+}
+
 msbuild NsqSharp/NsqSharp.csproj /p:TargetFrameworkVersion=v4.5.2 /p:Configuration="Integration Tests" /t:Clean /t:Rebuild /tv:4.0 /p:OutputPath="../nuget/lib/net452"
 if ($LastExitCode -ne 0) {
     echo ".NET 4.5.2 Build failed. Process exited with error code $LastExitCode."
