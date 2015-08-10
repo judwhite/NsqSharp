@@ -51,6 +51,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LogProcessCrash", "LogProce
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogProcessCrash", "Examples\LogProcessCrash\LogProcessCrash.csproj", "{438C8E35-46DD-4136-8BBB-40082B305C8D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThrottleAndTelemetry", "ThrottleAndTelemetry", "{AA7F4F2D-1FC1-4973-A7A9-A84EC0D14D06}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThrottleAndTelemetry.Messages", "Examples\ThrottleAndTelemetry\ThrottleAndTelemetry.Messages\ThrottleAndTelemetry.Messages.csproj", "{89B3CCB2-AEAB-42E1-AF87-84DE66DE585D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThrottleAndTelemetry.Common", "Examples\ThrottleAndTelemetry\ThrottleAndTelemetry.Common\ThrottleAndTelemetry.Common.csproj", "{E9628DE3-A592-4631-8C8D-89CC6141134A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThrottleAndTelemetry.Services", "Examples\ThrottleAndTelemetry\ThrottleAndTelemetry.Services\ThrottleAndTelemetry.Services.csproj", "{A358C735-E9CD-4B31-B389-E2D9233C3F5F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThrottleAndTelemetry.Handlers.Search", "Examples\ThrottleAndTelemetry\ThrottleAndTelemetry.Handlers.Search\ThrottleAndTelemetry.Handlers.Search.csproj", "{012DF8B5-5EE8-47D6-8DA3-37D6CD769131}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThrottleAndTelemetry.Handlers.Users", "Examples\ThrottleAndTelemetry\ThrottleAndTelemetry.Handlers.Users\ThrottleAndTelemetry.Handlers.Users.csproj", "{0E4A03E2-5A0E-4180-8F82-2A3ECDD3AD6D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThrottleAndTelemetry.Handlers.Repositories", "Examples\ThrottleAndTelemetry\ThrottleAndTelemetry.Handlers.Repositories\ThrottleAndTelemetry.Handlers.Repositories.csproj", "{9BD3F6BA-8C65-473B-8992-08046144BC32}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThrottleAndTelemetry.Handlers.Organizations", "Examples\ThrottleAndTelemetry\ThrottleAndTelemetry.Handlers.Organizations\ThrottleAndTelemetry.Handlers.Organizations.csproj", "{4FF8C33B-A185-4425-8F20-360709404557}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -142,6 +158,48 @@ Global
 		{438C8E35-46DD-4136-8BBB-40082B305C8D}.Integration Tests|Any CPU.Build.0 = Release|Any CPU
 		{438C8E35-46DD-4136-8BBB-40082B305C8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{438C8E35-46DD-4136-8BBB-40082B305C8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89B3CCB2-AEAB-42E1-AF87-84DE66DE585D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89B3CCB2-AEAB-42E1-AF87-84DE66DE585D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89B3CCB2-AEAB-42E1-AF87-84DE66DE585D}.Integration Tests|Any CPU.ActiveCfg = Release|Any CPU
+		{89B3CCB2-AEAB-42E1-AF87-84DE66DE585D}.Integration Tests|Any CPU.Build.0 = Release|Any CPU
+		{89B3CCB2-AEAB-42E1-AF87-84DE66DE585D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89B3CCB2-AEAB-42E1-AF87-84DE66DE585D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9628DE3-A592-4631-8C8D-89CC6141134A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9628DE3-A592-4631-8C8D-89CC6141134A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9628DE3-A592-4631-8C8D-89CC6141134A}.Integration Tests|Any CPU.ActiveCfg = Release|Any CPU
+		{E9628DE3-A592-4631-8C8D-89CC6141134A}.Integration Tests|Any CPU.Build.0 = Release|Any CPU
+		{E9628DE3-A592-4631-8C8D-89CC6141134A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9628DE3-A592-4631-8C8D-89CC6141134A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A358C735-E9CD-4B31-B389-E2D9233C3F5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A358C735-E9CD-4B31-B389-E2D9233C3F5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A358C735-E9CD-4B31-B389-E2D9233C3F5F}.Integration Tests|Any CPU.ActiveCfg = Release|Any CPU
+		{A358C735-E9CD-4B31-B389-E2D9233C3F5F}.Integration Tests|Any CPU.Build.0 = Release|Any CPU
+		{A358C735-E9CD-4B31-B389-E2D9233C3F5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A358C735-E9CD-4B31-B389-E2D9233C3F5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{012DF8B5-5EE8-47D6-8DA3-37D6CD769131}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{012DF8B5-5EE8-47D6-8DA3-37D6CD769131}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{012DF8B5-5EE8-47D6-8DA3-37D6CD769131}.Integration Tests|Any CPU.ActiveCfg = Release|Any CPU
+		{012DF8B5-5EE8-47D6-8DA3-37D6CD769131}.Integration Tests|Any CPU.Build.0 = Release|Any CPU
+		{012DF8B5-5EE8-47D6-8DA3-37D6CD769131}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{012DF8B5-5EE8-47D6-8DA3-37D6CD769131}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E4A03E2-5A0E-4180-8F82-2A3ECDD3AD6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E4A03E2-5A0E-4180-8F82-2A3ECDD3AD6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E4A03E2-5A0E-4180-8F82-2A3ECDD3AD6D}.Integration Tests|Any CPU.ActiveCfg = Release|Any CPU
+		{0E4A03E2-5A0E-4180-8F82-2A3ECDD3AD6D}.Integration Tests|Any CPU.Build.0 = Release|Any CPU
+		{0E4A03E2-5A0E-4180-8F82-2A3ECDD3AD6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E4A03E2-5A0E-4180-8F82-2A3ECDD3AD6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BD3F6BA-8C65-473B-8992-08046144BC32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BD3F6BA-8C65-473B-8992-08046144BC32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BD3F6BA-8C65-473B-8992-08046144BC32}.Integration Tests|Any CPU.ActiveCfg = Release|Any CPU
+		{9BD3F6BA-8C65-473B-8992-08046144BC32}.Integration Tests|Any CPU.Build.0 = Release|Any CPU
+		{9BD3F6BA-8C65-473B-8992-08046144BC32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BD3F6BA-8C65-473B-8992-08046144BC32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FF8C33B-A185-4425-8F20-360709404557}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FF8C33B-A185-4425-8F20-360709404557}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FF8C33B-A185-4425-8F20-360709404557}.Integration Tests|Any CPU.ActiveCfg = Release|Any CPU
+		{4FF8C33B-A185-4425-8F20-360709404557}.Integration Tests|Any CPU.Build.0 = Release|Any CPU
+		{4FF8C33B-A185-4425-8F20-360709404557}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FF8C33B-A185-4425-8F20-360709404557}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -166,5 +224,13 @@ Global
 		{6962DA1C-5532-4C12-B2A3-36B53877A1FB} = {AEA8D8ED-997C-429D-8555-50020C9CC570}
 		{836ECD8F-C1DC-466B-839D-3D4607F5C837} = {0FB50390-80AC-4487-BC62-C9311FD60D4D}
 		{438C8E35-46DD-4136-8BBB-40082B305C8D} = {836ECD8F-C1DC-466B-839D-3D4607F5C837}
+		{AA7F4F2D-1FC1-4973-A7A9-A84EC0D14D06} = {0FB50390-80AC-4487-BC62-C9311FD60D4D}
+		{89B3CCB2-AEAB-42E1-AF87-84DE66DE585D} = {AA7F4F2D-1FC1-4973-A7A9-A84EC0D14D06}
+		{E9628DE3-A592-4631-8C8D-89CC6141134A} = {AA7F4F2D-1FC1-4973-A7A9-A84EC0D14D06}
+		{A358C735-E9CD-4B31-B389-E2D9233C3F5F} = {AA7F4F2D-1FC1-4973-A7A9-A84EC0D14D06}
+		{012DF8B5-5EE8-47D6-8DA3-37D6CD769131} = {AA7F4F2D-1FC1-4973-A7A9-A84EC0D14D06}
+		{0E4A03E2-5A0E-4180-8F82-2A3ECDD3AD6D} = {AA7F4F2D-1FC1-4973-A7A9-A84EC0D14D06}
+		{9BD3F6BA-8C65-473B-8992-08046144BC32} = {AA7F4F2D-1FC1-4973-A7A9-A84EC0D14D06}
+		{4FF8C33B-A185-4425-8F20-360709404557} = {AA7F4F2D-1FC1-4973-A7A9-A84EC0D14D06}
 	EndGlobalSection
 EndGlobal
