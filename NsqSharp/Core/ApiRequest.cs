@@ -50,9 +50,11 @@ namespace NsqSharp.Core
 
     internal static class ApiRequest
     {
-        public static INsqLookupdApiResponseProducers NegotiateV1(string method, string endpoint)
+        public static INsqLookupdApiResponseProducers NegotiateV1(string method, string endpoint, TimeSpan timeout)
         {
-            const int timeoutMilliseconds = 2000;
+            int timeoutMilliseconds = (int)timeout.TotalMilliseconds;
+            if (timeoutMilliseconds < 2000)
+                timeoutMilliseconds = 2000;
 
             var httpclient = (HttpWebRequest)WebRequest.Create(endpoint);
             httpclient.Proxy = WebRequest.DefaultWebProxy;

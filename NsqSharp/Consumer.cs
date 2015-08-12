@@ -592,7 +592,7 @@ namespace NsqSharp
             INsqLookupdApiResponseProducers data;
             try
             {
-                data = ApiRequest.NegotiateV1("GET", endpoint);
+                data = ApiRequest.NegotiateV1("GET", endpoint, _config.DialTimeout);
             }
             catch (Exception ex)
             {
