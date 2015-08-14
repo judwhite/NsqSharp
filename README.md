@@ -100,7 +100,7 @@ class Program
 public class MessageHandler : IHandler
 {
     /// <summary>Handles a message.</summary>
-    public void HandleMessage(Message message)
+    public void HandleMessage(IMessage message)
     {
         string msg = Encoding.UTF8.GetString(message.Body);
         Console.WriteLine(msg);
@@ -110,7 +110,7 @@ public class MessageHandler : IHandler
     /// Called when a message has exceeded the specified <see cref="Config.MaxAttempts"/>.
     /// </summary>
     /// <param name="message">The failed message.</param>
-    public void LogFailedMessage(Message message)
+    public void LogFailedMessage(IMessage message)
     {
         // Log failed messages
     }
