@@ -168,7 +168,7 @@ namespace NsqSharp
         [Opt("max_backoff_duration"), Min("0"), Max("60m"), Default("2m")]
         public TimeSpan MaxBackoffDuration { get; set; }
         /// <summary>Unit of time for calculating consumer backoff.
-        /// Default backoff calculation: <see cref="BackoffMultiplier"/> * (2 ^ <see cref="Message.Attempts"/>).
+        /// Default backoff calculation: <see cref="BackoffMultiplier"/> * (2 ^ backoff counter).
         /// Will not exceed <see cref="MaxBackoffDuration"/>.
         /// See: <see cref="BackoffStrategy"/>
         /// Range: 0-60m Default: 1s</summary>
