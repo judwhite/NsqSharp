@@ -1338,11 +1338,19 @@ namespace NsqSharp
                     connections.Count, maxInFlight));
                 _needRdyRedistributed = 1;
             }
-
-            if (inBackoff() && connections.Count > 1)
+            else if (connections.Count > 1)
             {
-                log(LogLevel.Debug, string.Format("redistributing RDY state (in backoff and {0} conns > 1)", connections.Count));
-                _needRdyRedistributed = 1;
+                if (inBackoff())
+                {
+                    log(LogLevel.Debug, string.Format("redistributing RDY state (in backoff and {0} conns > 1)",
+                        connections.Count));
+                    _needRdyRedistributed = 1;
+                }
+                else
+                {
+                    redistributeRDYForStarvedConnections(connections, maxInFlight);
+                    return;
+                }
             }
 
             if (Interlocked.CompareExchange(ref _needRdyRedistributed, value: 0, comparand: 1) != 1)
@@ -1380,6 +1388,81 @@ namespace NsqSharp
                 possibleConns.Remove(c);
                 log(LogLevel.Debug, string.Format("({0}) redistributing RDY", c));
                 updateRDY(c, 1);
+            }
+        }
+
+        private void redistributeRDYForStarvedConnections(List<Conn> connections, int maxInFlight)
+        {
+            var activeConns = new List<Conn>();
+            var idleConns = new List<Conn>();
+
+            foreach (var c in connections)
+            {
+                var lastMsgDuration = DateTime.Now.Subtract(c.LastMessageTime);
+                long rdyCount = c.RDY;
+                if (rdyCount > 0 && lastMsgDuration > _config.LowRdyIdleTimeout)
+                {
+                    idleConns.Add(c);
+                    _needRdyRedistributed = 1;
+                }
+                else if (lastMsgDuration <= _config.LowRdyIdleTimeout ||
+                         (rdyCount == 0 && lastMsgDuration > _config.LowRdyIdleTimeout))
+                {
+                    activeConns.Add(c);
+                    if (rdyCount == 0)
+                        _needRdyRedistributed = 1;
+                }
+            }
+
+            if (Interlocked.CompareExchange(ref _needRdyRedistributed, value: 0, comparand: 1) != 1)
+            {
+                return;
+            }
+
+            long availableMaxInFlight = maxInFlight - _totalRdyCount;
+            if (inBackoff() || availableMaxInFlight == 0)
+            {
+                // let redistributeRDY handle this scenario
+                return;
+            }
+
+            if (activeConns.Count == 0)
+            {
+                foreach (var c in connections)
+                {
+                    if (!idleConns.Contains(c))
+                        activeConns.Add(c);
+                }
+
+                // everything's idle with a RDY count > 0, let it be
+                if (activeConns.Count == 0)
+                    return;
+            }
+
+            foreach (var c in idleConns)
+            {
+                var lastMsgDuration = DateTime.Now.Subtract(c.LastMessageTime);
+                long rdyCount = c.RDY;
+                log(LogLevel.Debug, string.Format("({0}) rdy: {1} (last message received {2})",
+                    c, rdyCount, lastMsgDuration));
+                log(LogLevel.Debug, string.Format("({0}) idle connection, giving up RDY", c));
+                updateRDY(c, 0);
+            }
+
+            while (activeConns.Count > 0 && availableMaxInFlight > 0)
+            {
+                long newRdyCount = availableMaxInFlight / activeConns.Count;
+                if (newRdyCount == 0)
+                    newRdyCount = 1;
+
+                availableMaxInFlight -= newRdyCount;
+
+                int i = _rng.Intn(activeConns.Count);
+                var c = activeConns[i];
+                // delete
+                activeConns.Remove(c);
+                log(LogLevel.Debug, string.Format("({0}) redistributing RDY", c));
+                updateRDY(c, newRdyCount);
             }
         }
 
