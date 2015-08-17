@@ -44,7 +44,8 @@ namespace NsqSharp.Tests
                 sleepBeforeIdlePublish: TimeSpan.FromMinutes(12),
                 testDuration: TimeSpan.FromMinutes(30),
                 startWithInitialMessageOnIdleNsqd: true,
-                numberOfMessagesToSendOnIdleNsqd: 2
+                numberOfMessagesToSendOnIdleNsqd: 2,
+                numberOfMessages: 10000
             );
 
             // expected max without redistribute: 360+3
@@ -55,6 +56,35 @@ namespace NsqSharp.Tests
             {
                 Console.WriteLine("[{0}] {1} {2}", item.HandlerStartTime.Formatted(), item.NsqdAddress, item.Message);
             }
+
+            var p1 = results.Where(p => p.NsqdAddress.Contains(":4150")).ToList();
+            var p2 = results.Where(p => p.NsqdAddress.Contains(":5150")).ToList();
+
+            Assert.AreEqual(3, p1.Count, "p1.Count");
+            Assert.GreaterOrEqual(580, p2.Count, "p2.Count");
+        }
+
+        [Test]
+        public void TestRdyRedistributionMaxInFlight1()
+        {
+            var results = TestRdyRedistribution(
+                rdyRedistributeOnIdle: true,
+                maxInFlight: 1,
+                rdyRedistributeInterval: TimeSpan.FromSeconds(5),
+                lowRdyIdleTimeout: TimeSpan.FromSeconds(10),
+                handlerSleepTime: TimeSpan.FromMilliseconds(250),
+                sleepBeforeIdlePublish: TimeSpan.FromSeconds(20),
+                testDuration: TimeSpan.FromSeconds(60),
+                startWithInitialMessageOnIdleNsqd: true,
+                numberOfMessagesToSendOnIdleNsqd: 2,
+                numberOfMessages: 30
+            );
+
+            var p1 = results.Where(p => p.NsqdAddress.Contains(":4150")).ToList();
+            var p2 = results.Where(p => p.NsqdAddress.Contains(":5150")).ToList();
+
+            Assert.AreEqual(3, p1.Count, "p1.Count");
+            Assert.AreEqual(30, p2.Count, "p2.Count");
         }
 
         private static List<TestResults> TestRdyRedistribution(
@@ -66,7 +96,8 @@ namespace NsqSharp.Tests
             TimeSpan sleepBeforeIdlePublish,
             TimeSpan testDuration,
             bool startWithInitialMessageOnIdleNsqd,
-            int numberOfMessagesToSendOnIdleNsqd
+            int numberOfMessagesToSendOnIdleNsqd,
+            int numberOfMessages
         )
         {
             string topicName = string.Format("test_rdy_redistribution_{0}", DateTime.Now.UnixNano());
@@ -84,7 +115,7 @@ namespace NsqSharp.Tests
                 }
 
                 Producer p2 = new Producer("127.0.0.1:5150");
-                for (int i = 0; i < 10000; i++)
+                for (int i = 0; i < numberOfMessages; i++)
                 {
                     p2.Publish(topicName, i.ToString());
                 }
