@@ -151,6 +151,7 @@ namespace NsqSharp
         private long _backoffDuration;
         private int _backoffCounter;
         private int _maxInFlight;
+        private long _perConnMaxInFlight;
 
         private readonly ReaderWriterLockSlim _mtx = new ReaderWriterLockSlim();
 
@@ -372,10 +373,17 @@ namespace NsqSharp
         /// </summary>
         private long perConnMaxInFlight()
         {
-            long b = getMaxInFlight();
-            int connCount = conns().Count;
-            long s = (connCount == 0 ? 1 : b / connCount);
-            return Math.Min(Math.Max(1, s), b);
+            if (_perConnMaxInFlight == 0)
+            {
+                long b = getMaxInFlight();
+                int connCount = conns().Count;
+                long s = (connCount == 0 ? 1 : b / connCount);
+                return Math.Min(Math.Max(1, s), b);
+            }
+            else
+            {
+                return _perConnMaxInFlight;
+            }
         }
 
         /// <summary>
@@ -780,6 +788,7 @@ namespace NsqSharp
             }
 
             // pre-emptive signal to existing connections to lower their RDY count
+            _perConnMaxInFlight = 0;
             foreach (var c in conns())
             {
                 maybeUpdateRDY(c);
@@ -1321,13 +1330,17 @@ namespace NsqSharp
         private void redistributeRDY()
         {
             if (inBackoffTimeout())
+            {
+                _perConnMaxInFlight = 0;
                 return;
+            }
 
             // if an external heuristic set needRDYRedistributed we want to wait
             // until we can actually redistribute to proceed
             var connections = conns();
             if (connections.Count == 0)
             {
+                _perConnMaxInFlight = 0;
                 return;
             }
 
@@ -1346,12 +1359,14 @@ namespace NsqSharp
                         connections.Count));
                     _needRdyRedistributed = 1;
                 }
-                else
+                else if (_config.RDYRedistributeOnIdle)
                 {
                     redistributeRDYForStarvedConnections(connections, maxInFlight);
                     return;
                 }
             }
+
+            _perConnMaxInFlight = 0;
 
             if (Interlocked.CompareExchange(ref _needRdyRedistributed, value: 0, comparand: 1) != 1)
             {
@@ -1396,6 +1411,10 @@ namespace NsqSharp
             var activeConns = new List<Conn>();
             var idleConns = new List<Conn>();
 
+            // get idle and active connections
+            // idle = RDY > 0 and last message received > LowRdyIdleTimeout
+            // active = all other connections
+            // if an idle connection exists or an active connection with RDY=0, we're going to try to redistribute
             foreach (var c in connections)
             {
                 var lastMsgDuration = DateTime.Now.Subtract(c.LastMessageTime);
@@ -1405,40 +1424,42 @@ namespace NsqSharp
                     idleConns.Add(c);
                     _needRdyRedistributed = 1;
                 }
-                else if (lastMsgDuration <= _config.LowRdyIdleTimeout ||
-                         (rdyCount == 0 && lastMsgDuration > _config.LowRdyIdleTimeout))
+                else
                 {
                     activeConns.Add(c);
                     if (rdyCount == 0)
+                    {
+                        // a better solution would be to leave 1 RDY on idle connections.
+                        // this would require minimum headroom on max rdy = concurrent handlers + (number of connections - 1)
                         _needRdyRedistributed = 1;
+                    }
                 }
             }
 
+            // check another thread didn't beat us to it
             if (Interlocked.CompareExchange(ref _needRdyRedistributed, value: 0, comparand: 1) != 1)
             {
                 return;
             }
 
-            long availableMaxInFlight = maxInFlight - _totalRdyCount;
-            if (inBackoff() || availableMaxInFlight == 0)
+            // if we're in backoff let redistributeRDY handle this scenario
+            if (inBackoff())
             {
-                // let redistributeRDY handle this scenario
                 return;
             }
 
+            // everything's idle with a RDY count > 0, let it be
             if (activeConns.Count == 0)
             {
-                foreach (var c in connections)
-                {
-                    if (!idleConns.Contains(c))
-                        activeConns.Add(c);
-                }
-
-                // everything's idle with a RDY count > 0, let it be
-                if (activeConns.Count == 0)
-                    return;
+                return;
             }
 
+            // if perConnMaxInFlight = 0 return immediately
+            _perConnMaxInFlight = getMaxInFlight() / activeConns.Count;
+            if (_perConnMaxInFlight == 0)
+                return;
+
+            // set the RDY count to 0 for idle connections
             foreach (var c in idleConns)
             {
                 var lastMsgDuration = DateTime.Now.Subtract(c.LastMessageTime);
@@ -1449,20 +1470,19 @@ namespace NsqSharp
                 updateRDY(c, 0);
             }
 
-            while (activeConns.Count > 0 && availableMaxInFlight > 0)
+            // get the total available RDY count and perConnMaxInFlight
+            long perConnMaxInFlight = getMaxInFlight() / activeConns.Count;
+            _perConnMaxInFlight = perConnMaxInFlight;
+
+            // if perConnMaxInFlight = 0 return immediately
+            if (perConnMaxInFlight == 0)
+                return;
+
+            // update all active connections to the new perConnMaxInFlight
+            foreach (var c in activeConns.OrderByDescending(p => p.RDY))
             {
-                long newRdyCount = availableMaxInFlight / activeConns.Count;
-                if (newRdyCount == 0)
-                    newRdyCount = 1;
-
-                availableMaxInFlight -= newRdyCount;
-
-                int i = _rng.Intn(activeConns.Count);
-                var c = activeConns[i];
-                // delete
-                activeConns.Remove(c);
-                log(LogLevel.Debug, string.Format("({0}) redistributing RDY", c));
-                updateRDY(c, newRdyCount);
+                log(LogLevel.Debug, string.Format("({0}) redistributing RDY to {1}", c, perConnMaxInFlight));
+                updateRDY(c, perConnMaxInFlight);
             }
         }
 

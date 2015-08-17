@@ -86,6 +86,7 @@
     <Compile Include="Bus\TestFakes\MessageAuditorStub.cs" />
     <Compile Include="Bus\TouchTest.cs" />
     <Compile Include="Bus\Utils\InterfaceBuilderTest.cs" />
+    <Compile Include="ConsumerRdyRedistributionTest.cs" />
     <Compile Include="Utils\Channels\ChanTest.cs" />
     <Compile Include="Core\CommandTest.cs" />
     <Compile Include="ConfigTest.cs" />
