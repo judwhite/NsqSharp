@@ -7,7 +7,7 @@ namespace NsqSharp.Utils.Extensions
     /// </summary>
     public static class DateTimeExtensions
     {
-        private static readonly DateTime _epoch = new DateTime(1970, 1, 1);
+        private static readonly DateTime _epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         /// <summary>
         /// UnixNano returns t as a Unix time, the number of nanoseconds elapsed since January 1, 1970 UTC. The result is

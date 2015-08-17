@@ -193,6 +193,13 @@ namespace NsqSharp
         [Opt("rdy_redistribute_interval"), Min("1ms"), Max("5s"), Default("5s")]
         public TimeSpan RDYRedistributeInterval { get; set; }
 
+        /// <summary>
+        /// Redistribute RDY counts to active nsqd instances when others are idle.
+        /// Default: <c>false</c>
+        /// </summary>
+        [Opt("rdy_redistribute_on_idle"), Default(false)]
+        public bool RDYRedistributeOnIdle { get; set; }
+
         /// <summary>ClientID identifier sent to nsqd representing this client.
         /// Default: short hostname.</summary>
         [Opt("client_id")]

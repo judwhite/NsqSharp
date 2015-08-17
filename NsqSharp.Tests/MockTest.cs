@@ -27,6 +27,9 @@ namespace NsqSharp.Tests
             }
         }
 
+#if !RUN_INTEGRATION_TESTS
+        [Ignore("NSQD Integration Test")]
+#endif
         [Test]
         public void TestConsumerBackoff()
         {
@@ -172,6 +175,9 @@ namespace NsqSharp.Tests
             Assert.AreEqual(expected, actual);
         }
 
+#if !RUN_INTEGRATION_TESTS
+        [Ignore("NSQD Integration Test")]
+#endif
         [Test]
         public void TestConsumerBackoffDisconnect()
         {
