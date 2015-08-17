@@ -219,7 +219,7 @@ namespace NsqSharp.Tests
             c.Set("backoff_multiplier", TimeSpan.FromMinutes(60));
             c.Set("max_attempts", 65535);
             c.Set("low_rdy_idle_timeout", TimeSpan.FromMinutes(5));
-            c.Set("rdy_redistribute_interval", TimeSpan.FromMinutes(5));
+            c.Set("rdy_redistribute_interval", TimeSpan.FromSeconds(5));
             c.Set("client_id", "my");
             c.Set("hostname", "my.host.name.com");
             c.Set("user_agent", "user-agent/1.0");
@@ -247,7 +247,7 @@ namespace NsqSharp.Tests
             Assert.AreEqual(TimeSpan.FromMinutes(60), c.BackoffMultiplier, "backoff_multiplier");
             Assert.AreEqual(65535, c.MaxAttempts, "max_attempts");
             Assert.AreEqual(TimeSpan.FromMinutes(5), c.LowRdyIdleTimeout, "low_rdy_idle_timeout");
-            Assert.AreEqual(TimeSpan.FromMinutes(5), c.RDYRedistributeInterval, "rdy_redistribute_interval");
+            Assert.AreEqual(TimeSpan.FromSeconds(5), c.RDYRedistributeInterval, "rdy_redistribute_interval");
             Assert.AreEqual("my", c.ClientID, "client_id");
             Assert.AreEqual("my.host.name.com", c.Hostname, "hostname");
             Assert.AreEqual("user-agent/1.0", c.UserAgent, "user_agent");

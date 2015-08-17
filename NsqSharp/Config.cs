@@ -188,9 +188,9 @@ namespace NsqSharp
 
         /// <summary>
         /// Duration between redistributing max-in-flight to connections.
-        /// Range: 1ms-5m Default: 5s
+        /// Range: 1ms-5s Default: 5s
         /// </summary>
-        [Opt("rdy_redistribute_interval"), Min("1ms"), Max("5m"), Default("5s")]
+        [Opt("rdy_redistribute_interval"), Min("1ms"), Max("5s"), Default("5s")]
         public TimeSpan RDYRedistributeInterval { get; set; }
 
         /// <summary>
