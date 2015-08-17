@@ -21,13 +21,13 @@ namespace NsqSharp.Api
         {
             ValidateTopic(topic);
 
-            var json = Get(string.Format("/lookup?topic={0}", topic));
+            //var json = Get(string.Format("/lookup?topic={0}", topic));
         }
 
         /// <summary>Returns a list of all known topics.</summary>
         private string[] GetTopics()
         {
-            var json = Get(string.Format("/topics"));
+            //var json = Get(string.Format("/topics"));
             return new[] { "TODO" };
         }
 
@@ -37,13 +37,13 @@ namespace NsqSharp.Api
         {
             ValidateTopic(topic);
 
-            var json = Get(string.Format("/channels?topic={0}", topic));
+            //var json = Get(string.Format("/channels?topic={0}", topic));
         }
 
         /// <summary>Returns a list of all known nsqd nodes.</summary>
         private void GetNodes()
         {
-            var json = Get(string.Format("/nodes"));
+            //var json = Get(string.Format("/nodes"));
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace NsqSharp.Api
 
             ValidateTopic(topic);
 
-            var json = Get(string.Format("/tombstone_topic_producer?topic={0}&node={1}", topic, nsqdNode));
+            //var json = Get(string.Format("/tombstone_topic_producer?topic={0}&node={1}", topic, nsqdNode));
         }
     }
 }
