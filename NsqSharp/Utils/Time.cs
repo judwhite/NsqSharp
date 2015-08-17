@@ -14,6 +14,8 @@ namespace NsqSharp.Utils
     /// </summary>
     public static class Time
     {
+        private static readonly DateTime _epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
         /// <summary>Nanosecond</summary>
         public const long Nanosecond = 1;
         /// <summary>Microsecond</summary>
@@ -120,7 +122,7 @@ namespace NsqSharp.Utils
         public static DateTime Unix(long sec, long nsec)
         {
             long ticks = sec * Second / 100 + nsec / 100;
-            return new DateTime(ticks, DateTimeKind.Local);
+            return _epoch.AddTicks(ticks);
         }
 
         /// <summary>
