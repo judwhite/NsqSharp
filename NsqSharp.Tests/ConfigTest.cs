@@ -113,7 +113,7 @@ namespace NsqSharp.Tests
 
             Assert.AreEqual(TimeSpan.FromSeconds(1), c.DialTimeout, "dial_timeout");
             Assert.AreEqual(TimeSpan.FromSeconds(60), c.ReadTimeout, "read_timeout");
-            Assert.AreEqual(TimeSpan.FromSeconds(1), c.WriteTimeout, "write_timeout");
+            Assert.AreEqual(TimeSpan.FromSeconds(10), c.WriteTimeout, "write_timeout");
             Assert.AreEqual(TimeSpan.FromSeconds(60), c.LookupdPollInterval, "lookupd_poll_interval");
             Assert.AreEqual(0.3, c.LookupdPollJitter, "lookupd_poll_jitter");
             Assert.AreEqual(TimeSpan.FromMinutes(15), c.MaxRequeueDelay, "max_requeue_delay");
@@ -367,7 +367,7 @@ namespace NsqSharp.Tests
 
             Assert.AreEqual(TimeSpan.FromMilliseconds(50), c2.DialTimeout, "dial_timeout");
             Assert.AreEqual(TimeSpan.FromMinutes(5), c2.ReadTimeout, "read_timeout");
-            Assert.AreEqual(TimeSpan.FromSeconds(1), c2.WriteTimeout, "write_timeout");
+            Assert.AreEqual(TimeSpan.FromSeconds(10), c2.WriteTimeout, "write_timeout");
             Assert.AreEqual(TimeSpan.FromSeconds(60), c2.LookupdPollInterval, "lookupd_poll_interval");
             Assert.AreEqual(0.3, c2.LookupdPollJitter, "lookupd_poll_jitter");
             Assert.AreEqual(TimeSpan.FromMinutes(15), c2.MaxRequeueDelay, "max_requeue_delay");

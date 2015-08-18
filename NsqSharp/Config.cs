@@ -127,8 +127,8 @@ namespace NsqSharp
         public TimeSpan ReadTimeout { get; set; }
 
         /// <summary>Deadline for network writes.
-        /// Range: 100ms-5m Default: 1s</summary>
-        [Opt("write_timeout"), Min("100ms"), Max("5m"), Default("1s")]
+        /// Range: 100ms-5m Default: 10s</summary>
+        [Opt("write_timeout"), Min("100ms"), Max("5m"), Default("10s")]
         public TimeSpan WriteTimeout { get; set; }
 
         /// <summary>Duration between polling lookupd for new producers.
