@@ -1,0 +1,17 @@
+﻿<ResourceDictionary 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:NsqMon.Converters">
+
+    <converters:AllTrueConverter x:Key="AllTrueConverter" />
+    <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+    <converters:NullableIntConverter x:Key="NullableIntConverter" />
+    <converters:IsEnumEqualConverter x:Key="IsEnumEqualConverter" />
+    <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    <converters:NotBoolToVisibilityConverter x:Key="NotBoolToVisibilityConverter" />
+    <converters:NotNullToBoolConverter x:Key="NotNullToBoolConverter" />
+    <converters:MultiplicationConverter x:Key="MultiplicationConverter" />
+    <converters:IsEqualToVisibilityConverter x:Key="IsEqualToVisibilityConverter" />
+    <converters:NegateBoolConverter x:Key="NegateBoolConverter" />
+
+</ResourceDictionary>

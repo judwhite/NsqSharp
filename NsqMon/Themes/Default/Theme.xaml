@@ -1,0 +1,23 @@
+﻿<ResourceDictionary 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>
+
+    <ResourceDictionary.MergedDictionaries>
+
+        <ResourceDictionary Source="../Converters.xaml" />
+
+        <ResourceDictionary Source="Brush.xaml" />
+        <ResourceDictionary Source="Button.xaml" />
+        <ResourceDictionary Source="CheckBox.xaml" />
+        <ResourceDictionary Source="DataGrid.xaml" />
+        <ResourceDictionary Source="DataGridCell.xaml" />
+        <ResourceDictionary Source="DataGridRow.xaml" />
+        <ResourceDictionary Source="Grid.xaml" />
+        <ResourceDictionary Source="Menu.xaml" />
+        <ResourceDictionary Source="MenuItem.xaml" />
+        <ResourceDictionary Source="TreeViewItem.xaml" />
+
+    </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>
