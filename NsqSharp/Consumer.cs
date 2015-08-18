@@ -1378,7 +1378,7 @@ namespace NsqSharp
                 }
                 else if (_config.RDYRedistributeOnIdle)
                 {
-                    redistributeRDYForStarvedConnections(connections, maxInFlight);
+                    redistributeRDYForIdleConnections(connections, maxInFlight);
                     return;
                 }
             }
@@ -1423,7 +1423,7 @@ namespace NsqSharp
             }
         }
 
-        private void redistributeRDYForStarvedConnections(List<Conn> connections, int maxInFlight)
+        private void redistributeRDYForIdleConnections(List<Conn> connections, int maxInFlight)
         {
             var activeConns = new List<Conn>();
             var idleConns = new List<Conn>();
@@ -1453,7 +1453,6 @@ namespace NsqSharp
                 }
             }
 
-            // check another thread didn't beat us to it
             if (Interlocked.CompareExchange(ref _needRdyRedistributed, value: 0, comparand: 1) != 1)
             {
                 return;
