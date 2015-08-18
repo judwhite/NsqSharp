@@ -178,7 +178,26 @@ namespace NsqSharp.Core
                 throw new Exception(string.Format("[{0}] failed to write magic - {1}", _addr, ex.Message), ex);
             }
 
-            var resp = identify();
+            IdentifyResponse resp;
+            try
+            {
+                resp = identify();
+            }
+            catch (ErrIdentify ex)
+            {
+                if (_addr.Contains(":4151"))
+                {
+                    throw new ErrIdentify("Error connecting to nsqd. It looks like you tried to connect to the HTTP port " +
+                        "(4151), use the TCP port (4150) instead.", ex);
+                }
+                else if (_addr.Contains(":4160") || _addr.Contains(":4161"))
+                {
+                    throw new ErrIdentify("Error connecting to nsqd. It looks like you tried to connect to nsqlookupd. " +
+                        "Producers must connect to nsqd over TCP (4150). Consumers can connect to nsqd over TCP (4150) using " +
+                        "Consumer.ConnectToNsqd or to nsqlookupd (4161) using Consumer.ConnectToNsqLookupd.", ex);
+                }
+                throw;
+            }
 
             if (resp != null && resp.AuthRequired)
             {

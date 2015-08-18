@@ -611,8 +611,25 @@ namespace NsqSharp
                     if (httpWebResponse != null && httpWebResponse.StatusCode == HttpStatusCode.NotFound)
                     {
                         log(LogLevel.Warning, string.Format("404 querying nsqlookupd ({0}) for topic {1}", endpoint, _topic));
+                        if (endpoint.Contains(":4151"))
+                        {
+                            log(LogLevel.Error, string.Format("404 querying nsqlookupd ({0}) - *** {1} ***  - {2}",
+                                endpoint, "This endpoint looks like an nsqd address. Try connecting to port 4161.", ex));
+                        }
+
                         return;
                     }
+                }
+
+                if (endpoint.Contains(":4150") || endpoint.Contains(":4151"))
+                {
+                    log(LogLevel.Error, string.Format("error querying nsqlookupd ({0}) - *** {1} ***  - {2}",
+                        endpoint, "This endpoint looks like an nsqd address. Try connecting to port 4161.", ex));
+                }
+                else if (endpoint.Contains(":4160"))
+                {
+                    log(LogLevel.Error, string.Format("error querying nsqlookupd ({0}) - *** {1} *** - {2}",
+                        endpoint, "This endpoint looks like an nsqlookupd TCP port. Try connecting to HTTP port 4161.", ex));
                 }
 
                 log(LogLevel.Error, string.Format("error querying nsqlookupd ({0}) - {1}", endpoint, ex));
