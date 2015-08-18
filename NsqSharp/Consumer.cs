@@ -151,7 +151,7 @@ namespace NsqSharp
         private long _backoffDuration;
         private int _backoffCounter;
         private int _maxInFlight;
-        private long _perConnMaxInFlight;
+        private long _perConnMaxInFlightOverride;
 
         private readonly ReaderWriterLockSlim _mtx = new ReaderWriterLockSlim();
 
@@ -373,7 +373,7 @@ namespace NsqSharp
         /// </summary>
         private long perConnMaxInFlight()
         {
-            if (_perConnMaxInFlight == 0)
+            if (_perConnMaxInFlightOverride == 0)
             {
                 long b = getMaxInFlight();
                 int connCount = conns().Count;
@@ -382,7 +382,7 @@ namespace NsqSharp
             }
             else
             {
-                return _perConnMaxInFlight;
+                return _perConnMaxInFlightOverride;
             }
         }
 
@@ -788,7 +788,7 @@ namespace NsqSharp
             }
 
             // pre-emptive signal to existing connections to lower their RDY count
-            _perConnMaxInFlight = 0;
+            _perConnMaxInFlightOverride = 0;
             foreach (var c in conns())
             {
                 maybeUpdateRDY(c);
@@ -1331,7 +1331,7 @@ namespace NsqSharp
         {
             if (inBackoffTimeout())
             {
-                _perConnMaxInFlight = 0;
+                _perConnMaxInFlightOverride = 0;
                 return;
             }
 
@@ -1340,7 +1340,7 @@ namespace NsqSharp
             var connections = conns();
             if (connections.Count == 0)
             {
-                _perConnMaxInFlight = 0;
+                _perConnMaxInFlightOverride = 0;
                 return;
             }
 
@@ -1366,7 +1366,7 @@ namespace NsqSharp
                 }
             }
 
-            _perConnMaxInFlight = 0;
+            _perConnMaxInFlightOverride = 0;
 
             if (Interlocked.CompareExchange(ref _needRdyRedistributed, value: 0, comparand: 1) != 1)
             {
@@ -1455,8 +1455,8 @@ namespace NsqSharp
             }
 
             // if perConnMaxInFlight = 0 return immediately
-            _perConnMaxInFlight = getMaxInFlight() / activeConns.Count;
-            if (_perConnMaxInFlight == 0)
+            _perConnMaxInFlightOverride = getMaxInFlight() / activeConns.Count;
+            if (_perConnMaxInFlightOverride == 0)
                 return;
 
             // set the RDY count to 0 for idle connections
@@ -1470,11 +1470,9 @@ namespace NsqSharp
                 updateRDY(c, 0);
             }
 
-            // get the total available RDY count and perConnMaxInFlight
-            long perConnMaxInFlight = getMaxInFlight() / activeConns.Count;
-            _perConnMaxInFlight = perConnMaxInFlight;
-
             // if perConnMaxInFlight = 0 return immediately
+            long perConnMaxInFlight = getMaxInFlight() / activeConns.Count;
+            _perConnMaxInFlightOverride = perConnMaxInFlight;
             if (perConnMaxInFlight == 0)
                 return;
 
