@@ -19,8 +19,16 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
-        <TextBlock Grid.Row="1" Text="Hello!"></TextBlock>
+
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="24" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" />
+            </Grid.ColumnDefinitions>
+            <ComboBox ItemsSource="{Binding Clusters, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="DisplayName" SelectedItem="{Binding SelectedCluster}" />
+        </Grid>
 
         <common:ErrorContainer x:Name="ErrorItems" Grid.Row="0" />
 
