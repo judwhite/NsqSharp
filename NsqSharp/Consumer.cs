@@ -1376,7 +1376,7 @@ namespace NsqSharp
                         connections.Count));
                     _needRdyRedistributed = 1;
                 }
-                else if (_config.RDYRedistributeOnIdle)
+                else if (_config.RDYRedistributeOnIdle && maxInFlight > 0)
                 {
                     redistributeRDYForIdleConnections(connections, maxInFlight);
                     return;
@@ -1446,8 +1446,6 @@ namespace NsqSharp
                     activeConns.Add(c);
                     if (rdyCount == 0)
                     {
-                        // a better solution would be to leave 1 RDY on idle connections.
-                        // this would require minimum headroom on max rdy = concurrent handlers + (number of connections - 1)
                         _needRdyRedistributed = 1;
                     }
                 }
@@ -1470,11 +1468,6 @@ namespace NsqSharp
                 return;
             }
 
-            // if perConnMaxInFlight = 0 return immediately
-            _perConnMaxInFlightOverride = getMaxInFlight() / activeConns.Count;
-            if (_perConnMaxInFlightOverride == 0)
-                return;
-
             // set the RDY count to 0 for idle connections
             foreach (var c in idleConns)
             {
@@ -1486,11 +1479,8 @@ namespace NsqSharp
                 updateRDY(c, 0);
             }
 
-            // if perConnMaxInFlight = 0 return immediately
-            long perConnMaxInFlight = getMaxInFlight() / activeConns.Count;
+            long perConnMaxInFlight = maxInFlight / activeConns.Count;
             _perConnMaxInFlightOverride = perConnMaxInFlight;
-            if (perConnMaxInFlight == 0)
-                return;
 
             // update all active connections to the new perConnMaxInFlight
             foreach (var c in activeConns.OrderByDescending(p => p.RDY))
