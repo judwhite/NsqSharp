@@ -12,6 +12,9 @@ namespace NsqMon.Common.Mvvm
     /// </summary>
     public interface IViewModelBase : INotifyPropertyChanged
     {
+        /// <summary>Occurs when a property value changes.</summary>
+        event EnhancedPropertyChangedEventHandler EnhancedPropertyChanged;
+
         /// <summary>Occurs when MessageBox /> has been called.</summary>
         event EventHandler<DataEventArgs<MessageBoxEvent>> ShowMessageBox;
 
@@ -35,15 +38,5 @@ namespace NsqMon.Common.Mvvm
 
         /// <summary>Gets the event aggregator.</summary>
         IEventAggregator EventAggregator { get; }
-    }
-
-    /// <summary>
-    /// IViewModelBase
-    /// </summary>
-    /// <typeparam name="T">The view model type.</typeparam>
-    public interface IViewModelBase<T> : IViewModelBase
-    {
-        /// <summary>Occurs when a property value changes.</summary>
-        event EnhancedPropertyChangedEventHandler<T> EnhancedPropertyChanged;
     }
 }

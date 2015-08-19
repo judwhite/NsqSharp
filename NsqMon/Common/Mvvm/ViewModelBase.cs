@@ -12,36 +12,6 @@ using NsqMon.Views;
 
 namespace NsqMon.Common.Mvvm
 {
-    /// <summary>ViewModelBase</summary>
-    /// <typeparam name="T">The view model type.</typeparam>
-    public abstract class ViewModelBase<T> : ViewModelBase
-    {
-        /// <summary>Occurs when a property value changes.</summary>
-        public event EnhancedPropertyChangedEventHandler<T> EnhancedPropertyChanged;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ViewModelBase"/> class.
-        /// </summary>
-        /// <param name="eventAggregator">The event aggregator.</param>
-        protected ViewModelBase(IEventAggregator eventAggregator)
-            : base(eventAggregator)
-        {
-        }
-
-        /// <summary>Raises the <see cref="ViewModelBase.PropertyChanged"/> and <see cref="EnhancedPropertyChanged" /> events.</summary>
-        /// <param name="propertyName">Name of the property.</param>
-        /// <param name="oldValue">The old value.</param>
-        /// <param name="newValue">The new value.</param>
-        protected override void RaisePropertyChanged(string propertyName, object oldValue, object newValue)
-        {
-            base.RaisePropertyChanged(propertyName, oldValue, newValue);
-
-            var handler = EnhancedPropertyChanged;
-            if (handler != null)
-                handler(this, new EnhancedPropertyChangedEventArgs<T>(propertyName, oldValue, newValue));
-        }
-    }
-
     /// <summary>
     /// ViewModelBase
     /// </summary>
@@ -52,6 +22,9 @@ namespace NsqMon.Common.Mvvm
 
         /// <summary>Dialog service.</summary>
         protected static readonly IDialogService _dialogService;
+
+        /// <summary>Occurs when a property value changes.</summary>
+        public event EnhancedPropertyChangedEventHandler EnhancedPropertyChanged;
 
         /// <summary>Occurs when a property value changes.</summary>
         public event PropertyChangedEventHandler PropertyChanged;
@@ -113,15 +86,14 @@ namespace NsqMon.Common.Mvvm
                 IoC.Resolve<IDialogService>().ShowError(exception, errorContainer);
         }
 
-        /// <summary>Raises the <see cref="PropertyChanged"/> event.</summary>
+        /// <summary>Raises the <see cref="ViewModelBase.PropertyChanged"/> and <see cref="EnhancedPropertyChanged" /> events.</summary>
         /// <param name="propertyName">Name of the property.</param>
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
         protected virtual void RaisePropertyChanged(string propertyName, object oldValue, object newValue)
         {
-            var handler = PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            EnhancedPropertyChanged?.Invoke(this, new EnhancedPropertyChangedEventArgs(propertyName, oldValue, newValue));
         }
 
         /// <summary>Gets the specified property value.</summary>
