@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NsqSharp.Api;
 using NsqSharp.Core;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Channels;
@@ -581,14 +582,7 @@ namespace NsqSharp
 
             _lookupdQueryIndex = (_lookupdQueryIndex + 1) % num;
 
-            string urlString = addr;
-            if (!urlString.Contains("://"))
-                urlString = "http://" + addr;
-
-            // TODO: handle parsing url better... maybe
-            var u = new Uri(urlString);
-            urlString = string.Format("{0}://{1}/lookup?topic={2}", u.Scheme, u.Authority, _topic);
-            return urlString;
+            return addr;
         }
 
         private void queryLookupd()
@@ -597,10 +591,15 @@ namespace NsqSharp
 
             log(LogLevel.Debug, string.Format("querying nsqlookupd {0}", endpoint));
 
-            INsqLookupdApiResponseProducers data;
+            int timeoutMilliseconds = (int)_config.DialTimeout.TotalMilliseconds;
+            if (timeoutMilliseconds < 2000)
+                timeoutMilliseconds = 2000;
+
+            TopicProducerInformation[] producers;
             try
             {
-                data = ApiRequest.NegotiateV1("GET", endpoint, _config.DialTimeout);
+                var nsqLookupdClient = new NsqLookupdHttpClient(endpoint, TimeSpan.FromMilliseconds(timeoutMilliseconds));
+                producers = nsqLookupdClient.Lookup(_topic).Producers;
             }
             catch (Exception ex)
             {
@@ -648,15 +647,12 @@ namespace NsqSharp
             //     "timestamp": 1340152173
             // }
             var nsqAddrs = new Collection<string>();
-            if (data.producers != null)
+            foreach (var producer in producers)
             {
-                foreach (var producer in data.producers)
-                {
-                    var broadcastAddress = producer.broadcast_address;
-                    var port = producer.tcp_port;
-                    var joined = string.Format("{0}:{1}", broadcastAddress, port);
-                    nsqAddrs.Add(joined);
-                }
+                var broadcastAddress = producer.BroadcastAddress;
+                var port = producer.TcpPort;
+                var joined = string.Format("{0}:{1}", broadcastAddress, port);
+                nsqAddrs.Add(joined);
             }
 
             var behaviorDelegate = _behaviorDelegate;

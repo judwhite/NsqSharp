@@ -208,29 +208,12 @@ namespace NsqSharp.Api
             string endpoint = GetFullUrl("/stats?format=json");
             byte[] respBody = Request(endpoint, HttpMethod.Get, _timeoutMilliseconds);
 
-            var serializer = new DataContractJsonSerializer(typeof(NsqdStatsResponse));
+            var serializer = new DataContractJsonSerializer(typeof(NsqdStats));
             using (var memoryStream = new MemoryStream(respBody))
             {
-                return ((NsqdStatsResponse)serializer.ReadObject(memoryStream)).Data;
+                return ((NsqdStats)serializer.ReadObject(memoryStream));
             }
         }
-    }
-
-    /// <summary>
-    /// Statistics information response wrapper for nsqd. See <see cref="NsqdHttpClient.GetStats"/>.
-    /// </summary>
-    [DataContract]
-    public class NsqdStatsResponse
-    {
-        /// <summary>HTTP status code.</summary>
-        [DataMember(Name = "status_code")]
-        public string StatusCode { get; set; }
-        /// <summary>HTTP status text.</summary>
-        [DataMember(Name = "status_txt")]
-        public string StatusText { get; set; }
-        /// <summary>Statistics information for nsqd.</summary>
-        [DataMember(Name = "data")]
-        public NsqdStats Data { get; set; }
     }
 
     /// <summary>

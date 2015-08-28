@@ -186,7 +186,7 @@ namespace NsqSharp.Api
             webRequest.Proxy = WebRequest.DefaultWebProxy;
             webRequest.Method = httpMethod == HttpMethod.Post ? "POST" : "GET";
             webRequest.Timeout = timeoutMilliseconds;
-            webRequest.Accept = "text/html,application/vnd.nsq; version=1.0";
+            webRequest.Accept = "application/vnd.nsq; version=1.0";
             webRequest.UserAgent = string.Format("{0}/{1}", ClientInfo.ClientName, ClientInfo.Version);
 
             if (httpMethod == HttpMethod.Post && body != null && body.Length != 0)
