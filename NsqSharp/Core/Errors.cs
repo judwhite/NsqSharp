@@ -100,8 +100,10 @@ namespace NsqSharp.Core
     {
         /// <summary>Initializes a new instance of the ErrOverMaxInFlight class.</summary>
         public ErrOverMaxInFlight()
-            : base("over configure max-inflight")
+            : base("over configured max-inflight")
         {
+            // TODO: go-nsq PR: fix typo "over configure"
+            // https://github.com/bitly/go-nsq/blob/08a850b52c79a9a1b6e457233bd11bf7ba713178/errors.go#L23
         }
 
         /// <summary>
