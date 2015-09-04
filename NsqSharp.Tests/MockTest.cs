@@ -15,6 +15,9 @@ using NUnit.Framework;
 
 namespace NsqSharp.Tests
 {
+#if !RUN_INTEGRATION_TESTS
+    [Ignore("NSQD Integration Test")]
+#endif
     [TestFixture]
     public class MockTest
     {
