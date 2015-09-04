@@ -27,9 +27,6 @@ namespace NsqSharp.Tests
             }
         }
 
-#if !RUN_INTEGRATION_TESTS
-        [Ignore("NSQD Integration Test")]
-#endif
         [Test]
         public void TestConsumerBackoff()
         {
@@ -45,22 +42,22 @@ namespace NsqSharp.Tests
                              new instruction(0, FrameType.Response, "OK"),
                              // IDENTIFY
                              new instruction(0, FrameType.Response, "OK"),
-                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
-                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
-                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
-                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgBad)),
-                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgBad)),
-                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
-                             new instruction(100 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgBad)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgBad)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              // needed to exit test
-                             new instruction(1000 * Time.Millisecond, -1, "exit")
+                             new instruction(200 * Time.Millisecond, -1, "exit")
                          };
             var n = new mockNSQD(script, IPAddress.Loopback, 4152);
 
             var topicName = "test_consumer_commands" + DateTime.Now.Unix();
             var config = new Config();
             config.MaxInFlight = 5;
-            config.BackoffMultiplier = Time.Duration(40 * Time.Millisecond);
+            config.BackoffMultiplier = Time.Duration(10 * Time.Millisecond);
             var q = new Consumer(topicName, "ch", new ConsoleLogger(LogLevel.Debug), config);
             q.AddHandler(new testHandler());
             q.ConnectToNsqd(n.tcpAddr);
@@ -120,11 +117,11 @@ namespace NsqSharp.Tests
                              new instruction(0, FrameType.Response, "OK"),
                              // IDENTIFY
                              new instruction(0, FrameType.Response, "OK"),
-                             new instruction(250 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
-                             new instruction(250 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeueNoBackoff)),
-                             new instruction(250 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeueNoBackoff)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              // needed to exit test
-                             new instruction(1000 * Time.Millisecond, -1, "exit")
+                             new instruction(100 * Time.Millisecond, -1, "exit")
                          };
 
             var n = new mockNSQD(script, IPAddress.Loopback, 4153);
@@ -132,7 +129,7 @@ namespace NsqSharp.Tests
             var topicName = "test_requeue" + DateTime.Now.Unix();
             var config = new Config();
             config.MaxInFlight = 1;
-            config.BackoffMultiplier = Time.Duration(50 * Time.Millisecond);
+            config.BackoffMultiplier = Time.Duration(10 * Time.Millisecond);
             var q = new Consumer(topicName, "ch", new ConsoleLogger(LogLevel.Debug), config);
             q.AddHandler(new testHandler());
             q.ConnectToNsqd(n.tcpAddr);
@@ -140,7 +137,7 @@ namespace NsqSharp.Tests
             bool timeout = false;
             Select
                 .CaseReceive(n.exitChan, o => { })
-                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(3500)), o => { timeout = true; })
+                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(500)), o => { timeout = true; })
                 .NoDefault();
 
             Assert.IsFalse(timeout, "timeout");
@@ -175,9 +172,6 @@ namespace NsqSharp.Tests
             Assert.AreEqual(expected, actual);
         }
 
-#if !RUN_INTEGRATION_TESTS
-        [Ignore("NSQD Integration Test")]
-#endif
         [Test]
         public void TestConsumerBackoffDisconnect()
         {
@@ -193,12 +187,12 @@ namespace NsqSharp.Tests
                              new instruction(0, FrameType.Response, "OK"),
                              // IDENTIFY
                              new instruction(0, FrameType.Response, "OK"),
-                             new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
-                             new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
-                             new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
-                             new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgRequeue)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              // needed to exit test
-                             new instruction(1000 * Time.Millisecond, -1, "exit")
+                             new instruction(100 * Time.Millisecond, -1, "exit")
                          };
 
             var n = new mockNSQD(script, IPAddress.Loopback, 4154);
@@ -206,9 +200,9 @@ namespace NsqSharp.Tests
             var topicName = "test_backoff_disconnect" + DateTime.Now.Unix();
             var config = new Config();
             config.MaxInFlight = 5;
-            config.BackoffMultiplier = Time.Duration(50 * Time.Millisecond);
+            config.BackoffMultiplier = Time.Duration(10 * Time.Millisecond);
             config.LookupdPollInterval = Time.Duration(10 * Time.Millisecond);
-            config.RDYRedistributeInterval = Time.Duration(50 * Time.Millisecond);
+            config.RDYRedistributeInterval = Time.Duration(10 * Time.Millisecond);
             var q = new Consumer(topicName, "ch", new ConsoleLogger(LogLevel.Debug), config);
             q.AddHandler(new testHandler());
             q.ConnectToNsqd(n.tcpAddr);
@@ -216,7 +210,7 @@ namespace NsqSharp.Tests
             bool timeout = false;
             Select
                 .CaseReceive(n.exitChan, o => { })
-                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(3000)), o => { timeout = true; })
+                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(500)), o => { timeout = true; })
                 .NoDefault();
 
             Assert.IsFalse(timeout, "timeout");
@@ -259,10 +253,10 @@ namespace NsqSharp.Tests
                              new instruction(0, FrameType.Response, "OK"),
                              // IDENTIFY
                              new instruction(0, FrameType.Response, "OK"),
-                             new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
-                             new instruction(200 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
+                             new instruction(20 * Time.Millisecond, FrameType.Message, frameMessage(msgGood)),
                              // needed to exit test
-                             new instruction(1000 * Time.Millisecond, -1, "exit")
+                             new instruction(100 * Time.Millisecond, -1, "exit")
                          };
 
             n = new mockNSQD(script, IPAddress.Loopback, 4154);
@@ -270,7 +264,7 @@ namespace NsqSharp.Tests
             bool timeout2 = false;
             Select
                 .CaseReceive(n.exitChan, o => { })
-                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(3000)), o => { timeout2 = true; })
+                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(500)), o => { timeout2 = true; })
                 .NoDefault();
 
             Assert.IsFalse(timeout2, "timeout2");
