@@ -8,7 +8,6 @@ using NsqSharp.Api;
 using NsqSharp.Core;
 using NsqSharp.Tests.Utils.Extensions;
 using NsqSharp.Utils.Extensions;
-using NsqSharp.Utils.Loggers;
 using NUnit.Framework;
 
 namespace NsqSharp.Tests
