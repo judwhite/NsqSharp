@@ -162,7 +162,7 @@ namespace NsqSharp.Bus
                     (
                         messageInformation,
                         requeue ? FailedMessageQueueAction.Requeue : FailedMessageQueueAction.Finish,
-                        requeue ? FailedMessageReason.HandlerException : FailedMessageReason.MaxAttemptsExceeded,
+                        FailedMessageReason.HandlerException,
                         ex
                     )
                 );
@@ -177,15 +177,35 @@ namespace NsqSharp.Bus
 
         public void LogFailedMessage(IMessage message)
         {
+            object handler;
+            try
+            {
+                handler = _objectBuilder.GetInstance(_handlerType);
+            }
+            catch
+            {
+                handler = _handlerType;
+            }
+
+            object deserializedMessageBody;
+            try
+            {
+                deserializedMessageBody = _serializer.Deserialize(_concreteMessageType, message.Body);
+            }
+            catch
+            {
+                deserializedMessageBody = null;
+            }
+
             var messageInformation = new MessageInformation
             {
                 UniqueIdentifier = Guid.NewGuid(),
                 Topic = _topic,
                 Channel = _channel,
-                HandlerType = _handlerType,
+                HandlerType = handler.GetType(),
                 MessageType = _messageType,
                 Message = message,
-                DeserializedMessageBody = null,
+                DeserializedMessageBody = deserializedMessageBody,
                 Started = DateTime.UtcNow
             };
 
