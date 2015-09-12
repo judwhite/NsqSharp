@@ -68,6 +68,7 @@
     <Compile Include="Api\NsqdHttpClient.cs" />
     <Compile Include="Api\NsqLookupdHttpClient.cs" />
     <Compile Include="Bus\BusService.cs" />
+    <Compile Include="Bus\Configuration\BuiltIn\AutofacObjectBuilder.cs" />
     <Compile Include="Bus\Configuration\BuiltIn\ConsoleMessageAuditor.cs" />
     <Compile Include="Bus\Configuration\BuiltIn\HandlerTypeToChannelDictionary.cs" />
     <Compile Include="Bus\Configuration\BuiltIn\MessageTypeToTopicDictionary.cs" />
