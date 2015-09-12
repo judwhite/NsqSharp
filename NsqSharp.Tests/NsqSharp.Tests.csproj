@@ -85,6 +85,7 @@
     <Compile Include="Bus\MultiImplementIHandleMessagesTest.cs" />
     <Compile Include="Bus\TestFakes\MessageAuditorStub.cs" />
     <Compile Include="Bus\TouchTest.cs" />
+    <Compile Include="Bus\Tuple.cs" />
     <Compile Include="Bus\Utils\InterfaceBuilderTest.cs" />
     <Compile Include="ConsumerRdyRedistributionTest.cs" />
     <Compile Include="Utils\Channels\ChanTest.cs" />
