@@ -3,9 +3,10 @@
 namespace NsqSharp.Bus.Configuration
 {
     /// <summary>
-    /// Object builder interface.
+    /// Container interface.
     /// </summary>
-    public interface IObjectBuilder
+
+    public interface IDependencyResolver
     {
         /// <summary>
         /// Creates or finds the registered instance of type <typeparamref name="T"/>.
@@ -20,7 +21,12 @@ namespace NsqSharp.Bus.Configuration
         /// <param name="type">The type to resolve.</param>
         /// <returns>The registered instance of the specifid <paramref name="type"/>.</returns>
         object GetInstance(Type type);
-
+    }
+    /// <summary>
+    /// Object builder interface.
+    /// </summary>
+    public interface IObjectBuilder : IDependencyResolver
+    {
         /// <summary>
         /// Injects an <paramref name="instance"/> of type <typeparamref name="T"/> into the container.
         /// </summary>
