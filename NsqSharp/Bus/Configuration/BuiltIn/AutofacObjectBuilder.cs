@@ -16,9 +16,12 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
         private readonly MethodInfo _registerInstanceMethod;
         private readonly MethodInfo _registerTypeMethod;
         private readonly MethodInfo _createRegistrationMethod;
-        private readonly MethodInfo _getComponentRegistryProperty;
+
         private readonly MethodInfo _tryResolveMethod;
         private readonly MethodInfo _resolveMethod;
+
+        private readonly object _componentRegistry;
+        private readonly MethodInfo _registerMethod;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutofacObjectBuilder"/> class.
@@ -32,13 +35,20 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
 
             _container = container;
 
+            //  Reference: https://groups.google.com/forum/#!topic/autofac/9OptOgmGqrQ
+
+            // get _container.ComponentRegistry getter
             var containerType = _container.GetType();
             var componentRegistryProperty = containerType.GetProperty("ComponentRegistry");
             if (componentRegistryProperty == null)
                 throw new Exception("Container.ComponentRegistry property not found");
-            _getComponentRegistryProperty = componentRegistryProperty.GetGetMethod();
-            if (_getComponentRegistryProperty == null)
+            var getComponentRegistryProperty = componentRegistryProperty.GetGetMethod();
+            if (getComponentRegistryProperty == null)
                 throw new Exception("Container.ComponentRegistry property getter not found");
+            _componentRegistry = getComponentRegistryProperty.Invoke(_container, null);
+            var componentRegistryType = _componentRegistry.GetType();
+            _registerMethod = componentRegistryType.GetMethods()
+                                  .Single(p => p.Name == "Register" && p.GetParameters().Length == 1);
 
             var autofacAssembly = _container.GetType().Assembly;
 
@@ -137,17 +147,12 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
                 object componentRegistration = _registerTypeMethod.Invoke(null, new[] { containerBuilder, type });
 
                 // _container.ComponentRegistry.Register(componentRegistration.CreateRegistration());
-                var componentRegistry = _getComponentRegistryProperty.Invoke(_container, null);
-                var componentRegistryType = componentRegistry.GetType();
-                var registerMethod = componentRegistryType.GetMethods()
-                                        .Single(p => p.Name == "Register" && p.GetParameters().Length == 1);
-
                 var componentRegistrationType = componentRegistration.GetType();
                 var createRegistrationMethod = _createRegistrationMethod.MakeGenericMethod(
                                                    componentRegistrationType.GenericTypeArguments
                                                );
-                var registration = createRegistrationMethod.Invoke(componentRegistry, new[] { componentRegistration });
-                registerMethod.Invoke(componentRegistry, new[] { registration });
+                var registration = createRegistrationMethod.Invoke(_componentRegistry, new[] { componentRegistration });
+                _registerMethod.Invoke(_componentRegistry, new[] { registration });
 
                 // return _container.Resolve(type);
                 var result = _resolveMethod.Invoke(null, new[] { _container, type });
@@ -166,25 +171,20 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
             lock (_containerLocker)
             {
                 // Autofac equivalent: 
-                //   var cb = new ContainerBuilder().RegisterInstance(instance).As<T>();
-                //   _container.ComponentRegistry.Register(cb.CreateRegistration());
+                //   var componentRegistration = new ContainerBuilder().RegisterInstance<T>(instance)();
+                //   _container.ComponentRegistry.Register(componentRegistration.CreateRegistration());
 
                 var containerBuilder = Activator.CreateInstance(_containerBuilderType);
                 var registerInstanceMethod = _registerInstanceMethod.MakeGenericMethod(typeof(T));
                 var componentRegistration = registerInstanceMethod.Invoke(null, new[] { containerBuilder, instance });
-
-                var componentRegistry = _getComponentRegistryProperty.Invoke(_container, null);
-                var componentRegistryType = componentRegistry.GetType();
-                var registerMethod = componentRegistryType.GetMethods()
-                    .Single(p => p.Name == "Register" && p.GetParameters().Length == 1);
 
                 var componentRegistrationType = componentRegistration.GetType();
 
                 var createRegistrationMethod = _createRegistrationMethod.MakeGenericMethod(
                                                    componentRegistrationType.GenericTypeArguments
                                                );
-                var registration = createRegistrationMethod.Invoke(componentRegistry, new[] { componentRegistration });
-                registerMethod.Invoke(componentRegistry, new[] { registration });
+                var registration = createRegistrationMethod.Invoke(_componentRegistry, new[] { componentRegistration });
+                _registerMethod.Invoke(_componentRegistry, new[] { registration });
             }
         }
     }
