@@ -34,25 +34,29 @@ namespace NsqSharp.Tests.Bus
             {
                 var objectBuilder = new AutofacObjectBuilder(container);
 
-                BusService.Start(new BusConfiguration(
-                    objectBuilder,
-                    new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
-                    new MessageAuditorStub(),
-                    new MessageTypeToTopicDictionary(new Dictionary<Type, string> {
-                        { typeof(TestMessage), topicName }
-                    }),
-                    new HandlerTypeToChannelDictionary(new Dictionary<Type, string> {
-                        { typeof(TestMessageHandler), channelName }
-                    }),
-                    defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
-                    defaultThreadsPerHandler: 1,
-                    nsqConfig: new Config
-                    {
-                        LookupdPollJitter = 0,
-                        LookupdPollInterval = TimeSpan.FromSeconds(1)
-                    },
-                    preCreateTopicsAndChannels: true
-                ));
+                var busConfiguration =
+                    new BusConfiguration(
+                        objectBuilder,
+                        new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
+                        new MessageAuditorStub(),
+                        new MessageTypeToTopicDictionary(new Dictionary<Type, string>
+                                                         {
+                                                             { typeof(TestMessage), topicName }
+                                                         }),
+                        new HandlerTypeToChannelDictionary(new Dictionary<Type, string>
+                                                           {
+                                                               { typeof(TestMessageHandler), channelName }
+                                                           }),
+                        defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
+                        defaultThreadsPerHandler: 1,
+                        nsqConfig: new Config
+                                   {
+                                       LookupdPollJitter = 0,
+                                       LookupdPollInterval = TimeSpan.FromSeconds(1)
+                                   },
+                        preCreateTopicsAndChannels: true);
+
+                BusService.Start(busConfiguration);
 
                 var bus = objectBuilder.GetInstance<IBus>();
 
@@ -80,7 +84,9 @@ namespace NsqSharp.Tests.Bus
 
                 Assert.AreEqual(topicName, messageInformation.Topic, "messageInformation.Topic");
                 Assert.AreEqual(channelName, messageInformation.Channel, "messageInformation.Channel");
-                Assert.AreNotEqual(Guid.Empty, messageInformation.UniqueIdentifier, "messageInformation.UniqueIdentifier");
+                Assert.AreNotEqual(Guid.Empty,
+                                   messageInformation.UniqueIdentifier,
+                                   "messageInformation.UniqueIdentifier");
             }
             finally
             {
@@ -114,8 +120,11 @@ namespace NsqSharp.Tests.Bus
         private class TestMessageHandler : IHandleMessages<TestMessage>
         {
             private static readonly List<IMessage> _messages = new List<IMessage>();
-            private static readonly List<ICurrentMessageInformation> _messagesInfos = new List<ICurrentMessageInformation>();
             private static readonly object _messagesLocker = new object();
+
+            private static readonly List<ICurrentMessageInformation> _messagesInfos =
+                new List<ICurrentMessageInformation>();
+
             private static readonly AutoResetEvent _wait = new AutoResetEvent(initialState: false);
 
             private readonly IBus _bus;

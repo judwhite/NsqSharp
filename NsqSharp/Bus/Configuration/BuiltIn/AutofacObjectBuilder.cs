@@ -48,7 +48,8 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
             _componentRegistry = getComponentRegistryProperty.Invoke(_container, null);
             var componentRegistryType = _componentRegistry.GetType();
             _registerMethod = componentRegistryType.GetMethods()
-                                  .Single(p => p.Name == "Register" && p.GetParameters().Length == 1);
+                                                   .Single(p => p.Name == "Register" &&
+                                                                p.GetParameters().Length == 1);
 
             var autofacAssembly = _container.GetType().Assembly;
 
@@ -64,10 +65,8 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
 
             _createRegistrationMethod =
                 registrationBuilderType.GetMethods()
-                    .SingleOrDefault(
-                        p =>
-                            p.Name == "CreateRegistration" && p.GetParameters().Length == 1
-                    );
+                                       .SingleOrDefault(p => p.Name == "CreateRegistration" &&
+                                                             p.GetParameters().Length == 1);
             if (_createRegistrationMethod == null)
                 throw new Exception("Autofac.Builder.RegistrationBuilder.CreateRegistration method not found");
 
@@ -82,11 +81,9 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
             // Get ContainerBuilder RegisterType method
             _registerTypeMethod =
                 registrationExtensionsType.GetMethods()
-                    .SingleOrDefault(
-                        p =>
-                            p.Name == "RegisterType" && p.GetParameters().Length == 2 &&
-                            p.GetParameters()[1].ParameterType == typeof(Type)
-                    );
+                                          .SingleOrDefault(p => p.Name == "RegisterType" &&
+                                                                p.GetParameters().Length == 2 &&
+                                                                p.GetParameters()[1].ParameterType == typeof(Type));
             if (_registerTypeMethod == null)
                 throw new Exception("Autofac.RegistrationExtensions.RegisterType method not found");
 
@@ -96,21 +93,18 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
                 throw new Exception("Autofac.ResolutionExtensions type not found");
             _tryResolveMethod =
                 resolutionExtensionsType.GetMethods()
-                    .SingleOrDefault(
-                        p =>
-                            p.Name == "TryResolve" && p.GetParameters().Length == 3 &&
-                            p.GetParameters()[1].ParameterType == typeof(Type)
-                    );
+                                        .SingleOrDefault(p => p.Name == "TryResolve" &&
+                                                              p.GetParameters().Length == 3 &&
+                                                              p.GetParameters()[1].ParameterType == typeof(Type));
             if (_tryResolveMethod == null)
                 throw new Exception("Autofac.ResolutionExtensions.TryResolve method not found");
 
             // Get _container.Resolve method
             _resolveMethod =
                 resolutionExtensionsType.GetMethods()
-                    .SingleOrDefault(
-                        p =>
-                            p.Name == "Resolve" && p.GetParameters().Length == 2 &&
-                            p.GetParameters()[1].ParameterType == typeof(Type)
+                                        .SingleOrDefault(p => p.Name == "Resolve" &&
+                                                              p.GetParameters().Length == 2 &&
+                                                              p.GetParameters()[1].ParameterType == typeof(Type)
                     );
             if (_resolveMethod == null)
                 throw new Exception("Autofac.ResolutionExtensions.Resolve method not found");
@@ -204,9 +198,8 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
         {
             // _container.ComponentRegistry.Register(componentRegistration.CreateRegistration());
             var componentRegistrationType = componentRegistration.GetType();
-            var createRegistrationMethod = _createRegistrationMethod.MakeGenericMethod(
-                                               componentRegistrationType.GenericTypeArguments
-                                            );
+            var createRegistrationMethod =
+                _createRegistrationMethod.MakeGenericMethod(componentRegistrationType.GenericTypeArguments);
             var registration = createRegistrationMethod.Invoke(_componentRegistry, new[] { componentRegistration });
 
             _registerMethod.Invoke(_componentRegistry, new[] { registration });
