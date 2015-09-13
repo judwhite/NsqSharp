@@ -48,8 +48,10 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
             _componentRegistry = getComponentRegistryProperty.Invoke(_container, null);
             var componentRegistryType = _componentRegistry.GetType();
             _registerMethod = componentRegistryType.GetMethods()
-                                                   .Single(p => p.Name == "Register" &&
-                                                                p.GetParameters().Length == 1);
+                                                   .SingleOrDefault(p => p.Name == "Register" &&
+                                                                         p.GetParameters().Length == 1);
+            if (_registerMethod == null)
+                throw new Exception("Container.ComponentRegistry.Register property getter not found");
 
             var autofacAssembly = _container.GetType().Assembly;
 
