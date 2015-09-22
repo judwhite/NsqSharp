@@ -90,8 +90,8 @@ namespace NsqSharp.Bus.Configuration
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             }
 
-            if (dependencyInjectionContainer == null)
-                throw new ArgumentNullException("dependencyInjectionContainer");
+            /*if (dependencyInjectionContainer == null)
+                throw new ArgumentNullException("dependencyInjectionContainer");*/
             if (defaultMessageSerializer == null)
                 throw new ArgumentNullException("defaultMessageSerializer");
             if (messageAuditor == null)
@@ -421,6 +421,24 @@ namespace NsqSharp.Bus.Configuration
         public bool IsConsoleMode
         {
             get { return (NativeMethods.GetConsoleWindow() != IntPtr.Zero); }
+        }
+
+        /// <summary>
+        /// Creates IBus instance using current configuration. Returns IBus in stopped state.
+        /// </summary>
+        /// <returns>A list of topics/channels currently handled by this process.</returns>
+        public IBus CreateBus()
+        {
+            return  new NsqBus(
+                _topicChannelHandlers,
+                _dependencyInjectionContainer,
+                _messageTypeToTopicProvider,
+                _defaultMessageSerializer,
+                _nsqLogger,
+                _messageMutator,
+                _messageTopicRouter,
+                _nsqdPublisher
+            );
         }
     }
 

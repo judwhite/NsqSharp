@@ -11,7 +11,7 @@ namespace NsqSharp.Bus
     internal class MessageDistributor : IHandler
     {
         private readonly NsqBus _bus;
-        private readonly IObjectBuilder _objectBuilder;
+        private readonly IDependencyResolver _objectBuilder;
         private readonly ILogger _logger;
         private readonly IMessageSerializer _serializer;
         private readonly MethodInfo _handleMethod;
@@ -24,7 +24,7 @@ namespace NsqSharp.Bus
 
         public MessageDistributor(
             NsqBus bus,
-            IObjectBuilder objectBuilder,
+            IDependencyResolver objectBuilder,
             ILogger logger,
             MessageHandlerMetadata messageHandlerMetadata
         )

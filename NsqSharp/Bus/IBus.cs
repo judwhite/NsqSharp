@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using NsqSharp.Bus.Configuration;
 
 namespace NsqSharp.Bus
 {
@@ -54,5 +55,19 @@ namespace NsqSharp.Bus
         /// <c>null</c> if the current thread isn't a thread started to handle a message.</summary>
         [Obsolete("Use GetCurrentThreadMessageInformation. This method will be removed by v1.0.")]
         ICurrentMessageInformation GetCurrentMessageInformation();
+
+        /// <summary>
+        /// Starts the bus.
+        /// </summary>
+        void Start();
+        /// <summary>
+        /// Stops the bus.
+        /// </summary>
+        void Stop();
+
+        /// <summary>
+        /// Sets dependency resolver
+        /// </summary>
+        void SetDependencyResolver(IDependencyResolver container);
     }
 }

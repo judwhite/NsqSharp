@@ -13,7 +13,7 @@ namespace NsqSharp.Bus
     internal class NsqBus : IBus
     {
         private readonly Dictionary<string, List<MessageHandlerMetadata>> _topicChannelHandlers;
-        private readonly IObjectBuilder _dependencyInjectionContainer;
+        private IDependencyResolver _dependencyResolver;
         private readonly IMessageTypeToTopicProvider _messageTypeToTopicProvider;
         private readonly IMessageSerializer _sendMessageSerializer;
         private readonly ILogger _nsqLogger;
@@ -37,8 +37,8 @@ namespace NsqSharp.Bus
         {
             if (topicChannelHandlers == null)
                 throw new ArgumentNullException("topicChannelHandlers");
-            if (dependencyInjectionContainer == null)
-                throw new ArgumentNullException("dependencyInjectionContainer");
+            /*if (dependencyInjectionContainer == null)
+                throw new ArgumentNullException("dependencyInjectionContainer");*/
             if (messageTypeToTopicProvider == null)
                 throw new ArgumentNullException("messageTypeToTopicProvider");
             if (sendMessageSerializer == null)
@@ -49,15 +49,17 @@ namespace NsqSharp.Bus
                 throw new ArgumentNullException("nsqLogger");
 
             _topicChannelHandlers = topicChannelHandlers;
-            _dependencyInjectionContainer = dependencyInjectionContainer;
             _messageTypeToTopicProvider = messageTypeToTopicProvider;
             _sendMessageSerializer = sendMessageSerializer;
             _nsqLogger = nsqLogger;
             _messageMutator = messageMutator;
             _messageTopicRouter = messageTopicRouter;
             _nsqdPublisher = nsqdPublisher;
-
-            _dependencyInjectionContainer.Inject((IBus)this);
+            if (dependencyInjectionContainer != null)
+            {
+                dependencyInjectionContainer.Inject((IBus)this);
+                _dependencyResolver = dependencyInjectionContainer;
+            }
         }
 
         private string GetTopic<T>()
@@ -211,11 +213,13 @@ namespace NsqSharp.Bus
         {
             return typeof(T).IsInterface
                         ? InterfaceBuilder.CreateObject<T>()
-                        : _dependencyInjectionContainer.GetInstance<T>();
+                        : _dependencyResolver.GetInstance<T>();
         }
 
         public void Start()
         {
+            if (_dependencyResolver == null)
+                throw new ArgumentNullException("Must call SetDependencyResolver first");
             Trace.WriteLine("Starting...");
 
             foreach (var topicChannelHandler in _topicChannelHandlers)
@@ -223,7 +227,7 @@ namespace NsqSharp.Bus
                 foreach (var item in topicChannelHandler.Value)
                 {
                     var consumer = new Consumer(item.Topic, item.Channel, _nsqLogger, item.Config);
-                    var distributor = new MessageDistributor(this, _dependencyInjectionContainer, _nsqLogger, item);
+                    var distributor = new MessageDistributor(this, _dependencyResolver, _nsqLogger, item);
                     consumer.AddHandler(distributor, item.InstanceCount);
 
                     // TODO: max_in_flight vs item.InstanceCount
@@ -275,6 +279,11 @@ namespace NsqSharp.Bus
         internal void SetCurrentMessageInformation(ICurrentMessageInformation currentMessageInformation)
         {
             _threadMessage = currentMessageInformation;
+        }
+
+        public void SetDependencyResolver(IDependencyResolver container)
+        {
+            _dependencyResolver = container;
         }
     }
 }
