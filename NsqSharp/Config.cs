@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Security.Authentication;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using NsqSharp.Core;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Attributes;
@@ -228,21 +226,13 @@ namespace NsqSharp
 
         // To set TLS config, use the following options:
         //
-        // tls_v1 - Bool enable TLS negotiation
-        // tls_root_ca_file - String path to file containing root CA
-        // tls_insecure_skip_verify - Bool indicates whether this client should verify server certificates
-        // tls_cert - String path to file containing public key for certificate
-        // tls_key - String path to file containing private key for certificate
         // tls_min_version - String indicating the minimum version of tls acceptable ('ssl3.0', 'tls1.0', 'tls1.1', 'tls1.2')
+        // tls_check_certificate_revocation - Bool indicating whether this client should check revocation
+        // tls_insecure_skip_verify - Bool indicating whether this client should verify server certificates
 
-        // TODO: TLS
-        /// <summary>Enable TLS negotiation</summary>
-        [Opt("tls_v1")]
-        private bool TlsV1 { get; set; }
-
-        /// <summary>TLS configuration</summary>
+        /// <summary>TLS configuration. Required to use TLS.</summary>
         [Opt("tls_config")]
-        private TlsConfig TlsConfig { get; set; }
+        public TlsConfig TlsConfig { get; set; }
 
         // Compression Settings
 
@@ -484,18 +474,13 @@ namespace NsqSharp
 
         internal class tlsConfig : configHandler
         {
-            private string certFile { get; set; }
-            private string keyFile { get; set; }
-
             public bool HandlesOption(Config c, string option)
             {
                 switch (option)
                 {
-                    case "tls_root_ca_file":
-                    case "tls_insecure_skip_verify":
-                    case "tls_cert":
-                    case "tls_key":
                     case "tls_min_version":
+                    case "tls_check_certificate_revocation":
+                    case "tls_insecure_skip_verify":
                         return true;
                 }
                 return false;
@@ -503,109 +488,52 @@ namespace NsqSharp
 
             public void Set(Config c, string option, object value)
             {
-                if (c.TlsConfig == null)
-                {
-                    c.TlsConfig = new TlsConfig
-                    {
-                        MinVersion = SslProtocols.Tls,
-#if NETFX_3_5 || NETFX_4_0
-                        MaxVersion = SslProtocols.Tls
-#else
-                        MaxVersion = SslProtocols.Tls12
-#endif
-                    };
-                }
+                var tlsConfig = c.TlsConfig != null
+                                    ? c.TlsConfig.Clone()
+                                    : new TlsConfig();
 
                 switch (option)
                 {
-                    case "tls_cert":
-                    case "tls_key":
-                        // TODO: Test
-                        if (option == "tls_cert")
-                            certFile = (string)value;
-                        else
-                            keyFile = (string)value;
-
-                        if (!string.IsNullOrEmpty(certFile) && !string.IsNullOrEmpty(keyFile) &&
-                            c.TlsConfig.Certificates.Count == 0)
-                        {
-                            c.TlsConfig.Certificates.Import(certFile);
-                            c.TlsConfig.Certificates.Import(keyFile);
-                        }
-                        return;
-
-                    case "tls_root_ca_file":
-                        // TODO: Test
-                        string path = (string)value;
-                        var certificates = PEM(File.ReadAllText(path));
-                        c.TlsConfig.RootCAs = certificates;
-                        return;
-
-                    case "tls_insecure_skip_verify":
-                        bool coercedVal = value.Coerce<bool>();
-                        c.TlsConfig.InsecureSkipVerify = coercedVal;
-                        return;
-
                     case "tls_min_version":
                         var version = (string)value;
                         switch (version)
                         {
                             case "ssl3.0":
-                                c.TlsConfig.MinVersion = SslProtocols.Ssl3;
+                                tlsConfig.MinVersion = SslProtocols.Ssl3;
                                 break;
                             case "tls1.0":
-                                c.TlsConfig.MinVersion = SslProtocols.Tls;
+                                tlsConfig.MinVersion = SslProtocols.Tls;
                                 break;
 #if !NETFX_3_5 && !NETFX_4_0
                             case "tls1.1":
-                                c.TlsConfig.MinVersion = SslProtocols.Tls11;
-                                return;
+                                tlsConfig.MinVersion = SslProtocols.Tls11;
+                                break;
                             case "tls1.2":
-                                c.TlsConfig.MinVersion = SslProtocols.Tls12;
-                                return;
+                                tlsConfig.MinVersion = SslProtocols.Tls12;
+                                break;
 #endif
                             default:
                                 throw new Exception(string.Format("ERROR: {0} is not a tls version", value));
                         }
-                        return;
+                        break;
+                    case "tls_check_certificate_revocation":
+                        bool checkCertificationRevocation = value.Coerce<bool>();
+                        tlsConfig.CheckCertificateRevocation = checkCertificationRevocation;
+                        break;
+                    case "tls_insecure_skip_verify":
+                        bool insecureSkipVerify = value.Coerce<bool>();
+                        tlsConfig.InsecureSkipVerify = insecureSkipVerify;
+                        break;
+                    default:
+                        throw new Exception(string.Format("unknown option {0}", option));
                 }
 
-                throw new Exception(string.Format("unknown option {0}", option));
+                c.TlsConfig = tlsConfig;
             }
 
             public void Validate(Config c)
             {
                 // no op
-            }
-
-            private static X509Certificate2Collection PEM(string pem)
-            {
-                // TODO: Test
-
-                const string beginCert = "-----BEGIN CERTIFICATE-----";
-                const string endCert = "-----END CERTIFICATE-----";
-
-                var certificates = new X509Certificate2Collection();
-
-                int end;
-                for (int start = pem.IndexOf(beginCert); start >= 0; start = pem.IndexOf(beginCert, end))
-                {
-                    start += beginCert.Length;
-
-                    end = pem.IndexOf(endCert, start);
-                    if (end == -1)
-                        throw new Exception(string.Format("'{0}' not found after index {1}", endCert, start));
-
-                    byte[] rawData = Convert.FromBase64String(pem.Substring(start, end - start));
-                    certificates.Import(rawData);
-                }
-
-                if (certificates.Count == 0)
-                {
-                    throw new Exception("no certificates found");
-                }
-
-                return certificates;
             }
         }
 

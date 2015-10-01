@@ -377,7 +377,7 @@ namespace NsqSharp.Core
             ci.user_agent = _config.UserAgent;
             ci.short_id = _config.ClientID; // deprecated
             ci.long_id = _config.Hostname;  // deprecated
-            ci.tls_v1 = false; //_config.TlsV1; // TODO: TLS
+            ci.tls_v1 = (_config.TlsConfig != null);
             ci.deflate = false; //_config.Deflate; // TODO: Deflate
             ci.deflate_level = 6; //_config.DeflateLevel; // TODO: Deflate
             ci.snappy = false; //_config.Snappy; // TODO: Snappy
@@ -437,14 +437,11 @@ namespace NsqSharp.Core
 
                 _maxRdyCount = resp.MaxRdyCount;
 
-                // TODO: TLS
-                /*if resp.TLSv1 {
-                    c.log(LogLevelInfo, "upgrading to TLS")
-                    err := c.upgradeTLS(c.config.TlsConfig)
-                    if err != nil {
-                        return nil, ErrIdentify{err.Error()}
-                    }
-                }*/
+                if (resp.TLSv1)
+                {
+                    log(LogLevel.Info, "upgrading to TLS");
+                    upgradeTLS(_config.TlsConfig);
+                }
 
                 // TODO: Deflate
                 /*if resp.Deflate {
@@ -485,12 +482,21 @@ namespace NsqSharp.Core
             }
         }
 
-        /*private void upgradeTLS()
+        private void upgradeTLS(TlsConfig tlsConfig)
         {
-            // TODO
+            if (tlsConfig == null)
+                throw new ArgumentNullException("tlsConfig", "Set Config.TlsConfig to use TLS");
+
+            ((TcpConn)_conn).UpgradeTls(tlsConfig);
+
+            FrameType frameType;
+            byte[] body;
+            Protocol.ReadUnpackedResponse(this, out frameType, out body);
+            if (frameType != FrameType.Response || !body.SequenceEqual(Encoding.UTF8.GetBytes("OK")))
+                throw new Exception("invalid response from TLS upgrade");
         }
 
-        private void upgradeDeflate()
+        /*private void upgradeDeflate()
         {
             // TODO
         }
