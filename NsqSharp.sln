@@ -67,6 +67,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThrottleAndTelemetry.Handle
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThrottleAndTelemetry.Handlers.Organizations", "Examples\ThrottleAndTelemetry\ThrottleAndTelemetry.Handlers.Organizations\ThrottleAndTelemetry.Handlers.Organizations.csproj", "{4FF8C33B-A185-4425-8F20-360709404557}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Echo.Bus.Tls", "Echo.Bus.Tls", "{D48C6B0A-5E6B-4AC8-B1EE-58CF905358AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Echo.Bus.Tls", "Examples\Echo.Bus.Tls\Echo.Bus.Tls.csproj", "{4676806B-2270-4CF5-B85A-B566FF39B426}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -200,6 +204,12 @@ Global
 		{4FF8C33B-A185-4425-8F20-360709404557}.Integration Tests|Any CPU.Build.0 = Release|Any CPU
 		{4FF8C33B-A185-4425-8F20-360709404557}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FF8C33B-A185-4425-8F20-360709404557}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4676806B-2270-4CF5-B85A-B566FF39B426}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4676806B-2270-4CF5-B85A-B566FF39B426}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4676806B-2270-4CF5-B85A-B566FF39B426}.Integration Tests|Any CPU.ActiveCfg = Release|Any CPU
+		{4676806B-2270-4CF5-B85A-B566FF39B426}.Integration Tests|Any CPU.Build.0 = Release|Any CPU
+		{4676806B-2270-4CF5-B85A-B566FF39B426}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4676806B-2270-4CF5-B85A-B566FF39B426}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -232,5 +242,7 @@ Global
 		{0E4A03E2-5A0E-4180-8F82-2A3ECDD3AD6D} = {AA7F4F2D-1FC1-4973-A7A9-A84EC0D14D06}
 		{9BD3F6BA-8C65-473B-8992-08046144BC32} = {AA7F4F2D-1FC1-4973-A7A9-A84EC0D14D06}
 		{4FF8C33B-A185-4425-8F20-360709404557} = {AA7F4F2D-1FC1-4973-A7A9-A84EC0D14D06}
+		{D48C6B0A-5E6B-4AC8-B1EE-58CF905358AA} = {0FB50390-80AC-4487-BC62-C9311FD60D4D}
+		{4676806B-2270-4CF5-B85A-B566FF39B426} = {D48C6B0A-5E6B-4AC8-B1EE-58CF905358AA}
 	EndGlobalSection
 EndGlobal

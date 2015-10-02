@@ -132,6 +132,7 @@
     <Compile Include="Utils\Channels\IReceiveOnlyChan.cs" />
     <Compile Include="Utils\Channels\ISendOnlyChan.cs" />
     <Compile Include="Utils\Channels\Select.cs" />
+    <Compile Include="Utils\Extensions\X509ChainStatusExtensions.cs" />
     <Compile Include="Utils\Extensions\StringExtensions.cs" />
     <Compile Include="Utils\Loggers\ConsoleLogger.cs" />
     <Compile Include="Utils\Loggers\TraceLogger.cs" />
