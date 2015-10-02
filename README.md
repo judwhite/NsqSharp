@@ -3,7 +3,7 @@ NsqSharp
 
 [![Build Status](https://travis-ci.org/judwhite/NsqSharp.svg?branch=master)](https://travis-ci.org/judwhite/NsqSharp)&nbsp;&nbsp;[![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)&nbsp;&nbsp;[![nuget](https://img.shields.io/nuget/v/NsqSharp.svg)](https://www.nuget.org/packages/NsqSharp)
 
-A .NET client library for [NSQ](https://github.com/bitly/nsq), a realtime distributed messaging platform.
+A .NET client library for [NSQ](https://github.com/nsqio/nsq), a realtime distributed messaging platform.
 
 Check out this [slide deck](https://speakerdeck.com/snakes/nsq-nyc-golang-meetup?slide=19) for a quick intro to NSQ.
 
@@ -38,7 +38,7 @@ sc description nsqd "nsqd 0.3.2"
 sc start nsqd
 ```
 
-You can also build these files from source: https://github.com/bitly/nsq (official), or https://github.com/judwhite/nsq (fork) to add the ability to run as a Windows Service.
+You can also build these files from source: https://github.com/nsqio/nsq (official), or https://github.com/judwhite/nsq (fork) to add the ability to run as a Windows Service.
 
 ## C# Examples
 
@@ -48,7 +48,7 @@ More examples are in the [Examples](https://github.com/judwhite/NsqSharp/tree/ma
 
 #### Simple Producer
 
-```C#
+```cs
 using System;
 using NsqSharp;
 
@@ -58,7 +58,7 @@ class Program
     {
         var producer = new Producer("127.0.0.1:4150");
         producer.Publish("test-topic-name", "Hello!");
-    
+
         Console.WriteLine("Enter your message (blank line to quit):");
         string line = Console.ReadLine();
         while (!string.IsNullOrEmpty(line))
@@ -74,7 +74,7 @@ class Program
 
 #### Simple Consumer
 
-```C#
+```cs
 using System;
 using System.Text;
 using NsqSharp;
@@ -87,7 +87,7 @@ class Program
         var consumer = new Consumer("test-topic-name", "channel-name");
         consumer.AddHandler(new MessageHandler());
         consumer.ConnectToNsqLookupd("127.0.0.1:4161");
-    
+
         Console.WriteLine("Listening for messages. If this is the first execution, it " +
                           "could take up to 60s for topic producers to be discovered.");
         Console.WriteLine("Press enter to stop...");
@@ -133,10 +133,10 @@ The [PingPong](https://github.com/judwhite/NsqSharp/tree/master/Examples/PingPon
 
 Applications initiated with [`BusService.Start`](https://github.com/judwhite/NsqSharp/blob/master/Examples/PingPong/Program.cs#L24) can be installed as a Windows Service using `sc create`. When in console mode the application will gracefully shutdown with `Ctrl+C`. When running as a Windows Service stopping the service or rebooting/shutting down the machine will do a graceful shutdown.
 
-NsqSharp has no external dependencies. StructureMap and Newtonsoft.Json are supported through convenience classes which use reflection for the initial wire-up. Other containers and serializers can be used by implementing [`IObjectBuilder`](https://github.com/judwhite/NsqSharp/blob/master/NsqSharp/Bus/Configuration/IObjectBuilder.cs) and [`IMessageSerializer`](https://github.com/judwhite/NsqSharp/blob/master/NsqSharp/Bus/Configuration/IMessageSerializer.cs) wrappers in your code.
+NsqSharp has no external dependencies. StructureMap, Autofac, and Newtonsoft.Json are supported through convenience classes which use reflection for the initial wire-up. Other containers and serializers can be used by implementing [`IObjectBuilder`](https://github.com/judwhite/NsqSharp/blob/master/NsqSharp/Bus/Configuration/IObjectBuilder.cs) and [`IMessageSerializer`](https://github.com/judwhite/NsqSharp/blob/master/NsqSharp/Bus/Configuration/IMessageSerializer.cs) wrappers in your code.
 
 ## NsqSharp Project Goals
-- Structurally similar to the official [go-nsq](https://github.com/bitly/go-nsq) client.
+- Structurally similar to the official [go-nsq](https://github.com/nsqio/go-nsq) client.
 - Up to date with the latest stable release of go-nsq.
 - Provide similar behavior and semantics as the official package.
 - Unobtrusive. No external dependencies. Publishing message contracts does not require a reference to NsqSharp.
@@ -145,7 +145,7 @@ NsqSharp has no external dependencies. StructureMap and Newtonsoft.Json are supp
 
 Pull requests and issues are very welcome and appreciated.
 
-When submitting a pull request please keep in mind we're trying to stay as close to [go-nsq](https://github.com/bitly/go-nsq) as possible. This sometimes means writing C# which looks more like Go and follows their file layout. Code in the `NsqSharp.Bus` namespace should follow C# conventions and more or less look like other code in this namespace.
+When submitting a pull request please keep in mind we're trying to stay as close to [go-nsq](https://github.com/nsqio/go-nsq) as possible. This sometimes means writing C# which looks more like Go and follows their file layout. Code in the `NsqSharp.Bus` namespace should follow C# conventions and more or less look like other code in this namespace.
 
 ## License
 
