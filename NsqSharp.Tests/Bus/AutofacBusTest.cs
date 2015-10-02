@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using Autofac;
 using Newtonsoft.Json;
+using NsqSharp.Api;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.BuiltIn;
@@ -20,6 +21,15 @@ namespace NsqSharp.Tests.Bus
 #endif
     public class AutofacBusTest
     {
+        private static readonly NsqdHttpClient _nsqdHttpClient;
+        private static readonly NsqLookupdHttpClient _nsqLookupdHttpClient;
+
+        static AutofacBusTest()
+        {
+            _nsqdHttpClient = new NsqdHttpClient("http://127.0.0.1:4151", TimeSpan.FromSeconds(5));
+            _nsqLookupdHttpClient = new NsqLookupdHttpClient("http://127.0.0.1:4161", TimeSpan.FromSeconds(5));
+        }
+
         [Test]
         public void AutofacContainerTest()
         {
@@ -91,6 +101,8 @@ namespace NsqSharp.Tests.Bus
             finally
             {
                 BusService.Stop();
+                _nsqdHttpClient.DeleteTopic(topicName);
+                _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
         }
 
