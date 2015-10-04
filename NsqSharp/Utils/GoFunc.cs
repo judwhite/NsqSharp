@@ -16,7 +16,7 @@ namespace NsqSharp.Utils
         /// </summary>
         /// <param name="action">The method to execute.</param>
         /// <param name="threadName">The name to assign to the thread (optional).</param>
-        public static void Run(Action action, string threadName = null)
+        public static void Run(Action action, string threadName)
         {
             if (action == null)
                 throw new ArgumentNullException("action");

@@ -79,7 +79,7 @@ namespace NsqSharp.Tests.Bus
                                BusService.Stop();
                                Console.WriteLine(string.Format("Shutdown occurred in {0}", DateTime.Now - start));
                                stoppedChan.Send(true);
-                           });
+                           }, "bus stopper and stopped notifier");
 
                 bool timeout = false;
                 Select

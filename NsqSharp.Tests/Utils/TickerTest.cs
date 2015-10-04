@@ -121,7 +121,7 @@ namespace NsqSharp.Tests.Utils
                     select.Execute();
                     if (listOfTimes.Count >= 10)
                     {
-                        GoFunc.Run(() => exitChan.Send(true));
+                        GoFunc.Run(() => exitChan.Send(true), "exit notifier");
                     }
                 }
             }
@@ -154,7 +154,7 @@ namespace NsqSharp.Tests.Utils
 
                                          if (listOfTimes.Count == 5)
                                          {
-                                             GoFunc.Run(() => lookupdRecheckChan.Send(true));
+                                             GoFunc.Run(() => lookupdRecheckChan.Send(true), "lookupd recheck sender");
                                          }
                                      })
                         .CaseReceive(lookupdRecheckChan,
@@ -172,7 +172,7 @@ namespace NsqSharp.Tests.Utils
                     select.Execute();
                     if (listOfTimes.Count >= 10)
                     {
-                        GoFunc.Run(() => exitChan.Send(true));
+                        GoFunc.Run(() => exitChan.Send(true), "exit notifier");
                     }
                 }
             }
@@ -239,7 +239,7 @@ namespace NsqSharp.Tests.Utils
                     x++;
                     if (listOfTimes.Count >= 10)
                     {
-                        GoFunc.Run(() => exitChan.Send(true));
+                        GoFunc.Run(() => exitChan.Send(true), "exit notifier");
                     }
                 }
             }

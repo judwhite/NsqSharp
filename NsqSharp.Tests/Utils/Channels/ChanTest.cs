@@ -408,7 +408,7 @@ namespace NsqSharp.Tests.Utils.Channels
                     .NoDefault();
 
                 wg.Done();
-            });
+            }, "sender");
 
             GoFunc.Run(() =>
             {
@@ -417,7 +417,7 @@ namespace NsqSharp.Tests.Utils.Channels
                     .NoDefault();
 
                 wg.Done();
-            });
+            }, "receiver");
 
             wg.Wait();
 
@@ -710,8 +710,8 @@ namespace NsqSharp.Tests.Utils.Channels
 
             for (int i = 0; i < 8; i++)
             {
-                GoFunc.Run(receive);
-                GoFunc.Run(send);
+                GoFunc.Run(receive, "receiver");
+                GoFunc.Run(send, "sender");
             }
 
             start.Close();
@@ -788,8 +788,8 @@ namespace NsqSharp.Tests.Utils.Channels
 
             for (int i = 0; i < 8; i++)
             {
-                GoFunc.Run(receive);
-                GoFunc.Run(send);
+                GoFunc.Run(receive, "receiver");
+                GoFunc.Run(send, "sender");
             }
 
             start.Close();

@@ -111,7 +111,7 @@ namespace NsqSharp.Tests
                 startCh.Close();
 
                 var done = new Chan<bool>();
-                GoFunc.Run(() => { wg.Wait(); done.Send(true); });
+                GoFunc.Run(() => { wg.Wait(); done.Send(true); }, "waiter and done sender");
 
                 bool finished = false;
                 Select
