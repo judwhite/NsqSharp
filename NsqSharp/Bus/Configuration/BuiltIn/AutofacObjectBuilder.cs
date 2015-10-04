@@ -201,7 +201,7 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
             // _container.ComponentRegistry.Register(componentRegistration.CreateRegistration());
             var componentRegistrationType = componentRegistration.GetType();
             var createRegistrationMethod =
-                _createRegistrationMethod.MakeGenericMethod(componentRegistrationType.GenericTypeArguments);
+                _createRegistrationMethod.MakeGenericMethod(componentRegistrationType.GetGenericArguments());
             var registration = createRegistrationMethod.Invoke(_componentRegistry, new[] { componentRegistration });
 
             _registerMethod.Invoke(_componentRegistry, new[] { registration });

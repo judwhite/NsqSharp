@@ -69,7 +69,7 @@ namespace NsqSharp.Utils
         {
             errorMessage = null;
 
-            if (sslPolicyErrors.HasFlag(SslPolicyErrors.RemoteCertificateNotAvailable))
+            if ((sslPolicyErrors & SslPolicyErrors.RemoteCertificateNotAvailable) == SslPolicyErrors.RemoteCertificateNotAvailable)
             {
                 errorMessage = chain.ChainStatus.GetErrors();
                 return false;
