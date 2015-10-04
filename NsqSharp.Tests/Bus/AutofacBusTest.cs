@@ -14,6 +14,7 @@ using NUnit.Framework;
 
 namespace NsqSharp.Tests.Bus
 {
+#if !NETFX_3_5
 #if !RUN_INTEGRATION_TESTS
     [TestFixture(IgnoreReason = "NSQD Integration Test")]
 #else
@@ -60,10 +61,10 @@ namespace NsqSharp.Tests.Bus
                         defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
                         defaultThreadsPerHandler: 1,
                         nsqConfig: new Config
-                                   {
-                                       LookupdPollJitter = 0,
-                                       LookupdPollInterval = TimeSpan.FromSeconds(1)
-                                   },
+                        {
+                            LookupdPollJitter = 0,
+                            LookupdPollInterval = TimeSpan.FromSeconds(1)
+                        },
                         preCreateTopicsAndChannels: true);
 
                 BusService.Start(busConfiguration);
@@ -180,4 +181,5 @@ namespace NsqSharp.Tests.Bus
             }
         }
     }
+#endif
 }

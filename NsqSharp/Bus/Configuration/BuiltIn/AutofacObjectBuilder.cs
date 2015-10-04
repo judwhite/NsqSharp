@@ -4,6 +4,7 @@ using System.Reflection;
 
 namespace NsqSharp.Bus.Configuration.BuiltIn
 {
+#if !NETFX_3_5
     /// <summary>
     /// StructureMap object builder. See <see cref="BusConfiguration"/>.
     /// </summary>
@@ -207,4 +208,5 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
             _registerMethod.Invoke(_componentRegistry, new[] { registration });
         }
     }
+#endif
 }
