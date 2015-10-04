@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using NsqSharp.Core;
 using NsqSharp.Utils.Loggers;
@@ -34,6 +35,7 @@ namespace NsqSharp.Utils
                                        var logger = new TraceLogger();
                                        logger.Output(LogLevel.Critical, string.Format("{0} - {1}", threadName, ex));
                                        logger.Flush();
+                                       Trace.Flush();
                                        throw;
                                    }
                                }
