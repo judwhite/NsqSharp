@@ -136,7 +136,9 @@ namespace NsqSharp
         /// Initializes a new instance of the Producer class.
         /// </summary>
         /// <param name="nsqdAddress">The nsqd address.</param>
-        /// <param name="logger">The logger.</param>
+        /// <param name="logger">
+        /// The logger. Default = <see cref="ConsoleLogger"/>(<see cref="E:LogLevel.Info"/>).
+        /// </param>
         public Producer(string nsqdAddress, ILogger logger)
             : this(nsqdAddress, logger, new Config(), null)
         {
@@ -146,7 +148,9 @@ namespace NsqSharp
         /// Initializes a new instance of the Producer class.
         /// </summary>
         /// <param name="nsqdAddress">The nsqd address.</param>
-        /// <param name="logger">The logger.</param>
+        /// <param name="logger">
+        /// The logger. Default = <see cref="ConsoleLogger"/>(<see cref="E:LogLevel.Info"/>).
+        /// </param>
         /// <param name="config">The config. Values are copied, changing the properties on <paramref name="config"/>
         /// after the constructor is called will have no effect on the <see cref="Producer"/>.</param>
         public Producer(string nsqdAddress, ILogger logger, Config config)
