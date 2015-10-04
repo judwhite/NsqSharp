@@ -140,31 +140,34 @@ namespace NsqSharp.Utils
                     if (_isClosed)
                         return;
 
-                    Flush();
-
                     _isClosed = true;
 
-                    ReadTimeout = TimeSpan.FromMilliseconds(10);
-                    WriteTimeout = TimeSpan.FromMilliseconds(10);
+                    try
+                    {
+                        Flush();
 
-                    _networkStream.Close();
-                    _tcpClient.Close();
+                        ReadTimeout = TimeSpan.FromMilliseconds(10);
+                        WriteTimeout = TimeSpan.FromMilliseconds(10);
+
+                        _networkStream.Close();
+                        _tcpClient.Close();
+                    }
+                    catch (SocketException)
+                    {
+                    }
+                    catch (IOException)
+                    {
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                    }
                 }
             }
         }
 
-        public void CloseRead()
-        {
-            Close();
-        }
-
-        public void CloseWrite()
-        {
-            Close();
-        }
-
         public void Flush()
         {
+            _networkStream.Flush();
         }
     }
 }

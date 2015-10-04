@@ -167,7 +167,9 @@ namespace NsqSharp.Utils.Channels
                     if (_buffer.Count > 0)
                     {
                         ok = true;
-                        return Dequeue();
+                        data = Dequeue();
+                        _isReadyToSend = (_buffer.Count > 0);
+                        return data;
                     }
                 }
 

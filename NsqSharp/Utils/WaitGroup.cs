@@ -7,14 +7,13 @@ namespace NsqSharp.Utils
     /// A WaitGroup waits for a collection of routines to finish. The main routine calls Add to set the number of routines to
     /// wait for. Then each of the routines runs and calls Done when finished. At the same time, Wait can be used to block until
     /// all routines have finished. See: http://golang.org/pkg/sync/#WaitGroup
-    /// 
-    /// NOTE: This is not as robust as Go's version. Go supports reusing a WaitGroup; here we're assuming Wait will only be
-    /// called once. This may change in future implementations.
     /// </summary>
     public class WaitGroup
     {
+        private readonly ManualResetEvent _wait = new ManualResetEvent(initialState: true);
+        private readonly object _doneLocker = new object();
         private int _count;
-        private readonly AutoResetEvent _wait = new AutoResetEvent(initialState: false);
+        private bool _done = true;
 
         /// <summary>
         /// Add adds delta, which may be negative, to the WaitGroup counter. If the counter becomes zero, all goroutines blocked
@@ -28,11 +27,24 @@ namespace NsqSharp.Utils
         /// <param name="delta"></param>
         public void Add(int delta)
         {
+            lock (_doneLocker)
+            {
+                if (_done)
+                {
+                    _done = false;
+                    _wait.Reset();
+                }
+            }
+
             int num = Interlocked.Add(ref _count, delta);
 
             if (num <= 0)
             {
-                _wait.Set();
+                lock (_doneLocker)
+                {
+                    _done = true;
+                    _wait.Set();
+                }
 
                 if (num < 0)
                     throw new Exception("sync: negative WaitGroup counter");
@@ -52,20 +64,7 @@ namespace NsqSharp.Utils
         /// </summary>
         public void Wait()
         {
-            if (_count != 0)
-            {
-                if (_count < 0)
-                    throw new Exception("sync: negative WaitGroup counter");
-
-                while (true)
-                {
-                    if (_wait.WaitOne(TimeSpan.FromMilliseconds(100)) || _count <= 0)
-                        break;
-                }
-
-                if (_count < 0)
-                    throw new Exception("sync: negative WaitGroup counter");
-            }
+            _wait.WaitOne();
         }
     }
 }

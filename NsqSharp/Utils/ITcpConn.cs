@@ -8,16 +8,6 @@ namespace NsqSharp.Utils
     public interface ITcpConn : IConn
     {
         /// <summary>
-        /// CloseRead shuts down the reading side of the TCP connection. Most callers should just use Close.
-        /// </summary>
-        void CloseRead();
-
-        /// <summary>
-        /// CloseWrite shuts down the writing side of the TCP connection. Most callers should just use Close.
-        /// </summary>
-        void CloseWrite();
-
-        /// <summary>
         /// Gets or sets the read timeout.
         /// </summary>
         TimeSpan ReadTimeout { get; set; }

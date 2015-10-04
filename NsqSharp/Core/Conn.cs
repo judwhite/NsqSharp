@@ -84,7 +84,6 @@ namespace NsqSharp.Core
         private readonly Config _config;
 
         private ITcpConn _conn;
-        // TODO: tlsConn
         private readonly string _addr;
 
         private readonly IConnDelegate _delegate;
@@ -224,7 +223,7 @@ namespace NsqSharp.Core
             _closeFlag = 1;
             if (_conn != null && _messagesInFlight == 0)
             {
-                _conn.CloseRead();
+                _conn.Close();
             }
         }
 
@@ -759,7 +758,7 @@ namespace NsqSharp.Core
             {
                 log(LogLevel.Info, "beginning close");
                 _exitChan.Close();
-                _conn.CloseRead();
+                _conn.Close();
 
                 _wg.Add(1);
                 GoFunc.Run(cleanup, "Conn:cleanup");
@@ -822,7 +821,7 @@ namespace NsqSharp.Core
         private void waitForCleanup()
         {
             _wg.Wait();
-            _conn.CloseWrite();
+            _conn.Close();
             log(LogLevel.Info, "clean close complete");
             _delegate.OnClose(this);
         }

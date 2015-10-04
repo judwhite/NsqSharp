@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using NsqSharp.Core;
 using NsqSharp.Utils.Loggers;
@@ -15,7 +16,7 @@ namespace NsqSharp.Utils
         /// </summary>
         /// <param name="action">The method to execute.</param>
         /// <param name="threadName">The name to assign to the thread (optional).</param>
-        public static void Run(Action action, string threadName = null)
+        public static void Run(Action action, string threadName)
         {
             if (action == null)
                 throw new ArgumentNullException("action");
@@ -34,6 +35,7 @@ namespace NsqSharp.Utils
                                        var logger = new TraceLogger();
                                        logger.Output(LogLevel.Critical, string.Format("{0} - {1}", threadName, ex));
                                        logger.Flush();
+                                       Trace.Flush();
                                        throw;
                                    }
                                }

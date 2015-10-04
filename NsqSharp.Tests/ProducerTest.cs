@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -255,6 +256,138 @@ namespace NsqSharp.Tests
 
             Assert.AreEqual(msgCount, h.messagesGood, "should have handled a diff number of messages");
             Assert.AreEqual(1, h.messagesFailed, "failed message not done");
+        }
+
+        [Test]
+        public void TestProducerReconnect()
+        {
+            int[] publishingThreads = { 64, 32, 8 };
+            int[] millisecondsBetweenNsqdShutdowns = { 100, 250, 1000, 5000 };
+            int[] shutdownCounts = { 5 };
+
+            foreach (var publishingThreadCount in publishingThreads)
+            {
+                foreach (var ms in millisecondsBetweenNsqdShutdowns.Reverse())
+                {
+                    foreach (var shutdownCount in shutdownCounts)
+                    {
+                        Console.WriteLine("**** T:{0} / MS:{1} / S:{2} ****", publishingThreadCount, ms, shutdownCount);
+                        TestProducerReconnect(publishingThreadCount, ms, shutdownCount);
+                    }
+                }
+            }
+        }
+
+        private void TestProducerReconnect(int publishingThreads, int millisecondsBetweenNsqdShutdown, int shutdownCount)
+        {
+            string topicName = string.Format("test_producerreconnect_{0}", DateTime.Now.UnixNano());
+
+            _nsqdHttpClient.CreateTopic(topicName);
+            _nsqLookupdHttpClient.CreateTopic(topicName);
+            try
+            {
+                var payload = new byte[512];
+                var publisher = new Producer("127.0.0.1:4150", new ConsoleLogger(LogLevel.Info), new Config());
+
+                bool running = true;
+
+                for (int i = 0; i < publishingThreads; i++)
+                {
+                    GoFunc.Run(() =>
+                    {
+                        while (running)
+                        {
+                            try
+                            {
+                                publisher.PublishAsync(topicName, payload);
+                            }
+                            catch
+                            {
+                            }
+                        }
+                    }, string.Format("producer thread {0:00}/{1:00}", i + 1, publishingThreads));
+                }
+
+                string errorMessage = null;
+
+                var wg = new WaitGroup();
+                wg.Add(1);
+                GoFunc.Run(() =>
+                {
+                    for (int i = 0; i < shutdownCount; i++)
+                    {
+                        Thread.Sleep(millisecondsBetweenNsqdShutdown);
+
+                        Console.WriteLine("Stopping nsqd {0}/{1}...", i + 1, shutdownCount);
+                        var p = new ProcessStartInfo("net", "stop nsqd");
+                        p.CreateNoWindow = true;
+                        p.UseShellExecute = false;
+                        Process.Start(p).WaitForExit();
+
+                        Console.WriteLine("Starting nsqd {0}/{1}...", i + 1, shutdownCount);
+                        p = new ProcessStartInfo("net", "start nsqd");
+                        p.CreateNoWindow = true;
+                        p.UseShellExecute = false;
+                        Process.Start(p).WaitForExit();
+
+                        Console.WriteLine("Attempting publish...");
+
+                        // test the waters
+                        int tries;
+                        for (tries = 0; ; tries++)
+                        {
+                            try
+                            {
+                                publisher.Publish(topicName, payload);
+                                break;
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                Thread.Sleep(1000);
+
+                                if (tries == 60)
+                                {
+                                    errorMessage = string.Format("Producer not accepting Publish requests.\n" +
+                                        "Producer Threads: {0}\nTime between NSQd shutdowns:{1}ms\n" +
+                                        "Shutdown Count: {2}/{3}\nLast Exception Message: {4}", publishingThreads,
+                                        millisecondsBetweenNsqdShutdown, i + 1, shutdownCount, ex.Message);
+                                    Console.WriteLine(errorMessage);
+                                    wg.Done();
+                                    return;
+                                }
+                            }
+                        }
+                        Console.WriteLine("Successful publish on attempt #{0}", tries + 1);
+                    }
+                    wg.Done();
+                }, "nsqd restart thread");
+
+                wg.Wait();
+                running = false;
+
+                if (!string.IsNullOrEmpty(errorMessage))
+                    Assert.Fail(errorMessage);
+
+                Console.WriteLine("Starting test publishing of 1000 messages...");
+
+                for (int j = 0; j < 1000; j++)
+                {
+                    publisher.Publish(topicName, payload);
+                }
+
+                Console.WriteLine("Done.");
+            }
+            finally
+            {
+                var p = new ProcessStartInfo("net", "start nsqd");
+                p.CreateNoWindow = true;
+                p.UseShellExecute = false;
+                Process.Start(p).WaitForExit();
+
+                _nsqdHttpClient.DeleteTopic(topicName);
+                _nsqLookupdHttpClient.DeleteTopic(topicName);
+            }
         }
     }
 
