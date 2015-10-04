@@ -13,8 +13,10 @@ namespace NsqSharp.Utils
     /// </summary>
     public class WaitGroup
     {
+        private readonly ManualResetEvent _wait = new ManualResetEvent(initialState: true);
+        private readonly object _doneLocker = new object();
         private int _count;
-        private readonly AutoResetEvent _wait = new AutoResetEvent(initialState: false);
+        private bool _done = true;
 
         /// <summary>
         /// Add adds delta, which may be negative, to the WaitGroup counter. If the counter becomes zero, all goroutines blocked
@@ -28,11 +30,24 @@ namespace NsqSharp.Utils
         /// <param name="delta"></param>
         public void Add(int delta)
         {
+            lock (_doneLocker)
+            {
+                if (_done)
+                {
+                    _done = false;
+                    _wait.Reset();
+                }
+            }
+
             int num = Interlocked.Add(ref _count, delta);
 
             if (num <= 0)
             {
-                _wait.Set();
+                lock (_doneLocker)
+                {
+                    _done = true;
+                    _wait.Set();
+                }
 
                 if (num < 0)
                     throw new Exception("sync: negative WaitGroup counter");
@@ -52,20 +67,7 @@ namespace NsqSharp.Utils
         /// </summary>
         public void Wait()
         {
-            if (_count != 0)
-            {
-                if (_count < 0)
-                    throw new Exception("sync: negative WaitGroup counter");
-
-                while (true)
-                {
-                    if (_wait.WaitOne(TimeSpan.FromMilliseconds(100)) || _count <= 0)
-                        break;
-                }
-
-                if (_count < 0)
-                    throw new Exception("sync: negative WaitGroup counter");
-            }
+            _wait.WaitOne();
         }
     }
 }
