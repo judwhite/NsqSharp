@@ -332,20 +332,11 @@ namespace NsqSharp
                 throw t.Error;
         }
 
-        private readonly Action _noopAction = () => { };
         private readonly Action<int> _throwErrStoppedAction = b => { throw new ErrStopped(); };
 
         private void sendCommandAsync(Command cmd, Chan<ProducerResponse> doneChan, params object[] args)
         {
-            Interlocked.Increment(ref _concurrentProducers);
-
-            var t = new ProducerResponse
-            {
-                _cmd = cmd,
-                _doneChan = doneChan,
-                Args = args
-            };
-
+            ProducerResponse t = null;
             try
             {
                 if (_state != (int)State.Connected)
@@ -353,19 +344,37 @@ namespace NsqSharp
                     Connect();
                 }
 
+                // keep track of how many outstanding producers we're dealing with
+                // in order to later ensure that we clean them all up...
+                Interlocked.Increment(ref _concurrentProducers);
+
+                t = new ProducerResponse
+                {
+                    _cmd = cmd,
+                    _doneChan = doneChan,
+                    Args = args
+                };
+
                 Select
-                    .CaseSend(_transactionChan, t, _noopAction)
+                    .CaseSend(_transactionChan, t)
                     .CaseReceive(_exitChan, _throwErrStoppedAction)
                     .NoDefault();
+
+                Interlocked.Decrement(ref _concurrentProducers);
             }
             catch (Exception ex)
             {
-                t.Error = ex;
-                GoFunc.Run(() => t.finish());
-            }
-            finally
-            {
-                Interlocked.Decrement(ref _concurrentProducers);
+                if (t != null)
+                {
+                    Interlocked.Decrement(ref _concurrentProducers);
+                    t.Error = ex;
+                    GoFunc.Run(() => t.finish(), "Producer: t.finish()");
+                }
+                else
+                {
+                    Thread.Sleep(1000); // slow down hammering Connect
+                    throw;
+                }
             }
         }
 
@@ -494,27 +503,40 @@ namespace NsqSharp
         private void transactionCleanup()
         {
             // clean up transactions we can easily account for
+            var wg = new WaitGroup();
+            wg.Add(_transactions.Count);
             foreach (var t in _transactions)
             {
-                t.Error = new ErrNotConnected();
-                t.finish();
+                var t1 = t;
+                GoFunc.Run(() =>
+                           {
+                               t1.Error = new ErrNotConnected();
+                               t1.finish();
+                               wg.Done();
+                           }, "transactionCleanup: drain _transactions");
             }
             _transactions.Clear();
 
             // spin and free up any writes that might have raced
             // with the cleanup process (blocked on writing
             // to transactionChan)
+
+            // give the runtime a chance to schedule other racing goroutines
+            var ticker = new Ticker(TimeSpan.FromMilliseconds(100));
             bool doLoop = true;
-            // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
-            while (doLoop)
-            {
-                Select
+            using (var select =
+                    Select
                     .CaseReceive(_transactionChan, t =>
                     {
-                        t.Error = new ErrNotConnected();
-                        t.finish();
+                        wg.Add(1);
+                        GoFunc.Run(() =>
+                                   {
+                                       t.Error = new ErrNotConnected();
+                                       t.finish();
+                                       wg.Done();
+                                   }, "transactionCleanup: finish transaction from _transactionChan");
                     })
-                    .Default(() =>
+                    .CaseReceive(ticker.C, _ =>
                     {
                         // keep spinning until there are 0 concurrent producers
                         if (_concurrentProducers == 0)
@@ -522,10 +544,20 @@ namespace NsqSharp
                             doLoop = false;
                             return;
                         }
-                        // give the runtime a chance to schedule other racing goroutines
-                        Thread.Sleep(TimeSpan.FromMilliseconds(5));
-                    });
+                        log(LogLevel.Warning, string.Format(
+                            "waiting for {0} concurrent producers to finish", _concurrentProducers));
+                    })
+                    .NoDefault(defer: true)
+            )
+            {
+                while (doLoop)
+                {
+                    select.Execute();
+                }
             }
+            ticker.Close();
+
+            wg.Wait();
         }
 
         private void log(LogLevel lvl, string line)
