@@ -7,9 +7,6 @@ namespace NsqSharp.Utils
     /// A WaitGroup waits for a collection of routines to finish. The main routine calls Add to set the number of routines to
     /// wait for. Then each of the routines runs and calls Done when finished. At the same time, Wait can be used to block until
     /// all routines have finished. See: http://golang.org/pkg/sync/#WaitGroup
-    /// 
-    /// NOTE: This is not as robust as Go's version. Go supports reusing a WaitGroup; here we're assuming Wait will only be
-    /// called once. This may change in future implementations.
     /// </summary>
     public class WaitGroup
     {
