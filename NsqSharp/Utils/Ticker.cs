@@ -9,7 +9,7 @@ namespace NsqSharp.Utils
     /// </summary>
     public class Ticker
     {
-        private Chan<DateTime> _tickerChan = new Chan<DateTime>();
+        private readonly Chan<DateTime> _tickerChan = new Chan<DateTime>();
         private bool _stop;
 
         /// <summary>
