@@ -9,7 +9,7 @@ namespace NsqSharp.Utils
     /// </summary>
     public class Ticker
     {
-        private readonly Chan<DateTime> _tickerChan = new Chan<DateTime>();
+        private Chan<DateTime> _tickerChan = new Chan<DateTime>();
         private bool _stop;
 
         /// <summary>
@@ -28,19 +28,35 @@ namespace NsqSharp.Utils
                     Thread.Sleep(duration);
                     if (!_stop)
                     {
-                        _tickerChan.Send(DateTime.Now);
+                        try
+                        {
+                            _tickerChan.Send(DateTime.Now);
+                        }
+                        catch (ChannelClosedException)
+                        {
+                        }
                     }
                 }
             }, string.Format("Ticker started:{0} duration:{1}", DateTime.Now, duration));
         }
 
         /// <summary>
-        /// Stop turns off a ticker. After Stop, no more ticks will be sent. Stop does not close the channel, to prevent a
-        /// read from the channel succeeding incorrectly.
+        /// Stop turns off a ticker. After Stop, no more ticks will be sent. Stop does not close the channel,
+        /// to prevent a read from the channel succeeding incorrectly. See <see cref="Close"/>.
         /// </summary>
         public void Stop()
         {
             _stop = true;
+        }
+
+        /// <summary>
+        /// Stops the ticker and closes the channel, exiting the ticker thread. Note: after closing a channel,
+        /// all reads from the channel will return default(T). See <see cref="Stop"/>.
+        /// </summary>
+        public void Close()
+        {
+            Stop();
+            _tickerChan.Close();
         }
 
         /// <summary>
