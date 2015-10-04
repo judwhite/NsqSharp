@@ -6,6 +6,7 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using NsqSharp.Api;
 using NsqSharp.Core;
+using NsqSharp.Utils;
 using NsqSharp.Utils.Extensions;
 using NUnit.Framework;
 
@@ -33,16 +34,24 @@ namespace NsqSharp.Tests
             consumerTest(configSetter: null);
         }
 
-        // TODO: TLS
-        /*[Test, Ignore("TLS not implemented")]
+        [Test]
         public void TestConsumerTLS()
         {
             consumerTest(c =>
                          {
-                             c.TlsV1 = true;
                              c.TlsConfig = new TlsConfig { InsecureSkipVerify = true };
                          });
-        }*/
+        }
+
+        [Test]
+        public void TestConsumerTLSViaSet()
+        {
+            consumerTest(c =>
+                         {
+                             c.Set("tls_insecure_skip_verify", true);
+                         });
+        }
+
 
         // TODO: Deflate
         /*[Test, Ignore("Deflate not implemented")]
@@ -88,28 +97,27 @@ namespace NsqSharp.Tests
             });
         }*/
 
-        // TODO: TLS
-        /*[Test, Ignore("TLS Client Cert not implemented")]
+        /*
+        // TODO: Address when client certificate auth enabled
+        [Test]
         public void TestConsumerTLSClientCert()
         {
-            //cert, _ := tls.LoadX509KeyPair("./test/client.pem", "./test/client.key") // TODO
             consumerTest(c =>
             {
-                c.TlsV1 = true;
                 c.TlsConfig = new TlsConfig
                 {
-                    //Certificates = cert // TODO
+                    //Certificates = cert
                     InsecureSkipVerify = true
                 };
             });
-        }*/
+        }
 
-        // TODO: TLS
-        /*[Test, Ignore("TLS Client Cert not implemented")]
+        // TODO: Address when client certificate auth enabled
+        [Test]
         public void TestConsumerTLSClientCertViaSet()
         {
             consumerTest(c =>
-            {
+            {                
                 c.Set("ts_v1", true);
                 c.Set("tls_cert", "./test/client.pem");
                 c.Set("tls_key", "./test/client.key");
@@ -134,10 +142,10 @@ namespace NsqSharp.Tests
             /*if (config.Deflate)
                 topicName = topicName + "_deflate";
             else if (config.Snappy)
-                topicName = topicName + "_snappy";
-            
-            if (config.TlsV1)
-                topicName = topicName + "_tls";*/
+                topicName = topicName + "_snappy";*/
+
+            if (config.TlsConfig != null)
+                topicName = topicName + "_tls";
 
             topicName = topicName + DateTime.Now.Unix();
 
