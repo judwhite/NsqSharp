@@ -37,8 +37,8 @@ namespace NsqSharp.Tests.Bus
         [Test]
         public void TestBusShutdown()
         {
-            string topicName = string.Format("test_currentmessage_{0}", DateTime.Now.UnixNano());
-            const string channelName = "test_currentmessage";
+            string topicName = string.Format("test_busshutdown_{0}", DateTime.Now.UnixNano());
+            const string channelName = "test_busshutdown";
 
             var container = new Container();
 

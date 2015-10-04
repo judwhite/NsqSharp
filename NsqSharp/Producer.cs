@@ -520,7 +520,6 @@ namespace NsqSharp
                         }
                         // give the runtime a chance to schedule other racing goroutines
                         Thread.Sleep(TimeSpan.FromMilliseconds(5));
-                        // TODO: create PR in go-nsq: is continue necessary in default case?
                     });
             }
         }

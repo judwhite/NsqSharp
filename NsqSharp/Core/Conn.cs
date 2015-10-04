@@ -84,7 +84,6 @@ namespace NsqSharp.Core
         private readonly Config _config;
 
         private ITcpConn _conn;
-        // TODO: tlsConn
         private readonly string _addr;
 
         private readonly IConnDelegate _delegate;
