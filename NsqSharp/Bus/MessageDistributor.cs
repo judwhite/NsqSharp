@@ -162,7 +162,7 @@ namespace NsqSharp.Bus
                     (
                         messageInformation,
                         requeue ? FailedMessageQueueAction.Requeue : FailedMessageQueueAction.Finish,
-                        FailedMessageReason.HandlerException,
+                        requeue ? FailedMessageReason.HandlerException : FailedMessageReason.MaxAttemptsExceeded,
                         ex
                     )
                 );
