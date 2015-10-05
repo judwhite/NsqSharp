@@ -110,8 +110,11 @@ namespace NsqSharp.Tests
                 Producer p1 = new Producer("127.0.0.1:4150");
                 if (startWithInitialMessageOnIdleNsqd)
                 {
+                    Console.WriteLine("[{0}] Sending initial message on 4150...", DateTime.Now.Formatted());
                     p1.Publish(topicName, "initial");
                 }
+
+                Console.WriteLine("[{0}] Sending messages on 5150...", DateTime.Now.Formatted());
 
                 Producer p2 = new Producer("127.0.0.1:5150");
                 for (int i = 0; i < numberOfMessages; i++)
@@ -137,12 +140,16 @@ namespace NsqSharp.Tests
 
                 Thread.Sleep(sleepBeforeIdlePublish);
 
+                Console.WriteLine("[{0}] Sending messages on 4150...", DateTime.Now.Formatted());
+
                 for (int i = 1; i <= numberOfMessagesToSendOnIdleNsqd; i++)
                 {
                     p1.Publish(topicName, string.Format("{0} - snuck in!", i));
                 }
 
                 Thread.Sleep(testDuration - sleepBeforeIdlePublish);
+
+                Console.WriteLine("[{0}] Stopping...", DateTime.Now.Formatted());
 
                 p1.Stop();
                 p2.Stop();
