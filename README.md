@@ -9,6 +9,11 @@ Check out this [slide deck](https://speakerdeck.com/snakes/nsq-nyc-golang-meetup
 
 Watch [Spray Some NSQ On It](https://www.youtube.com/watch?v=CL_SUzXIUuI) by co-author [Matt Reiferson](https://github.com/mreiferson) for an under 30-minute intro to NSQ as a messaging platform.
 
+## Project Status
+
+- Used in Production.
+- Maintained. Issues and Pull Requests will be responded to.
+
 ## Quick Install
 
 NsqSharp is a client library that talks to the `nsqd` (message queue) and `nsqlookupd` (topic discovery service). See the slides above for more information about their roles.
