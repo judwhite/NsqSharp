@@ -31,6 +31,18 @@ namespace Echo.Bus.Tls
             // new dependency injection container
             var container = new ContainerBuilder().Build();
 
+            var nsqConfig = new Config
+                            {
+                                TlsConfig = new TlsConfig
+                                            {
+                                                MinVersion = SslProtocols.Tls12,
+                                                InsecureSkipVerify = true // NOTE: For testing only
+                                            },
+                                LookupdPollInterval = TimeSpan.FromSeconds(5),
+                                AuthSecret = "b2b:secret",
+                                DialTimeout = TimeSpan.FromSeconds(10)
+                            };
+
             // start the bus
             BusService.Start(new BusConfiguration(
                 new AutofacObjectBuilder(container), // dependency injection container
@@ -52,15 +64,7 @@ namespace Echo.Bus.Tls
                 defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
                 nsqLogger: new ConsoleLogger(LogLevel.Info), // default = TraceLogger
                 defaultThreadsPerHandler: 1, // threads per handler. tweak based on use case.
-                nsqConfig: new Config
-                {
-                    TlsConfig = new TlsConfig
-                    {
-                        MinVersion = SslProtocols.Tls12,
-                        InsecureSkipVerify = true // NOTE: For testing only
-                    },
-                    LookupdPollInterval = TimeSpan.FromSeconds(5)
-                }
+                nsqConfig: nsqConfig
             ));
         }
     }
