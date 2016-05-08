@@ -86,6 +86,7 @@
     <Compile Include="Bus\BusShutdownTest.cs" />
     <Compile Include="Bus\CurrentThreadMessageMockableTest.cs" />
     <Compile Include="Bus\DeferTest.cs" />
+    <Compile Include="Bus\MessageDistributorTest.cs" />
     <Compile Include="Bus\MessageMutatorTest.cs" />
     <Compile Include="Bus\MessageRouterTest.cs" />
     <Compile Include="Bus\MultiImplementIHandleMessagesTest.cs" />

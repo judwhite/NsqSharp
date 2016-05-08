@@ -76,16 +76,16 @@ namespace NsqSharp.Bus
         public void HandleMessage(IMessage message)
         {
             var messageInformation = new MessageInformation
-                                     {
-                                         UniqueIdentifier = Guid.NewGuid(),
-                                         Topic = _topic,
-                                         Channel = _channel,
-                                         HandlerType = _handlerType,
-                                         MessageType = _messageType,
-                                         Message = message,
-                                         DeserializedMessageBody = null,
-                                         Started = DateTime.UtcNow
-                                     };
+            {
+                UniqueIdentifier = Guid.NewGuid(),
+                Topic = _topic,
+                Channel = _channel,
+                HandlerType = _handlerType,
+                MessageType = _messageType,
+                Message = message,
+                DeserializedMessageBody = null,
+                Started = DateTime.UtcNow
+            };
 
             _bus.SetCurrentMessageInformation(messageInformation);
 
@@ -148,21 +148,25 @@ namespace NsqSharp.Bus
             }
             catch (Exception ex)
             {
-                bool requeue = (message.Attempts < message.MaxAttempts);
-
                 messageInformation.Finished = DateTime.UtcNow;
 
-                if (requeue)
-                    message.Requeue();
-                else
-                    message.Finish();
+                if (!message.HasResponded)
+                {
+                    if (message.Attempts < message.MaxAttempts)
+                        message.Requeue();
+                    else
+                        message.Finish();
+                }
+
+                bool requeued = (message.RequeuedUntil != null);
+                bool maxAttemptsExceeded = (message.Attempts >= message.MaxAttempts);
 
                 _messageAuditor.TryOnFailed(_logger, _bus,
                     new FailedMessageInformation
                     (
                         messageInformation,
-                        requeue ? FailedMessageQueueAction.Requeue : FailedMessageQueueAction.Finish,
-                        requeue ? FailedMessageReason.HandlerException : FailedMessageReason.MaxAttemptsExceeded,
+                        requeued ? FailedMessageQueueAction.Requeue : FailedMessageQueueAction.Finish,
+                        maxAttemptsExceeded ? FailedMessageReason.MaxAttemptsExceeded : FailedMessageReason.HandlerException,
                         ex
                     )
                 );
