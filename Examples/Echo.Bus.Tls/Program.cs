@@ -39,7 +39,6 @@ namespace Echo.Bus.Tls
                                                 InsecureSkipVerify = true // NOTE: For testing only
                                             },
                                 LookupdPollInterval = TimeSpan.FromSeconds(5),
-                                AuthSecret = "b2b:secret",
                                 DialTimeout = TimeSpan.FromSeconds(10)
                             };
 
