@@ -1531,6 +1531,10 @@ namespace NsqSharp
                     {
                         c.WriteCommand(Command.StartClose());
                     }
+                    catch (ConnectionClosedException)
+                    {
+                        // the connection is already closed; this is an acceptable state.
+                    }
                     catch (Exception ex)
                     {
                         log(LogLevel.Error, string.Format("({0}) error sending CLS - {1}", c, ex));

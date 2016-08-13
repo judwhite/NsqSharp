@@ -102,6 +102,9 @@ namespace NsqSharp.Utils
         {
             lock (_readLocker)
             {
+                if (_isClosed)
+                    throw new ConnectionClosedException();
+
                 int byteLength = b.Length;
 
                 int total = _networkStream.Read(b, 0, byteLength);
@@ -123,6 +126,9 @@ namespace NsqSharp.Utils
         {
             lock (_writeLocker)
             {
+                if (_isClosed)
+                    throw new ConnectionClosedException();
+
                 _networkStream.Write(b, offset, length);
                 return length;
             }
@@ -144,7 +150,7 @@ namespace NsqSharp.Utils
 
                     try
                     {
-                        Flush();
+                        _networkStream.Flush();
 
                         ReadTimeout = TimeSpan.FromMilliseconds(10);
                         WriteTimeout = TimeSpan.FromMilliseconds(10);
@@ -167,7 +173,13 @@ namespace NsqSharp.Utils
 
         public void Flush()
         {
-            _networkStream.Flush();
+            lock (_writeLocker)
+            {
+                if (_isClosed)
+                    throw new ConnectionClosedException();
+
+                _networkStream.Flush();
+            }
         }
     }
 }
