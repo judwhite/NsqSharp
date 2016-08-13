@@ -106,7 +106,7 @@ namespace NsqSharp
         }
 
         /// <summary>
-        ///     Sends a FIN command to the nsqd which sent this message, indicating the message processed successfully.
+        ///     Sends a FIN command to the nsqd which sent this message.
         /// </summary>
         public void Finish()
         {
