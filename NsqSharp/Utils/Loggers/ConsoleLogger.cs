@@ -12,6 +12,7 @@ namespace NsqSharp.Utils.Loggers
     {
         private readonly TextWriter _textWriter;
         private readonly LogLevel _minLogLevel;
+        private readonly object _textWriterLocker = new object();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsoleLogger"/> class.
@@ -34,8 +35,11 @@ namespace NsqSharp.Utils.Loggers
             // TODO: proper width formatting on log level
             message = string.Format("[{0}] {1}", Log.Prefix(logLevel), message);
 
-            _textWriter.WriteLine(message);
-            _textWriter.Flush();
+            lock (_textWriterLocker)
+            {
+                _textWriter.WriteLine(message);
+                _textWriter.Flush();
+            }
             Debug.WriteLine(message);
         }
 
@@ -44,7 +48,10 @@ namespace NsqSharp.Utils.Loggers
         /// </summary>
         public void Flush()
         {
-            _textWriter.Flush();
+            lock (_textWriterLocker)
+            {
+                _textWriter.Flush();
+            }
         }
     }
 }
