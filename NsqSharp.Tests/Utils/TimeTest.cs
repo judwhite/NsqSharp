@@ -47,7 +47,7 @@ namespace NsqSharp.Tests.Utils
             {"3h30m", new Result<long>(3 * Time.Hour + 30 * Time.Minute)},
             {"10.5s4m", new Result<long>(4 * Time.Minute + 10 * Time.Second + 500 * Time.Millisecond)},
             {"-2m3.4s", new Result<long>(-(2 * Time.Minute + 3 * Time.Second + 400 * Time.Millisecond))},
-            {"1h2m3s4ms5us6ns", new Result<long>(1 * Time.Hour + 2 * Time.Minute + 3 * Time.Second + 4 * Time.Millisecond + 
+            {"1h2m3s4ms5us6ns", new Result<long>(1 * Time.Hour + 2 * Time.Minute + 3 * Time.Second + 4 * Time.Millisecond +
                                                  5 * Time.Microsecond + 6 * Time.Nanosecond)},
             {"39h9m14.425s", new Result<long>(39 * Time.Hour + 9 * Time.Minute + 14 * Time.Second + 425 * Time.Millisecond)},
             // large value
@@ -117,26 +117,44 @@ namespace NsqSharp.Tests.Utils
         [Test]
         public void AfterFired()
         {
-            var c1 = Time.After(TimeSpan.FromMilliseconds(10));
-            var c2 = new Chan<string>();
+            // TODO: This test is flaky.
 
-            var t1 = new Thread(() =>
-                                {
-                                    Thread.Sleep(200);
-                                    c2.Send("no-timeout");
-                                });
-            t1.IsBackground = true;
-            t1.Start();
+            // Try twice before actually failing.
+            const int maxTries = 2;
 
-            var list = new List<string>();
+            for (int tryNum = 1; tryNum <= maxTries; tryNum++)
+            {
+                bool allowRetry = (tryNum < maxTries);
+                try
+                {
+                    var c1 = Time.After(TimeSpan.FromMilliseconds(10));
+                    var c2 = new Chan<string>();
 
-            Select
-                .CaseReceive(c1, o => list.Add("timeout"))
-                .CaseReceive(c2, list.Add)
-                .NoDefault();
+                    var t1 = new Thread(() =>
+                                        {
+                                            Thread.Sleep(200);
+                                            c2.Send("no-timeout");
+                                        });
+                    t1.IsBackground = true;
+                    t1.Start();
 
-            Assert.AreEqual(1, list.Count, "list.Count");
-            Assert.AreEqual("timeout", list[0], "list[0]");
+                    var list = new List<string>();
+
+                    Select
+                        .CaseReceive(c1, o => list.Add("timeout"))
+                        .CaseReceive(c2, list.Add)
+                        .NoDefault();
+
+                    Assert.AreEqual(1, list.Count, "list.Count");
+                    Assert.AreEqual("timeout", list[0], "list[0]");
+                }
+                catch (Exception ex)
+                {
+                    if (!allowRetry)
+                        throw;
+                    Console.WriteLine("Try #{0} failed, retrying. Error was: {1}", tryNum, ex);
+                }
+            }
         }
     }
 }
