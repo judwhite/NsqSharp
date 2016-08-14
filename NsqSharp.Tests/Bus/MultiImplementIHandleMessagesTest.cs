@@ -168,8 +168,6 @@ namespace NsqSharp.Tests.Bus
         [Test]
         public void Given_A_Handler_Implementing_Multiple_IHandleMessages_When_Bus_Starts_Then_An_Exception_Should_Be_Thrown()
         {
-            // TODO: Turn off /ping on bus start for unit tests
-
             string highPriorityTopicName = string.Format("test_high_priority_{0}", DateTime.Now.UnixNano());
             string lowPriorityTopicName = string.Format("test_low_priority_{0}", DateTime.Now.UnixNano());
             const string channelName = "test_channel";
