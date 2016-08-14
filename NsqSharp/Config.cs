@@ -218,7 +218,7 @@ namespace NsqSharp
         public TimeSpan HeartbeatInterval { get; set; }
 
         /// <summary>Receive a percentage of messages to sample the channel (requires nsqd 0.2.25+).
-        /// See: https://github.com/bitly/nsq/pull/223 for discussion.
+        /// See: https://github.com/nsqio/nsq/pull/223 for discussion.
         /// Range: 0-99 Default: 0 (disabled, receive all messages)
         /// </summary>
         [Opt("sample_rate"), Min(0), Max(99)]
@@ -271,13 +271,15 @@ namespace NsqSharp
         public int MaxInFlight { get; set; }
 
         /// <summary>The duration the server waits before auto-requeing a message sent to this client.
-        /// Default = Use server settings (server default = 60s).
+        /// nsqd will refuse a Consumer connection if this value exceeds the nsqd option set for "-max-msg-timeout" 
+        /// (server "-max-msg-timeout" default = 15m).
+        /// Default = Use server settings (server "-msg-timeout" default = 60s).
         /// </summary>
         [Opt("msg_timeout"), Min(0)]
         public TimeSpan MessageTimeout { get; set; }
 
         /// <summary>Secret for nsqd authentication (requires nsqd 0.2.29+).
-        /// See: https://github.com/bitly/nsq/pull/356, https://github.com/jehiah/nsqauth-contrib.
+        /// See: https://github.com/nsqio/nsq/pull/356, https://github.com/jehiah/nsqauth-contrib.
         /// </summary>
         [Opt("auth_secret")]
         public string AuthSecret { get; set; }
@@ -466,7 +468,7 @@ namespace NsqSharp
                 }
 
                 // TODO: PR go-nsq: this check was removed, seems still valid since the value can be set through code
-                // https://github.com/bitly/go-nsq/commit/dd8e5fc4ad80922d884ece51f5574af3fa4f14d3#diff-b4bda758a2aef091432646c354b4dc59L376
+                // https://github.com/nsqio/go-nsq/commit/dd8e5fc4ad80922d884ece51f5574af3fa4f14d3#diff-b4bda758a2aef091432646c354b4dc59L376
                 if (c.BackoffStrategy == null)
                     throw new Exception(string.Format("BackoffStrategy cannot be null"));
             }

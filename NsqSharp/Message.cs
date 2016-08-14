@@ -9,7 +9,7 @@ using NsqSharp.Utils;
 
 namespace NsqSharp
 {
-    // https://github.com/bitly/go-nsq/blob/master/message.go
+    // https://github.com/nsqio/go-nsq/blob/master/message.go
 
     /// <summary>
     ///     Message is the fundamental data type containing the <see cref="Id"/>, <see cref="Body"/>, and metadata of a
@@ -118,9 +118,14 @@ namespace NsqSharp
         }
 
         /// <summary>
-        ///     <para>Sends a TOUCH command to the nsqd which sent this message, resetting the default message timeout.</para>
+        ///     <para>Sends a TOUCH command to the nsqd which sent this message, resetting the message timeout.</para>
         ///     
-        ///     <para>The server-default timeout is 60s; see <see cref="Config.MessageTimeout"/>.</para>
+        ///     <para>The nsqd default "-msg-timeout" is 60s. See <see cref="Config.MessageTimeout"/>.</para>
+        /// 
+        ///     <para>
+        ///           nsqd will requeue the message, regardless of calls to TOUCH, if the time exceeds the nsqd option
+        ///           set for "-max-msg-timeout" (nsqd default = 15m).
+        ///     </para>
         ///     
         ///     <para>If FIN or REQ have already been sent for this message, calling <see cref="Touch"/> has no effect.</para>
         /// </summary>
@@ -317,9 +322,14 @@ namespace NsqSharp
         void Finish();
 
         /// <summary>
-        ///     <para>Sends a TOUCH command to the nsqd which sent this message, resetting the default message timeout.</para>
+        ///     <para>Sends a TOUCH command to the nsqd which sent this message, resetting the message timeout.</para>
         ///     
-        ///     <para>The server-default timeout is 60s; see <see cref="Config.MessageTimeout"/>.</para>
+        ///     <para>The nsqd default "-msg-timeout" is 60s. See <see cref="Config.MessageTimeout"/>.</para>
+        /// 
+        ///     <para>
+        ///           nsqd will requeue the message, regardless of calls to TOUCH, if the time exceeds the nsqd option
+        ///           set for "-max-msg-timeout" (nsqd default = 15m).
+        ///     </para>
         ///     
         ///     <para>If FIN or REQ have already been sent for this message, calling <see cref="Touch"/> has no effect.</para>
         /// </summary>
