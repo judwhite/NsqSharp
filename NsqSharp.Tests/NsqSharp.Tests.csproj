@@ -104,6 +104,7 @@
     <Compile Include="Utils\Extensions\OptAttributeExtensionsTest.cs" />
     <Compile Include="Utils\Extensions\PropertyInfoExtensionsTest.cs" />
     <Compile Include="Utils\Extensions\RNGCryptoServiceProviderExtensionsTest.cs" />
+    <Compile Include="Utils\Loggers\ConsoleLoggerTest.cs" />
     <Compile Include="Utils\SliceTest.cs" />
     <Compile Include="Utils\TickerTest.cs" />
     <Compile Include="Utils\TimeTest.cs" />

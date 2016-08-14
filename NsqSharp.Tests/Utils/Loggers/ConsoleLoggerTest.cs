@@ -1,0 +1,38 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using NsqSharp.Core;
+using NsqSharp.Utils;
+using NsqSharp.Utils.Loggers;
+using NUnit.Framework;
+
+namespace NsqSharp.Tests.Utils.Loggers
+{
+    [TestFixture]
+    public class ConsoleLoggerTest
+    {
+        [Test]
+        public void TestConsoleLoggerThreadSafety()
+        {
+            var consoleLogger = new ConsoleLogger(LogLevel.Debug);
+            var wg = new WaitGroup();
+            wg.Add(100);
+            var rnd = new Random();
+            for (int i = 0; i < 100; i++)
+            {
+                int n = rnd.Next(100, 65536);
+                var msg = new string('x', n);
+                var t = new Thread(() =>
+                {
+                    consoleLogger.Output(LogLevel.Warning, msg);
+                    wg.Done();
+                });
+                t.IsBackground = true;
+                t.Start();
+            }
+
+            wg.Wait();
+        }
+    }
+}
