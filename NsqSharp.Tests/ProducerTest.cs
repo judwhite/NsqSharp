@@ -265,13 +265,21 @@ namespace NsqSharp.Tests
             int[] millisecondsBetweenNsqdShutdowns = { 100, 250, 1000, 5000 };
             int[] shutdownCounts = { 5 };
 
+            int testCount = publishingThreads.Length * millisecondsBetweenNsqdShutdowns.Length * shutdownCounts.Length;
+            int currentTestNumber = 0;
+
             foreach (var publishingThreadCount in publishingThreads)
             {
                 foreach (var ms in millisecondsBetweenNsqdShutdowns.Reverse())
                 {
                     foreach (var shutdownCount in shutdownCounts)
                     {
-                        Console.WriteLine("**** T:{0} / MS:{1} / S:{2} ****", publishingThreadCount, ms, shutdownCount);
+                        currentTestNumber++;
+
+                        Console.WriteLine(
+                            "**** Publishing Threads: {0} / Time between shutdowns: {1}ms / Test {2}/{3} ****",
+                            publishingThreadCount, ms, currentTestNumber, testCount);
+
                         TestProducerReconnect(publishingThreadCount, ms, shutdownCount);
                     }
                 }
