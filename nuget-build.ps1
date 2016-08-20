@@ -5,6 +5,18 @@
 
 ### Build Tests
 
+msbuild NsqSharp.Tests/NsqSharp.Tests.csproj /p:TargetFrameworkVersion=v4.6.2 /p:Configuration="Integration Tests" /t:Clean /t:Rebuild /tv:4.0 /p:OutputPath="../nuget-tests/net462"
+if ($LastExitCode -ne 0) {
+    echo ".NET 4.6.2 Tests Build failed. Process exited with error code $LastExitCode."
+    Return
+}
+
+msbuild NsqSharp.Tests/NsqSharp.Tests.csproj /p:TargetFrameworkVersion=v4.6.1 /p:Configuration="Integration Tests" /t:Clean /t:Rebuild /tv:4.0 /p:OutputPath="../nuget-tests/net461"
+if ($LastExitCode -ne 0) {
+    echo ".NET 4.6.1 Tests Build failed. Process exited with error code $LastExitCode."
+    Return
+}
+
 msbuild NsqSharp.Tests/NsqSharp.Tests.csproj /p:TargetFrameworkVersion=v4.6 /p:Configuration="Integration Tests" /t:Clean /t:Rebuild /tv:4.0 /p:OutputPath="../nuget-tests/net46"
 if ($LastExitCode -ne 0) {
     echo ".NET 4.6 Tests Build failed. Process exited with error code $LastExitCode."
@@ -42,6 +54,20 @@ if ($LastExitCode -ne 0) {
 }
 
 ### Run Tests
+
+.\packages\NUnit.Runners.2.6.4\tools\nunit-console.exe ./nuget-tests/net462/NsqSharp.Tests.dll
+if ($LastExitCode -ne 0) {
+    echo ".NET 4.6.2 Tests failed. Process exited with error code $LastExitCode."
+    Return
+}
+echo "*** .NET 4.6.2 All tests passed."
+
+.\packages\NUnit.Runners.2.6.4\tools\nunit-console.exe ./nuget-tests/net461/NsqSharp.Tests.dll
+if ($LastExitCode -ne 0) {
+    echo ".NET 4.6.1 Tests failed. Process exited with error code $LastExitCode."
+    Return
+}
+echo "*** .NET 4.6.1 All tests passed."
 
 .\packages\NUnit.Runners.2.6.4\tools\nunit-console.exe ./nuget-tests/net46/NsqSharp.Tests.dll
 if ($LastExitCode -ne 0) {
@@ -87,6 +113,18 @@ echo "*** .NET 3.5 All tests passed."
 
 
 ### Build Nuget DLL's
+
+msbuild NsqSharp/NsqSharp.csproj /p:TargetFrameworkVersion=v4.6.2 /p:Configuration="Integration Tests" /t:Clean /t:Rebuild /tv:4.0 /p:OutputPath="../nuget/lib/net462"
+if ($LastExitCode -ne 0) {
+    echo ".NET 4.6.2 Build failed. Process exited with error code $LastExitCode."
+    Return
+}
+
+msbuild NsqSharp/NsqSharp.csproj /p:TargetFrameworkVersion=v4.6.1 /p:Configuration="Integration Tests" /t:Clean /t:Rebuild /tv:4.0 /p:OutputPath="../nuget/lib/net461"
+if ($LastExitCode -ne 0) {
+    echo ".NET 4.6.1 Build failed. Process exited with error code $LastExitCode."
+    Return
+}
 
 msbuild NsqSharp/NsqSharp.csproj /p:TargetFrameworkVersion=v4.6 /p:Configuration="Integration Tests" /t:Clean /t:Rebuild /tv:4.0 /p:OutputPath="../nuget/lib/net46"
 if ($LastExitCode -ne 0) {
