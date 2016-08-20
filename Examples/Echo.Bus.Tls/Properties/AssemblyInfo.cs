@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Echo.Bus.Tls")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Judson White")]
+[assembly: AssemblyCompany("Jud White")]
 [assembly: AssemblyProduct("Echo.Bus.Tls")]
-[assembly: AssemblyCopyright("Copyright © Judson White 2015")]
+[assembly: AssemblyCopyright("Copyright © Jud White 2015-2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

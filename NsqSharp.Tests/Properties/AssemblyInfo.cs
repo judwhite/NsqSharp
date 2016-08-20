@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("NsqSharp.Tests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Jud White")]
 [assembly: AssemblyProduct("NsqSharp.Tests")]
-[assembly: AssemblyCopyright("Copyright © Judson White 2015")]
+[assembly: AssemblyCopyright("Copyright © Jud White 2015-2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

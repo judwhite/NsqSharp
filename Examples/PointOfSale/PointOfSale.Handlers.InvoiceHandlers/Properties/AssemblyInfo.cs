@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("PointOfSale.Handlers.InvoiceHandlers")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Judson White")]
+[assembly: AssemblyCompany("Jud White")]
 [assembly: AssemblyProduct("PointOfSale.Handlers.InvoiceHandlers")]
-[assembly: AssemblyCopyright("Copyright © Judson White 2015")]
+[assembly: AssemblyCopyright("Copyright © Jud White 2015-2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
