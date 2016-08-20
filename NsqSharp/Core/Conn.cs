@@ -346,7 +346,8 @@ namespace NsqSharp.Core
             }
             catch (Exception ex)
             {
-                log(LogLevel.Error, string.Format("IO error - {0}", ex));
+                object msg = (ex is ConnectionClosedException) ? ex.Message : (object)ex;
+                log(LogLevel.Error, string.Format("Conn.WriteCommand IO error - {0}", msg));
                 _delegate.OnIOError(this, ex);
                 throw;
             }
@@ -559,7 +560,7 @@ namespace NsqSharp.Core
                         // if !strings.Contains(err.Error(), "use of closed network connection")
                         if (_closeFlag != 1)
                         {
-                            log(LogLevel.Error, string.Format("IO error - {0}", ex));
+                            log(LogLevel.Error, string.Format("IO error on ReadUnpackedResponse - {0}", ex));
                             _delegate.OnIOError(this, ex);
                         }
                         break;
@@ -576,7 +577,7 @@ namespace NsqSharp.Core
                         {
                             if (_closeFlag != 1)
                             {
-                                log(LogLevel.Error, string.Format("IO error - {0}", ex));
+                                log(LogLevel.Error, string.Format("IO error on Heartbeat - {0}", ex));
                                 _delegate.OnIOError(this, ex);
                             }
                             break;
@@ -597,7 +598,7 @@ namespace NsqSharp.Core
                             }
                             catch (Exception ex)
                             {
-                                log(LogLevel.Error, string.Format("IO error - {0}", ex));
+                                log(LogLevel.Error, string.Format("IO error on DecodeMessage - {0}", ex));
                                 _delegate.OnIOError(this, ex);
                                 doLoop = false;
                                 break;
@@ -667,11 +668,12 @@ namespace NsqSharp.Core
                         }
                         catch (Exception ex)
                         {
-                            log(LogLevel.Error, string.Format("error sending command {0} - {1}", cmd, ex.Message));
+                            object msg = (ex is ConnectionClosedException) ? ex.Message : (object)ex;
+                            log(LogLevel.Error, string.Format("Conn.writeLoop, cmdChan: error sending command {0} - {1}", cmd, msg));
                             close();
-                            // TODO: Create PR to remove unnecessary continue in go-nsq
-                            // https://github.com/bitly/go-nsq/blob/v1.0.3/conn.go#L552
                         }
+                        // TODO: Create PR to remove unnecessary continue in go-nsq
+                        // https://github.com/nsqio/go-nsq/blob/v1.0.3/conn.go#L552
                     })
                     .CaseReceive(_msgResponseChan, resp =>
                     {
@@ -709,7 +711,8 @@ namespace NsqSharp.Core
                         }
                         catch (Exception ex)
                         {
-                            log(LogLevel.Error, string.Format("error sending command {0} - {1}", resp.cmd, ex));
+                            object msg = (ex is ConnectionClosedException) ? ex.Message : (object)ex;
+                            log(LogLevel.Error, string.Format("Conn.writeLoop, msgResponseChan: error sending command {0} - {1}", resp.cmd, msg));
                             close();
                         }
                     })

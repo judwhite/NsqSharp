@@ -10,7 +10,7 @@ using NsqSharp.Utils.Loggers;
 
 namespace NsqSharp
 {
-    // https://github.com/bitly/go-nsq/blob/master/producer.go
+    // https://github.com/nsqio/go-nsq/blob/master/producer.go
 
     /// <summary>
     /// IConn interface

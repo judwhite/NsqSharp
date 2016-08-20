@@ -1037,7 +1037,7 @@ namespace NsqSharp
                     while (true)
                     {
                         // TODO: PR go-nsq: do they need .Seconds() on their r.log string?
-                        // https://github.com/bitly/go-nsq/blob/667c739c212e55a5ddde2a33d4be2b9376d2c7e5/consumer.go#L731
+                        // https://github.com/nsqio/go-nsq/blob/667c739c212e55a5ddde2a33d4be2b9376d2c7e5/consumer.go#L731
                         log(LogLevel.Info, string.Format("({0}) re-connecting in {1:0.0000} seconds...", connAddr,
                             _config.LookupdPollInterval.TotalSeconds));
                         Thread.Sleep(_config.LookupdPollInterval);
@@ -1530,6 +1530,10 @@ namespace NsqSharp
                     try
                     {
                         c.WriteCommand(Command.StartClose());
+                    }
+                    catch (ConnectionClosedException)
+                    {
+                        // the connection is already closed; this is an acceptable state.
                     }
                     catch (Exception ex)
                     {
