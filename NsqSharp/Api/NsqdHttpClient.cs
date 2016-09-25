@@ -16,7 +16,7 @@ namespace NsqSharp.Api
         private readonly int _timeoutMilliseconds;
 
         /// <summary>Initializes a new instance of <see cref="NsqLookupdHttpClient" /> class.</summary>
-        /// <param name="nsqdHttpAddress">The nsqlookupd HTTP address.</param>
+        /// <param name="nsqdHttpAddress">The nsqd HTTP address, including port. Example: 127.0.0.1:4151</param>
         /// <param name="httpRequestTimeout">The HTTP request timeout.</param>
         public NsqdHttpClient(string nsqdHttpAddress, TimeSpan httpRequestTimeout)
             : base(nsqdHttpAddress, httpRequestTimeout)
