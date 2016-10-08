@@ -15,7 +15,7 @@ namespace NsqSharp.Tests.Utils
             bool ticked = false;
             new SelectCase()
                 .CaseReceive(timer.C, _ => ticked = true)
-                .CaseReceive(Time.After(TimeSpan.FromSeconds(2)), _ => { })
+                .CaseReceive(Time.After(TimeSpan.FromSeconds(2)))
                 .NoDefault();
             Assert.IsTrue(ticked);
         }
@@ -27,12 +27,15 @@ namespace NsqSharp.Tests.Utils
             bool ticked = false;
             new SelectCase()
                 .CaseReceive(timer.C, _ => ticked = true)
-                .CaseReceive(Time.After(TimeSpan.FromSeconds(1)), _ => { })
+                .CaseReceive(Time.After(TimeSpan.FromSeconds(1)))
                 .NoDefault();
             Assert.IsFalse(ticked);
         }
 
         [Test]
+#if !RUN_INTEGRATION_TESTS
+        [Ignore("NSQD Integration Test")]
+#endif
         public void TestTimerStopRaceCondition()
         {
             // NOTE: This race condition was difficult to reproduce in Release but occurs
