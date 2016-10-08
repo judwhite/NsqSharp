@@ -34,19 +34,12 @@ namespace PointOfSale.Handlers.Audit.Handlers
                 else
                 {
                     string logEntry = string.Format(
-                        "id: {0} action:{1} reason:{2} topic:{3} channel:{4} msg:{5} ex:{6}",
+                        "id:{0} action:{1} reason:{2} topic:{3} channel:{4} msg:{5} ex:{6}",
                         info.MessageId, info.FailedAction, info.FailedReason, info.Topic, info.Channel, info.MessageBody,
                         info.FailedException
                     );
 
-                    if (info.FailedAction == "Requeue")
-                    {
-                        Trace.TraceWarning(logEntry);
-                    }
-                    else
-                    {
-                        Trace.TraceError(logEntry);
-                    }
+                    Trace.TraceError(logEntry);
                 }
             }
             else
