@@ -10,7 +10,8 @@ namespace NsqSharp.Utils
     public class Ticker
     {
         private readonly Chan<DateTime> _tickerChan = new Chan<DateTime>();
-        private bool _stop;
+        private readonly Chan<bool> _stopTicker = new Chan<bool>();
+        private long _stop;
 
         /// <summary>
         /// Initializes a new instance of the Ticker class.
@@ -22,22 +23,21 @@ namespace NsqSharp.Utils
                 throw new ArgumentOutOfRangeException("duration", "duration must be > 0");
 
             GoFunc.Run(() =>
-            {
-                while (!_stop)
+            {                
+                while (Interlocked.Read(ref _stop) == 0)
                 {
-                    Thread.Sleep(duration);
-                    if (!_stop)
-                    {
-                        try
-                        {
-                            _tickerChan.Send(DateTime.Now);
-                        }
-                        catch (ChannelClosedException)
-                        {
-                        }
-                    }
+                    new SelectCase()
+                        .CaseReceive(Time.After(duration),
+                                     _ =>
+                                     {
+                                         new SelectCase()
+                                             .CaseSend(_tickerChan, DateTime.Now)
+                                             .Default(null);
+                                     })
+                        .CaseReceive(_stopTicker)
+                        .NoDefault();
                 }
-            }, string.Format("Ticker started:{0} duration:{1}", DateTime.Now, duration));
+            }, string.Format("Ticker started:{0} Tick interval:{1}", DateTime.Now, duration));
         }
 
         /// <summary>
@@ -46,7 +46,10 @@ namespace NsqSharp.Utils
         /// </summary>
         public void Stop()
         {
-            _stop = true;
+            if (Interlocked.CompareExchange(ref _stop, 1, 0) == 0)
+            {
+                _stopTicker.Close();
+            }
         }
 
         /// <summary>

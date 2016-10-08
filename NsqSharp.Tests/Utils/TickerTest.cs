@@ -129,6 +129,13 @@ namespace NsqSharp.Tests.Utils
             ticker.Stop();
 
             var duration = DateTime.Now - start;
+
+            Console.WriteLine("Duration: {0}", duration);
+            foreach (var time in listOfTimes)
+            {
+                Console.WriteLine("Tick: {0}", time);
+            }
+
             Assert.AreEqual(10, listOfTimes.Count, "listOfTimes.Count");
             Assert.GreaterOrEqual(duration, TimeSpan.FromSeconds(10), "duration");
             Assert.Less(duration, TimeSpan.FromSeconds(11));
@@ -180,7 +187,13 @@ namespace NsqSharp.Tests.Utils
             ticker.Stop();
 
             var duration = DateTime.Now - start;
-            Console.WriteLine(duration);
+
+            Console.WriteLine("Duration: {0}", duration);
+            foreach (var time in listOfTimes)
+            {
+                Console.WriteLine("Tick: {0}", time);
+            }
+
             Assert.AreEqual(10, listOfTimes.Count, "listOfTimes.Count");
             Assert.GreaterOrEqual(duration, TimeSpan.FromSeconds(14), "duration");
             Assert.Less(duration, TimeSpan.FromSeconds(17));
@@ -207,9 +220,7 @@ namespace NsqSharp.Tests.Utils
 
                                          if (listOfTimes.Count == 5)
                                          {
-                                             Select
-                                                 .CaseSend(lookupdRecheckChan, true)
-                                                 .NoDefault(defer: false);
+                                             lookupdRecheckChan.Send(true);
                                          }
                                      })
                         .CaseReceive(lookupdRecheckChan,
@@ -229,13 +240,9 @@ namespace NsqSharp.Tests.Utils
                 // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
                 while (doLoop)
                 {
-                    Console.WriteLine("start {0}", x);
-                    if (x == 7)
-                    {
-                        Console.WriteLine("pause");
-                    }
+                    Console.WriteLine("start: {0} listOfTimes.Count: {1}", x, listOfTimes.Count);
                     select.Execute();
-                    Console.WriteLine("finish {0}", x);
+                    Console.WriteLine("finish: {0} listOfTimes.Count: {1}", x, listOfTimes.Count);
                     x++;
                     if (listOfTimes.Count >= 10)
                     {
@@ -247,7 +254,13 @@ namespace NsqSharp.Tests.Utils
             ticker.Stop();
 
             var duration = DateTime.Now - start;
-            Console.WriteLine(duration);
+
+            Console.WriteLine("Duration: {0}", duration);
+            foreach (var time in listOfTimes)
+            {
+                Console.WriteLine("Tick: {0}", time);
+            }
+
             Assert.AreEqual(10, listOfTimes.Count, "listOfTimes.Count");
             Assert.GreaterOrEqual(duration, TimeSpan.FromSeconds(14), "duration");
             Assert.Less(duration, TimeSpan.FromSeconds(17));
