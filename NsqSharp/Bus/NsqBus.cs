@@ -184,7 +184,7 @@ namespace NsqSharp.Bus
         {
             get
             {
-                var currentMessageInformation = GetCurrentMessageInformation();
+                var currentMessageInformation = GetCurrentThreadMessageInformation();
                 if (currentMessageInformation == null)
                     return null;
 
@@ -195,16 +195,6 @@ namespace NsqSharp.Bus
         public ICurrentMessageInformation GetCurrentThreadMessageInformation()
         {
             return _threadMessage;
-        }
-
-        public IMessage CurrentMessage
-        {
-            get { return CurrentThreadMessage; }
-        }
-
-        public ICurrentMessageInformation GetCurrentMessageInformation()
-        {
-            return GetCurrentThreadMessageInformation();
         }
 
         private T CreateInstance<T>()

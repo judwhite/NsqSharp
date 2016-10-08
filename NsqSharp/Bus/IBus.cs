@@ -44,15 +44,5 @@ namespace NsqSharp.Bus
         /// <summary>Gets <see cref="ICurrentMessageInformation"/> about the current message being processed. Returns
         /// <c>null</c> if the current thread isn't a thread started to handle a message.</summary>
         ICurrentMessageInformation GetCurrentThreadMessageInformation();
-
-        /// <summary>Gets the current NSQ message being processed. Returns <c>null</c> if the current thread isn't
-        /// a thread started to handle a message.</summary>
-        [Obsolete("Use CurrentThreadMessage. This property will be removed by v1.0.")]
-        IMessage CurrentMessage { get; }
-
-        /// <summary>Gets <see cref="ICurrentMessageInformation"/> about the current message being processed. Returns
-        /// <c>null</c> if the current thread isn't a thread started to handle a message.</summary>
-        [Obsolete("Use GetCurrentThreadMessageInformation. This method will be removed by v1.0.")]
-        ICurrentMessageInformation GetCurrentMessageInformation();
     }
 }
