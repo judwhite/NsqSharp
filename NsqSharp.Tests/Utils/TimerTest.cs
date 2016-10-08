@@ -33,9 +33,6 @@ namespace NsqSharp.Tests.Utils
         }
 
         [Test]
-#if !RUN_INTEGRATION_TESTS
-        [Ignore("NSQD Integration Test")]
-#endif
         public void TestTimerStopRaceCondition()
         {
             // NOTE: This race condition was difficult to reproduce in Release but occurs
