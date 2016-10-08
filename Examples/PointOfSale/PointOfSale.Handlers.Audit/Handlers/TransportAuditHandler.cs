@@ -41,7 +41,8 @@ namespace PointOfSale.Handlers.Audit.Handlers
 
                     if (info.FailedAction == "Requeue")
                     {
-                        Trace.TraceWarning(logEntry);
+                        //Trace.TraceWarning(logEntry);
+                        Trace.TraceError(logEntry);
                     }
                     else
                     {
