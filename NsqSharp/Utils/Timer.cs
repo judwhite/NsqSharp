@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using NsqSharp.Utils.Channels;
 
 namespace NsqSharp.Utils
@@ -10,7 +11,7 @@ namespace NsqSharp.Utils
     public class Timer
     {
         private readonly Chan<DateTime> _timerChan = new Chan<DateTime>();
-        private bool _isTimerActive;
+        private int _isTimerActive;
 
         /// <summary>
         /// Creates a new <see cref="Timer"/> that will send the current time on its channel <see cref="C"/> after at least
@@ -18,7 +19,7 @@ namespace NsqSharp.Utils
         /// </summary>
         public Timer(TimeSpan duration)
         {
-            _isTimerActive = true;
+            _isTimerActive = 1;
 
             GoFunc.Run(() =>
             {
@@ -26,9 +27,11 @@ namespace NsqSharp.Utils
                 Time.After(duration).ReceiveOk(out ok);
                 if (ok)
                 {
-                    _isTimerActive = false;
-                    _timerChan.Send(DateTime.Now);
-                    _timerChan.Close();
+                    if (Interlocked.CompareExchange(ref _isTimerActive, 0, 1) == 1)
+                    {
+                        _timerChan.Send(DateTime.Now);
+                        _timerChan.Close();
+                    }
                 }
             }, string.Format("timer started:{0} duration:{1}", DateTime.Now, duration));
         }
@@ -48,10 +51,9 @@ namespace NsqSharp.Utils
         /// </summary>
         public bool Stop()
         {
-            if (_isTimerActive)
+            if (Interlocked.CompareExchange(ref _isTimerActive, 0, 1) == 0)
                 return false;
 
-            _isTimerActive = false;
             _timerChan.Close();
 
             return true;

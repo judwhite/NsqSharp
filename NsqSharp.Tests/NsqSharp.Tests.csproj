@@ -114,6 +114,7 @@
     <Compile Include="Utils\SliceTest.cs" />
     <Compile Include="Utils\TcpConnTest.cs" />
     <Compile Include="Utils\TickerTest.cs" />
+    <Compile Include="Utils\TimerTest.cs" />
     <Compile Include="Utils\TimeTest.cs" />
     <Compile Include="MockTest.cs" />
     <Compile Include="ProducerBenchmarkTest.cs" />
