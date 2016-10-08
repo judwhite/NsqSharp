@@ -265,5 +265,30 @@ namespace NsqSharp.Tests.Utils
             Assert.GreaterOrEqual(duration, TimeSpan.FromSeconds(14), "duration");
             Assert.Less(duration, TimeSpan.FromSeconds(17));
         }
+
+        [Test]
+        public void TestTickerStopRaceCondition()
+        {
+            // NOTE: This race condition was difficult to reproduce in Release but occurs
+            //       almost immediately in Debug.
+
+            var wg = new WaitGroup();
+            var rand = new Random();
+
+            const int tries = 1000;
+            wg.Add(tries);
+            for (int i = 0; i < tries; i++)
+            {
+                var time = rand.Next(1, 500);
+                var ticker = new Ticker(TimeSpan.FromMilliseconds(time));
+                Time.AfterFunc(TimeSpan.FromMilliseconds(time),
+                                () =>
+                                {
+                                    ticker.Close();
+                                    wg.Done();
+                                });
+            }
+            wg.Wait();
+        }
     }
 }

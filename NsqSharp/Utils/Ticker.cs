@@ -10,6 +10,7 @@ namespace NsqSharp.Utils
     public class Ticker
     {
         private readonly Chan<DateTime> _tickerChan = new Chan<DateTime>();
+        private readonly object _tickerChanLocker = new object();
         private readonly Chan<bool> _stopTicker = new Chan<bool>();
         private long _stop;
 
@@ -23,16 +24,22 @@ namespace NsqSharp.Utils
                 throw new ArgumentOutOfRangeException("duration", "duration must be > 0");
 
             GoFunc.Run(() =>
-            {                
+            {
                 while (Interlocked.Read(ref _stop) == 0)
                 {
                     new SelectCase()
                         .CaseReceive(Time.After(duration),
                                      _ =>
                                      {
-                                         new SelectCase()
-                                             .CaseSend(_tickerChan, DateTime.Now)
-                                             .Default(null);
+                                         lock (_tickerChanLocker)
+                                         {
+                                             if (Interlocked.Read(ref _stop) == 0)
+                                             {
+                                                 new SelectCase()
+                                                     .CaseSend(_tickerChan, DateTime.Now)
+                                                     .Default(null);
+                                             }
+                                         }
                                      })
                         .CaseReceive(_stopTicker)
                         .NoDefault();
@@ -58,8 +65,11 @@ namespace NsqSharp.Utils
         /// </summary>
         public void Close()
         {
-            Stop();
-            _tickerChan.Close();
+            lock (_tickerChanLocker)
+            {
+                Stop();
+                _tickerChan.Close();
+            }
         }
 
         /// <summary>
