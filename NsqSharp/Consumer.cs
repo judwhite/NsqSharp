@@ -800,6 +800,8 @@ namespace NsqSharp
                 _mtx.ExitWriteLock();
             }
 
+            log(LogLevel.Info, string.Format("({0}) connected to nsqd", addr));
+
             // pre-emptive signal to existing connections to lower their RDY count
             _perConnMaxInFlightOverride = 0;
             foreach (var c in conns())

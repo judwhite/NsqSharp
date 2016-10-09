@@ -15,7 +15,7 @@ namespace NsqSharp.Tests.Utils
             bool ticked = false;
             new SelectCase()
                 .CaseReceive(timer.C, _ => ticked = true)
-                .CaseReceive(Time.After(TimeSpan.FromSeconds(2)))
+                .CaseReceive(Time.After(TimeSpan.FromSeconds(3)))
                 .NoDefault();
             Assert.IsTrue(ticked);
         }
@@ -23,7 +23,7 @@ namespace NsqSharp.Tests.Utils
         [Test]
         public void TestTimerDidNotElapse()
         {
-            var timer = new Timer(TimeSpan.FromSeconds(2));
+            var timer = new Timer(TimeSpan.FromSeconds(3));
             bool ticked = false;
             new SelectCase()
                 .CaseReceive(timer.C, _ => ticked = true)

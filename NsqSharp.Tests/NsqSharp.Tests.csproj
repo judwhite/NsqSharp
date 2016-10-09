@@ -89,6 +89,7 @@
   <ItemGroup>
     <Compile Include="Bus\AutofacBusTest.cs" />
     <Compile Include="Bus\BusCurrentMessageTest.cs" />
+    <Compile Include="Bus\BusRecoveryTest.cs" />
     <Compile Include="Bus\BusShutdownTest.cs" />
     <Compile Include="Bus\CurrentThreadMessageMockableTest.cs" />
     <Compile Include="Bus\DeferTest.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="Bus\Tuple.cs" />
     <Compile Include="Bus\Utils\InterfaceBuilderTest.cs" />
     <Compile Include="ConsumerRdyRedistributionTest.cs" />
+    <Compile Include="TestHelpers\TestConsoleLogger.cs" />
     <Compile Include="Utils\Channels\ChanTest.cs" />
     <Compile Include="Core\CommandTest.cs" />
     <Compile Include="ConfigTest.cs" />
