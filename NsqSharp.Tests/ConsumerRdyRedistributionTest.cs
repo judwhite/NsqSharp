@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using NsqSharp.Api;
-using NsqSharp.Core;
+using NsqSharp.Tests.TestHelpers;
 using NsqSharp.Tests.Utils.Extensions;
 using NsqSharp.Utils.Extensions;
 using NUnit.Framework;
@@ -163,21 +163,6 @@ namespace NsqSharp.Tests
                 _nsqdHttpClient1.DeleteTopic(topicName);
                 _nsqdHttpClient2.DeleteTopic(topicName);
                 _nsqLookupdHttpClient.DeleteTopic(topicName);
-            }
-        }
-
-        public class TestConsoleLogger : ILogger
-        {
-            /// <summary>
-            /// Writes the output for a logging event.
-            /// </summary>
-            public void Output(LogLevel logLevel, string message)
-            {
-                Console.WriteLine("[{0}] {1}", logLevel, message);
-            }
-
-            public void Flush()
-            {
             }
         }
 

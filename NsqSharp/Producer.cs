@@ -411,14 +411,15 @@ namespace NsqSharp
                 }
                 catch (Exception ex)
                 {
-                    _conn.Close();
                     log(LogLevel.Error, string.Format("({0}) error connecting to nsqd - {1}", _addr, ex.Message));
+                    _conn.Close();
                     throw;
                 }
 
                 _state = (int)State.Connected;
                 _closeChan = new Chan<int>();
                 _wg.Add(1);
+                log(LogLevel.Info, string.Format("{0} connected to nsqd", _addr));
                 GoFunc.Run(router, string.Format("Producer:router P{0}", _id));
             }
         }
