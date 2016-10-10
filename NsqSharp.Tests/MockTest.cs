@@ -55,7 +55,7 @@ namespace NsqSharp.Tests
                              // needed to exit test
                              new instruction(200 * Time.Millisecond, -1, "exit")
                          };
-            var n = new mockNSQD(script, IPAddress.Loopback, 4152);
+            var n = new mockNSQD(script, IPAddress.Loopback);
 
             var topicName = "test_consumer_commands" + DateTime.Now.Unix();
             var config = new Config();
@@ -65,7 +65,13 @@ namespace NsqSharp.Tests
             q.AddHandler(new testHandler());
             q.ConnectToNsqd(n.tcpAddr);
 
-            n.exitChan.Receive();
+            bool timeout = false;
+            Select
+                .CaseReceive(n.exitChan, o => { })
+                .CaseReceive(Time.After(TimeSpan.FromMilliseconds(5000)), o => { timeout = true; })
+                .NoDefault();
+
+            Assert.IsFalse(timeout, "timeout");
 
             for (int i = 0; i < n.got.Count; i++)
             {
@@ -100,6 +106,8 @@ namespace NsqSharp.Tests
                 actual.Add(Encoding.UTF8.GetString(g));
             }
 
+            q.DisconnectFromNsqd(n.tcpAddr);
+
             Assert.AreEqual(expected, actual);
         }
 
@@ -127,7 +135,7 @@ namespace NsqSharp.Tests
                              new instruction(100 * Time.Millisecond, -1, "exit")
                          };
 
-            var n = new mockNSQD(script, IPAddress.Loopback, 4153);
+            var n = new mockNSQD(script, IPAddress.Loopback);
 
             var topicName = "test_requeue" + DateTime.Now.Unix();
             var config = new Config();
@@ -198,7 +206,7 @@ namespace NsqSharp.Tests
                              new instruction(100 * Time.Millisecond, -1, "exit")
                          };
 
-            var n = new mockNSQD(script, IPAddress.Loopback, 4154);
+            var n = new mockNSQD(script, IPAddress.Loopback);
 
             var topicName = "test_backoff_disconnect" + DateTime.Now.Unix();
             var config = new Config();
@@ -262,7 +270,7 @@ namespace NsqSharp.Tests
                              new instruction(100 * Time.Millisecond, -1, "exit")
                          };
 
-            n = new mockNSQD(script, IPAddress.Loopback, 4154);
+            n = new mockNSQD(script, IPAddress.Loopback, n.listenPort);
 
             bool timeout2 = false;
             Select
@@ -293,14 +301,8 @@ namespace NsqSharp.Tests
                 actual.Add(Encoding.UTF8.GetString(g));
             }
 
-            try
-            {
-                Assert.AreEqual(expected, actual, "test2 failed");
-            }
-            finally
-            {
-                q.StopAsync();
-            }
+            Assert.AreEqual(expected, actual, "test2 failed");
+            q.Stop();
         }
     }
 
@@ -373,27 +375,28 @@ namespace NsqSharp.Tests
         public List<byte[]> got { get; set; }
         public List<DateTime> gotTime { get; set; }
         public string tcpAddr { get; set; }
-        private int listenPort { get; set; }
+        public int listenPort { get; private set; }
         public Chan<int> exitChan { get; set; }
 
-        public mockNSQD(instruction[] script, IPAddress addr, int port)
+        public mockNSQD(instruction[] script, IPAddress addr, int port = 0)
         {
             this.script = script;
             exitChan = new Chan<int>();
             got = new List<byte[]>();
             gotTime = new List<DateTime>();
             ipAddr = addr;
-            listenPort = port;
+            tcpListener = new TcpListener(ipAddr, port);
+            tcpListener.Start();
+            tcpAddr = tcpListener.LocalEndpoint.ToString();
+            listenPort = ((IPEndPoint)tcpListener.LocalEndpoint).Port;
+
             GoFunc.Run(listen, "mockNSQD:listen");
         }
 
         private void listen()
         {
-            tcpListener = new TcpListener(ipAddr, listenPort);
-            tcpAddr = tcpListener.LocalEndpoint.ToString();
-            tcpListener.Start();
-
-            Console.WriteLine("[{0}] TCP: listening on {1}", DateTime.Now.Formatted(), tcpListener.LocalEndpoint);
+            var addr = tcpListener.LocalEndpoint;
+            Console.WriteLine("[{0}] TCP: listening on {1}", DateTime.Now.Formatted(), addr);
 
             while (true)
             {
@@ -410,7 +413,7 @@ namespace NsqSharp.Tests
                 GoFunc.Run(() => handle(conn, remoteEndPoint), "mockNSQD:handle");
             }
 
-            Console.WriteLine("[{0}] TCP: closing {1}", DateTime.Now.Formatted(), tcpListener.LocalEndpoint);
+            Console.WriteLine("[{0}] TCP: closing {1}", DateTime.Now.Formatted(), addr);
             exitChan.Close();
         }
 

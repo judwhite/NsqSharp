@@ -6,6 +6,7 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using NsqSharp.Api;
 using NsqSharp.Core;
+using NsqSharp.Tests.TestHelpers;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Extensions;
 using NUnit.Framework;
@@ -138,7 +139,7 @@ namespace NsqSharp.Tests
             }
             var topicName = "rdr_test";
 
-            // TODO: Deflate, Snappy, TLS
+            // TODO: Deflate, Snappy
             /*if (config.Deflate)
                 topicName = topicName + "_deflate";
             else if (config.Snappy)
@@ -151,8 +152,7 @@ namespace NsqSharp.Tests
 
             try
             {
-                var q = new Consumer(topicName, "ch", config);
-                // q.SetLogger(nullLogger, LogLevelInfo)
+                var q = new Consumer(topicName, "ch", new TestConsoleLogger(), config);
 
                 var h = new MyTestHandler { q = q };
                 q.AddHandler(h);

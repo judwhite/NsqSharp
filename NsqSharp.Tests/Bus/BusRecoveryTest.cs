@@ -47,6 +47,7 @@ namespace NsqSharp.Tests.Bus
             _nsqdHttpClient.CreateTopic(topicName);
             _nsqLookupdHttpClient.CreateTopic(topicName);
 
+            IBus bus = null;
             try
             {
                 BusService.Start(new BusConfiguration(
@@ -70,12 +71,28 @@ namespace NsqSharp.Tests.Bus
                     }
                 ));
 
-                var bus = container.GetInstance<IBus>();
+                bus = container.GetInstance<IBus>();
 
-                Assert.Throws<ErrProtocol>(() => bus.Send(new TestMessage { Bytes = new byte[1024 * 1024 + 1] }));
+                int i;
+                for (i = 0; i < 5; i++)
+                {
+                    try
+                    {
+                        bus.Send(new TestMessage { Bytes = new byte[1024 * 1024 + 1] });
+                        throw new Exception("expected error when publishing over max message size");
+                    }
+                    catch (ErrNotConnected)
+                    {
+                        if (i == 4)
+                            throw;
+                    }
+                    catch (ErrProtocol)
+                    {
+                        break;
+                    }
+                }
 
                 bool successfulBusSend = false;
-                int i;
                 var start = DateTime.Now;
                 _wg.Add(1);
                 for (i = 0; i < 50; i++)
@@ -97,7 +114,8 @@ namespace NsqSharp.Tests.Bus
 
                 Assert.IsTrue(successfulBusSend, "successfulBusSend");
 
-                Console.WriteLine("*** Recovered in {0} ***", DateTime.Now - start);
+                var recoveryTime = DateTime.Now - start;
+                Console.WriteLine("*** Recovered in {0} ***", recoveryTime);
 
                 _wg.Wait();
 
@@ -105,11 +123,16 @@ namespace NsqSharp.Tests.Bus
                 Assert.IsNotNull(message, "TestMessageHandler.LastMessage");
                 Assert.IsNotNull(message, "TestMessageHandler.LastMessage.Bytes");
                 Assert.AreEqual(Encoding.UTF8.GetString(message.Bytes), string.Format("recovered {0}", i + 1));
+                Assert.LessOrEqual(recoveryTime, TimeSpan.FromSeconds(5), "recoveryTime");
             }
             finally
             {
                 _nsqdHttpClient.DeleteTopic(topicName);
                 _nsqLookupdHttpClient.DeleteTopic(topicName);
+
+                var nsqBus = bus as NsqBus;
+                if (nsqBus != null)
+                    nsqBus.Stop();
             }
         }
 
