@@ -1096,8 +1096,13 @@ namespace NsqSharp
                         }
                         break;
                     case BackoffSignal.BackoffFlag:
-                        var nextBackoff = _config.BackoffStrategy.Calculate(_config, backoffCounter + 1);
-                        if (nextBackoff <= _config.MaxBackoffDuration)
+                        bool increaseBackoffLevel = (backoffCounter == 0);
+                        if (!increaseBackoffLevel)
+                        {
+                            increaseBackoffLevel = _config.BackoffStrategy.Calculate(_config, backoffCounter)
+                                .IncreaseBackoffLevel;
+                        }
+                        if (increaseBackoffLevel)
                         {
                             backoffCounter++;
                             backoffUpdated = true;
@@ -1119,7 +1124,7 @@ namespace NsqSharp
                 else if (backoffCounter > 0)
                 {
                     // start or continue backoff
-                    var backoffDuration = _config.BackoffStrategy.Calculate(_config, backoffCounter);
+                    var backoffDuration = _config.BackoffStrategy.Calculate(_config, backoffCounter).Duration;
 
                     if (backoffDuration > _config.MaxBackoffDuration)
                     {
@@ -1127,7 +1132,7 @@ namespace NsqSharp
                     }
 
                     log(LogLevel.Warning,
-                        string.Format("backing off for {0:0.0000} seconds (backoff level {1}), setting all to RDY 0",
+                        string.Format("backing off for {0:0.000} seconds (backoff level {1}), setting all to RDY 0",
                             backoffDuration.TotalSeconds, backoffCounter
                         ));
 

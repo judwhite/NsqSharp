@@ -137,7 +137,7 @@ namespace NsqSharp.Tests
             c.Set("default_requeue_delay", TimeSpan.Zero);
             c.Set("backoff_strategy", "exponential");
             c.Set("max_backoff_duration", TimeSpan.Zero);
-            c.Set("backoff_multiplier", 0);
+            c.Set("backoff_multiplier", "1ms");
             c.Set("max_attempts", 0);
             c.Set("low_rdy_idle_timeout", TimeSpan.FromSeconds(1));
             c.Set("rdy_redistribute_interval", TimeSpan.FromMilliseconds(1));
@@ -164,7 +164,7 @@ namespace NsqSharp.Tests
             Assert.AreEqual(TimeSpan.Zero, c.DefaultRequeueDelay, "default_requeue_delay");
             Assert.AreEqual(typeof(ExponentialStrategy), c.BackoffStrategy.GetType(), "backoff_strategy");
             Assert.AreEqual(TimeSpan.Zero, c.MaxBackoffDuration, "max_backoff_duration");
-            Assert.AreEqual(TimeSpan.Zero, c.BackoffMultiplier, "backoff_multiplier");
+            Assert.AreEqual(TimeSpan.FromMilliseconds(1), c.BackoffMultiplier, "backoff_multiplier");
             Assert.AreEqual(0, c.MaxAttempts, "max_attempts");
             Assert.AreEqual(TimeSpan.FromSeconds(1), c.LowRdyIdleTimeout, "low_rdy_idle_timeout");
             Assert.AreEqual(TimeSpan.FromMilliseconds(1), c.RDYRedistributeInterval, "rdy_redistribute_interval");
@@ -258,7 +258,7 @@ namespace NsqSharp.Tests
             Assert.Throws<Exception>(() => c.Set("default_requeue_delay", TimeSpan.Zero - tick), "default_requeue_delay");
             Assert.Throws<Exception>(() => c.Set("backoff_strategy", "invalid"), "backoff_strategy");
             Assert.Throws<Exception>(() => c.Set("max_backoff_duration", TimeSpan.Zero - tick), "max_backoff_duration");
-            Assert.Throws<Exception>(() => c.Set("backoff_multiplier", TimeSpan.Zero - tick), "backoff_multiplier");
+            Assert.Throws<Exception>(() => c.Set("backoff_multiplier", TimeSpan.FromMilliseconds(1) - tick), "backoff_multiplier");
             Assert.Throws<Exception>(() => c.Set("max_attempts", 0 - 1), "max_attempts");
             Assert.Throws<Exception>(() => c.Set("low_rdy_idle_timeout", TimeSpan.FromSeconds(1) - tick), "low_rdy_idle_timeout");
             Assert.Throws<Exception>(() => c.Set("rdy_redistribute_interval", TimeSpan.FromMilliseconds(1) - tick), "rdy_redistribute_interval");
@@ -456,13 +456,15 @@ namespace NsqSharp.Tests
             var backoffStrategy = new ExponentialStrategy();
 
             var config = new Config();
+            config.BackoffMultiplier = TimeSpan.FromSeconds(1);
 
-            var attempts = new[] { 0, 1, 3, 5 };
+            var attempts = new[] { 1, 2, 4, 6 };
             for (int i = 0; i < attempts.Length; i++)
             {
                 var result = backoffStrategy.Calculate(config, attempts[i]);
 
-                Assert.AreEqual(expected[i], result, string.Format("wrong backoff duration for attempt {0}", attempts[i]));
+                Assert.AreEqual(expected[i], result.Duration,
+                    string.Format("wrong backoff duration for attempt {0}", attempts[i]));
             }
         }
 
@@ -484,16 +486,69 @@ namespace NsqSharp.Tests
             var config = new Config();
             config.BackoffMultiplier = TimeSpan.FromSeconds(0.5);
 
-            var attempts = new[] { 0, 1, 3, 5 };
+            var attempts = new[] { 1, 2, 4, 6 };
             for (int count = 0; count < 50000; count++)
             {
                 for (int i = 0; i < attempts.Length; i++)
                 {
                     int attempt = attempts[i];
-                    var result = backoffStrategy.Calculate(config, attempt);
+                    var result = backoffStrategy.Calculate(config, attempt).Duration;
 
-                    Assert.LessOrEqual(result, maxExpected[i], string.Format("wrong backoff duration for attempt {0}", attempt));
-                    //Console.WriteLine(string.Format("{0} {1}", result, maxExpected[i]));
+                    Assert.LessOrEqual(result, maxExpected[i],
+                        string.Format("wrong backoff duration for attempt {0}", attempt));
+                }
+            }
+        }
+
+        [Test]
+        public void TestExponentialMaxBackoffLevel()
+        {
+            TestBackoffMaxLevel(new ExponentialStrategy());
+        }
+
+        [Test]
+        public void TestFullJitterMaxBackoffLevel()
+        {
+            TestBackoffMaxLevel(new FullJitterStrategy());
+        }
+
+        private void TestBackoffMaxLevel(IBackoffStrategy backoffStrategy)
+        {
+            for (int maxBackoff = 0; maxBackoff <= 16; maxBackoff++)
+            {
+                for (int multiplier = 1; multiplier <= 16; multiplier++)
+                {
+                    var config = new Config
+                    {
+                        MaxBackoffDuration = TimeSpan.FromMilliseconds(maxBackoff),
+                        BackoffMultiplier = TimeSpan.FromMilliseconds(multiplier)
+                    };
+                    config.Validate();
+
+                    int expectedMaxLevel = 1;
+                    if (maxBackoff != 0 && multiplier != 0)
+                    {
+                        var x = config.MaxBackoffDuration.TotalSeconds / config.BackoffMultiplier.TotalSeconds;
+                        expectedMaxLevel = (int)Math.Ceiling(Math.Log(x, 2)) + 1;
+                        if (expectedMaxLevel <= 0)
+                            expectedMaxLevel = 1;
+                    }
+
+                    bool increaseBackoffLevel;
+                    if (expectedMaxLevel > 1)
+                    {
+                        increaseBackoffLevel = backoffStrategy.Calculate(config, expectedMaxLevel - 1).IncreaseBackoffLevel;
+
+                        Assert.IsTrue(increaseBackoffLevel,
+                            string.Format("increaseBackoff max={0} multiplier={1} level={2} expectedMaxLevel={3}",
+                                config.MaxBackoffDuration, config.BackoffMultiplier, expectedMaxLevel - 1, expectedMaxLevel));
+                    }
+
+                    increaseBackoffLevel = backoffStrategy.Calculate(config, expectedMaxLevel).IncreaseBackoffLevel;
+
+                    Assert.IsFalse(increaseBackoffLevel,
+                        string.Format("increaseBackoff max={0} multiplier={1} level={2} expectedMaxLevel={3}",
+                            config.MaxBackoffDuration, config.BackoffMultiplier, expectedMaxLevel, expectedMaxLevel));
                 }
             }
         }

@@ -25,48 +25,79 @@ namespace NsqSharp
     }
 
     /// <summary>
-    /// Read only configuration values related to backoff.
+    /// Read only configuration values related to backoff. See <see cref="IBackoffStrategy"/>.
     /// </summary>
     public interface IBackoffConfig
     {
         /// <summary>Unit of time for calculating consumer backoff.</summary>
         TimeSpan BackoffMultiplier { get; }
+        /// <summary>
+        ///     The max backoff duration used for calculating whether the backoff level should increase.
+        ///     See <see cref="IBackoffStrategy.Calculate"/>.
+        /// </summary>
+        TimeSpan MaxBackoffDuration { get; }
     }
 
     /// <summary>
     /// <see cref="IBackoffStrategy" /> defines a strategy for calculating the duration of time
-    /// a consumer should backoff for a given attempt
+    /// a consumer should backoff for a given attempt. See <see cref="ExponentialStrategy"/>
+    /// and <see cref="FullJitterStrategy"/>.
     /// </summary>
     public interface IBackoffStrategy
     {
         /// <summary>Calculates the backoff time.</summary>
         /// <param name="backoffConfig">Read only configuration values related to backoff.</param>
-        /// <param name="attempt">The number of times this message has been attempted (first attempt = 1).</param>
-        /// <returns>The <see cref="TimeSpan"/> to backoff.</returns>
-        TimeSpan Calculate(IBackoffConfig backoffConfig, int attempt);
+        /// <param name="backoffLevel">
+        ///     The backoff level (>= 1) used to calculate backoff duration.
+        ///     <paramref name="backoffLevel"/> increases/decreases with successive failures/successes.
+        /// </param>
+        /// <returns>A <see cref="BackoffCalculation"/> object with the backoff duration and whether to increase
+        ///          the backoff level.</returns>
+        BackoffCalculation Calculate(IBackoffConfig backoffConfig, int backoffLevel);
     }
 
     /// <summary>
-    /// <see cref="ExponentialStrategy"/> implements an exponential backoff strategy (default)
+    /// <see cref="BackoffCalculation"/> is the return value from <see cref="IBackoffStrategy.Calculate"/>.
+    /// </summary>
+    public class BackoffCalculation
+    {
+        /// <summary>The backoff duration.</summary>
+        public TimeSpan Duration { get; set; }
+        /// <summary>Indicates whether the caller should increase the backoff level.</summary>
+        public bool IncreaseBackoffLevel { get; set; }
+    }
+
+    /// <summary>
+    /// <see cref="ExponentialStrategy"/> implements an exponential backoff strategy (default).
     /// </summary>
     public class ExponentialStrategy : IBackoffStrategy
     {
         /// <summary>
-        /// Calculate returns a duration of time: 2 ^ attempt * <see cref="IBackoffConfig.BackoffMultiplier"/>.
+        /// Calculate returns a duration of time: 2^(backoffLevel-1) * <see cref="IBackoffConfig.BackoffMultiplier"/>.
         /// </summary>
         /// <param name="backoffConfig">Read only configuration values related to backoff.</param>
-        /// <param name="attempt">The number of times this message has been attempted (first attempt = 1).</param>
-        /// <returns>The <see cref="TimeSpan"/> to backoff.</returns>
-        public TimeSpan Calculate(IBackoffConfig backoffConfig, int attempt)
+        /// <param name="backoffLevel">
+        ///     The backoff level (>= 1) used to calculate backoff duration.
+        ///     <paramref name="backoffLevel"/> increases/decreases with successive failures/successes.
+        /// </param>
+        /// <returns>A <see cref="BackoffCalculation"/> object with the backoff duration and whether to increase
+        ///          the backoff level.</returns>
+        public BackoffCalculation Calculate(IBackoffConfig backoffConfig, int backoffLevel)
         {
             var backoffDuration = new TimeSpan(backoffConfig.BackoffMultiplier.Ticks *
-                (long)Math.Pow(2, attempt));
-            return backoffDuration;
+                (long)Math.Pow(2, backoffLevel - 1));
+
+            return new BackoffCalculation
+            {
+                Duration = backoffDuration,
+                IncreaseBackoffLevel = backoffDuration < backoffConfig.MaxBackoffDuration
+            };
         }
     }
 
     /// <summary>
-    /// FullJitterStrategy returns a random duration of time [0, 2 ^ attempt].
+    /// FullJitterStrategy returns a random duration of time in the
+    /// range [0, 2^(backoffLevel-1) * <see cref="IBackoffConfig.BackoffMultiplier"/>).
     /// Implements http://www.awsarchitectureblog.com/2015/03/backoff.html.
     /// </summary>
     public class FullJitterStrategy : IBackoffStrategy
@@ -75,12 +106,17 @@ namespace NsqSharp
         private RNGCryptoServiceProvider rng;
 
         /// <summary>
-        /// Calculate returns a random duration of time [0, 2 ^ attempt] * <see cref="IBackoffConfig.BackoffMultiplier"/>.
+        /// Calculate returns a random duration of time in the
+        /// range [0, 2^(backoffLevel-1) * <see cref="IBackoffConfig.BackoffMultiplier"/>).
         /// </summary>
         /// <param name="backoffConfig">Read only configuration values related to backoff.</param>
-        /// <param name="attempt">The number of times this message has been attempted (first attempt = 1).</param>
-        /// <returns>The <see cref="TimeSpan"/> to backoff.</returns>
-        public TimeSpan Calculate(IBackoffConfig backoffConfig, int attempt)
+        /// <param name="backoffLevel">
+        ///     The backoff level (>= 1) used to calculate backoff duration.
+        ///     <paramref name="backoffLevel"/> increases/decreases with successive failures/successes.
+        /// </param>
+        /// <returns>A <see cref="BackoffCalculation"/> object with the backoff duration and whether to increase
+        ///          the backoff level.</returns>
+        public BackoffCalculation Calculate(IBackoffConfig backoffConfig, int backoffLevel)
         {
             rngOnce.Do(() =>
                 {
@@ -92,11 +128,16 @@ namespace NsqSharp
             );
 
             var backoffDuration = new TimeSpan(backoffConfig.BackoffMultiplier.Ticks *
-                (long)Math.Pow(2, attempt));
+                (long)Math.Pow(2, backoffLevel - 1));
 
             int maxBackoffMilliseconds = (int)backoffDuration.TotalMilliseconds;
             int backoffMilliseconds = maxBackoffMilliseconds == 0 ? 0 : rng.Intn(maxBackoffMilliseconds);
-            return TimeSpan.FromMilliseconds(backoffMilliseconds);
+
+            return new BackoffCalculation
+            {
+                Duration = TimeSpan.FromMilliseconds(backoffMilliseconds),
+                IncreaseBackoffLevel = backoffDuration < backoffConfig.MaxBackoffDuration
+            };
         }
     }
 
@@ -166,11 +207,11 @@ namespace NsqSharp
         [Opt("max_backoff_duration"), Min("0"), Max("60m"), Default("2m")]
         public TimeSpan MaxBackoffDuration { get; set; }
         /// <summary>Unit of time for calculating consumer backoff.
-        /// Default backoff calculation: <see cref="BackoffMultiplier"/> * (2 ^ backoff counter).
+        /// Default backoff calculation: 2^(backoffLevel-1) * <see cref="BackoffMultiplier"/>.
         /// Will not exceed <see cref="MaxBackoffDuration"/>.
         /// See: <see cref="BackoffStrategy"/>
-        /// Range: 0-60m Default: 1s</summary>
-        [Opt("backoff_multiplier"), Min("0"), Max("60m"), Default("1s")]
+        /// Range: 1ms-60m Default: 1s</summary>
+        [Opt("backoff_multiplier"), Min("1ms"), Max("60m"), Default("1s")]
         public TimeSpan BackoffMultiplier { get; set; }
 
         /// <summary>Maximum number of times this consumer will attempt to process a message before giving up.
