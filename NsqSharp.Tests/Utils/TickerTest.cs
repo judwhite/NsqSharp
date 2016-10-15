@@ -10,6 +10,9 @@ namespace NsqSharp.Tests.Utils
     [TestFixture]
     public class TickerTest
     {
+        // NOTE: the default timer resolution on Windows is 15.6 ms
+        private readonly TimeSpan AcceptableError = TimeSpan.FromMilliseconds(15.6);
+
         [Test]
         public void TestSingleTicker()
         {
@@ -27,7 +30,7 @@ namespace NsqSharp.Tests.Utils
 
             // assert
             Assert.IsTrue(ok, "ok");
-            Assert.GreaterOrEqual(duration, TimeSpan.FromSeconds(1), "duration");
+            Assert.GreaterOrEqual(duration, TimeSpan.FromSeconds(1) - AcceptableError, "duration");
             Assert.Less(duration, TimeSpan.FromSeconds(1.5), "duration");
             Assert.Less(offBy, TimeSpan.FromSeconds(0.5), "offBy");
         }
@@ -54,12 +57,12 @@ namespace NsqSharp.Tests.Utils
 
             // assert
             Assert.IsTrue(ok1, "ok1");
-            Assert.GreaterOrEqual(duration1, TimeSpan.FromSeconds(1), "duration1");
+            Assert.GreaterOrEqual(duration1, TimeSpan.FromSeconds(1) - AcceptableError, "duration1");
             Assert.Less(duration1, TimeSpan.FromSeconds(1.5), "duration1");
             Assert.Less(offBy1, TimeSpan.FromSeconds(0.5), "offBy1");
 
             Assert.IsTrue(ok2, "ok2");
-            Assert.GreaterOrEqual(duration2, TimeSpan.FromSeconds(2), "duration2");
+            Assert.GreaterOrEqual(duration2, TimeSpan.FromSeconds(2) - AcceptableError, "duration2");
             Assert.Less(duration2, TimeSpan.FromSeconds(2.5), "duration2");
             Assert.Less(offBy2, TimeSpan.FromSeconds(0.5), "offBy2");
         }
@@ -90,7 +93,7 @@ namespace NsqSharp.Tests.Utils
 
             // assert
             Assert.IsTrue(ok1, "ok1");
-            Assert.GreaterOrEqual(duration1, TimeSpan.FromSeconds(1), "duration1");
+            Assert.GreaterOrEqual(duration1, TimeSpan.FromSeconds(1) - AcceptableError, "duration1");
             Assert.Less(duration1, TimeSpan.FromSeconds(1.5), "duration1");
             Assert.Less(offBy1, TimeSpan.FromSeconds(0.5), "offBy1");
 
@@ -137,7 +140,7 @@ namespace NsqSharp.Tests.Utils
             }
 
             Assert.AreEqual(10, listOfTimes.Count, "listOfTimes.Count");
-            Assert.GreaterOrEqual(duration, TimeSpan.FromSeconds(10), "duration");
+            Assert.GreaterOrEqual(duration, TimeSpan.FromSeconds(10) - AcceptableError, "duration");
             Assert.Less(duration, TimeSpan.FromSeconds(11));
         }
 
@@ -195,7 +198,7 @@ namespace NsqSharp.Tests.Utils
             }
 
             Assert.AreEqual(10, listOfTimes.Count, "listOfTimes.Count");
-            Assert.GreaterOrEqual(duration, TimeSpan.FromSeconds(14), "duration");
+            Assert.GreaterOrEqual(duration, TimeSpan.FromSeconds(14) - AcceptableError, "duration");
             Assert.Less(duration, TimeSpan.FromSeconds(17));
         }
 
@@ -262,7 +265,7 @@ namespace NsqSharp.Tests.Utils
             }
 
             Assert.AreEqual(10, listOfTimes.Count, "listOfTimes.Count");
-            Assert.GreaterOrEqual(duration, TimeSpan.FromSeconds(14), "duration");
+            Assert.GreaterOrEqual(duration, TimeSpan.FromSeconds(14) - AcceptableError, "duration");
             Assert.Less(duration, TimeSpan.FromSeconds(17));
         }
 

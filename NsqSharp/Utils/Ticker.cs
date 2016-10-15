@@ -10,9 +10,9 @@ namespace NsqSharp.Utils
     public class Ticker
     {
         private readonly Chan<DateTime> _tickerChan = new Chan<DateTime>();
-        private readonly object _tickerChanLocker = new object();
-        private readonly Chan<bool> _stopTicker = new Chan<bool>();
-        private long _stop;
+        private readonly object _locker = new object();
+        private System.Threading.Timer _threadingTimer;
+        private bool _stop;
 
         /// <summary>
         /// Initializes a new instance of the Ticker class.
@@ -23,28 +23,37 @@ namespace NsqSharp.Utils
             if (duration <= TimeSpan.Zero)
                 throw new ArgumentOutOfRangeException("duration", "duration must be > 0");
 
-            GoFunc.Run(() =>
+            var started = DateTime.Now;
+
+            lock (_locker)
             {
-                while (Interlocked.Read(ref _stop) == 0)
-                {
-                    new SelectCase()
-                        .CaseReceive(Time.After(duration),
-                                     _ =>
-                                     {
-                                         lock (_tickerChanLocker)
-                                         {
-                                             if (Interlocked.Read(ref _stop) == 0)
-                                             {
-                                                 new SelectCase()
-                                                     .CaseSend(_tickerChan, DateTime.Now)
-                                                     .Default(null);
-                                             }
-                                         }
-                                     })
-                        .CaseReceive(_stopTicker)
-                        .NoDefault();
-                }
-            }, string.Format("Ticker started:{0} Tick interval:{1}", DateTime.Now, duration));
+                System.Threading.Timer t = new System.Threading.Timer(
+                    delegate
+                    {
+                        Thread.CurrentThread.Name = string.Format("ticker started:{0} duration:{1} tick:{2}",
+                            started, duration, DateTime.Now);
+
+                        lock (_locker)
+                        {
+                            if (_stop)
+                            {
+                                if (_threadingTimer != null)
+                                {
+                                    _threadingTimer.Dispose();
+                                    _threadingTimer = null;
+                                }
+                                return;
+                            }
+
+                            new SelectCase()
+                                .CaseSend(_tickerChan, DateTime.UtcNow)
+                                .Default(null);
+                        }
+
+                    }, null, duration, duration);
+
+                _threadingTimer = t;
+            }
         }
 
         /// <summary>
@@ -53,9 +62,14 @@ namespace NsqSharp.Utils
         /// </summary>
         public void Stop()
         {
-            if (Interlocked.CompareExchange(ref _stop, 1, 0) == 0)
+            lock (_locker)
             {
-                _stopTicker.Close();
+                _stop = true;
+                if (_threadingTimer != null)
+                {
+                    _threadingTimer.Dispose();
+                    _threadingTimer = null;
+                }
             }
         }
 
@@ -65,7 +79,7 @@ namespace NsqSharp.Utils
         /// </summary>
         public void Close()
         {
-            lock (_tickerChanLocker)
+            lock (_locker)
             {
                 Stop();
                 _tickerChan.Close();
