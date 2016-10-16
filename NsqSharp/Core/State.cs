@@ -15,14 +15,5 @@
 
         /// <summary>Connected</summary>
         Connected = 2,
-
-        /// <summary>Subscribed</summary>
-        Subscribed = 3,
-
-        /// <summary>
-        /// Closing means CLOSE has started...
-        /// (responses are ok, but no new messages will be sent)
-        /// </summary>
-        Closing = 4,
     }
 }
