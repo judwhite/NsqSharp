@@ -1,6 +1,6 @@
 ﻿namespace NsqSharp.Core
 {
-    // https://github.com/nsqio/go-nsq/blob/v1.0.3/delegates.go#L5
+    // https://github.com/nsqio/go-nsq/blob/master/delegates.go
 
     /// <summary>
     /// LogLevel specifies the severity of a given log message
