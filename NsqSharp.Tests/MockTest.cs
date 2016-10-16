@@ -181,6 +181,7 @@ namespace NsqSharp.Tests
             }
 
             Assert.AreEqual(expected, actual);
+            q.Stop();
         }
 
         [Test]

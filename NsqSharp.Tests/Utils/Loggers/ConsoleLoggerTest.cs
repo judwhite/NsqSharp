@@ -7,6 +7,7 @@ using NUnit.Framework;
 
 namespace NsqSharp.Tests.Utils.Loggers
 {
+    [TestFixture]
     public class ConsoleLoggerTest
     {
         [Test]
