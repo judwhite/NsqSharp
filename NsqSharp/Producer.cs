@@ -313,6 +313,11 @@ namespace NsqSharp
             sendCommand(cmd);
         }
 
+        internal State GetState()
+        {
+            return (State)_state;
+        }
+
         private void sendCommand(Command cmd)
         {
             var doneChan = new Chan<ProducerResponse>();

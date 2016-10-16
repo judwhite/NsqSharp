@@ -81,6 +81,7 @@
     <Compile Include="Bus\Configuration\BuiltIn\NewtonsoftJsonSerializer.cs" />
     <Compile Include="Bus\Configuration\BuiltIn\NsqdHttpPublisher.cs" />
     <Compile Include="Bus\Configuration\BuiltIn\NsqdTcpPublisher.cs" />
+    <Compile Include="Bus\Configuration\BuiltIn\NsqdTcpPublisherPool.cs" />
     <Compile Include="Bus\Configuration\BuiltIn\StructureMapObjectBuilder.cs" />
     <Compile Include="Bus\Configuration\BusConfiguration.cs" />
     <Compile Include="Bus\Configuration\IBusStateChangedHandler.cs" />
@@ -153,6 +154,7 @@
     <Compile Include="Utils\ITcpConn.cs" />
     <Compile Include="Utils\IWriter.cs" />
     <Compile Include="Utils\Net.cs" />
+    <Compile Include="Utils\ProducerPool.cs" />
     <Compile Include="Utils\Once.cs" />
     <Compile Include="Utils\OS.cs" />
     <Compile Include="Utils\Slice.cs" />
