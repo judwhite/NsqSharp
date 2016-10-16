@@ -10,7 +10,7 @@ using NsqSharp.Utils;
 
 namespace NsqSharp.Core
 {
-    // https://github.com/bitly/go-nsq/blob/master/command.go
+    // https://github.com/nsqio/go-nsq/blob/master/command.go
 
     /// <summary>
     /// Command represents a command from a client to an NSQ daemon
@@ -171,7 +171,7 @@ namespace NsqSharp.Core
         /// The supplied map is marshaled into JSON to provide some flexibility
         /// for this command to evolve over time.
         ///
-        /// See http://bitly.github.io/nsq/clients/tcp_protocol_spec.html#identify for information
+        /// See http://nsq.io/clients/tcp_protocol_spec.html#identify for information
         /// on the supported options
         /// </summary>
         public static Command Identify(IdentifyRequest request)

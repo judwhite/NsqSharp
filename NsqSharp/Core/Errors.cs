@@ -4,7 +4,7 @@ using System.Security.Permissions;
 
 namespace NsqSharp.Core
 {
-    // https://github.com/bitly/go-nsq/blob/master/errors.go
+    // https://github.com/nsqio/go-nsq/blob/master/errors.go
 
     /// <summary>
     /// ErrNotConnected is returned when a publish command is made
@@ -103,7 +103,7 @@ namespace NsqSharp.Core
             : base("over configured max-inflight")
         {
             // TODO: go-nsq PR: fix typo "over configure"
-            // https://github.com/bitly/go-nsq/blob/08a850b52c79a9a1b6e457233bd11bf7ba713178/errors.go#L23
+            // https://github.com/nsqio/go-nsq/blob/08a850b52c79a9a1b6e457233bd11bf7ba713178/errors.go#L23
         }
 
         /// <summary>

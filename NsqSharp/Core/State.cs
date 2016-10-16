@@ -1,6 +1,6 @@
 ﻿namespace NsqSharp.Core
 {
-    // https://github.com/bitly/go-nsq/blob/master/states.go
+    // https://github.com/nsqio/go-nsq/blob/master/states.go
 
     /// <summary>
     /// States

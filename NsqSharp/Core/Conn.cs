@@ -11,7 +11,7 @@ using NsqSharp.Utils.Extensions;
 
 namespace NsqSharp.Core
 {
-    // https://github.com/bitly/go-nsq/blob/master/conn.go
+    // https://github.com/nsqio/go-nsq/blob/master/conn.go
 
     /// <summary>
     /// IdentifyResponse represents the metadata
@@ -619,7 +619,7 @@ namespace NsqSharp.Core
                             break;
                         default:
                             // TODO: what would 'err' be in this case?
-                            // https://github.com/bitly/go-nsq/blob/v1.0.3/conn.go#L518
+                            // https://github.com/nsqio/go-nsq/blob/v1.0.3/conn.go#L518
                             var unknownFrameTypeEx = new Exception(string.Format("unknown frame type {0}", frameType));
                             log(LogLevel.Error, string.Format("IO error - {0}", unknownFrameTypeEx.Message));
                             _delegate.OnIOError(this, unknownFrameTypeEx);
