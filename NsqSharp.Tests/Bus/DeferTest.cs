@@ -47,11 +47,11 @@ namespace NsqSharp.Tests.Bus
                     new StructureMapObjectBuilder(container),
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                     new MessageAuditorStub(),
-                    new MessageTypeToTopicDictionary(new Dictionary<Type, string> { 
-                        { typeof(DeferMessage), topicName } 
+                    new MessageTypeToTopicDictionary(new Dictionary<Type, string> {
+                        { typeof(DeferMessage), topicName }
                     }),
-                    new HandlerTypeToChannelDictionary(new Dictionary<Type, string> { 
-                        { typeof(DeferHandler), channelName } 
+                    new HandlerTypeToChannelDictionary(new Dictionary<Type, string> {
+                        { typeof(DeferHandler), channelName }
                     }),
                     defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
                     defaultThreadsPerHandler: 1,
@@ -80,12 +80,12 @@ namespace NsqSharp.Tests.Bus
                 TimeSpan time1Latency = list[0].Received - list[0].OriginalTimestamp;
                 TimeSpan time2Latency = list[1].Received - list[0].OriginalTimestamp;
                 TimeSpan deferDelta = list[1].Received - deferUntil;
-                
+
                 Console.WriteLine(string.Format("Time between messages: {0} (ideal < 3s)", timeBetweenMessages));
                 Console.WriteLine(string.Format("Time 1 latency: {0} (ideal = 0s)", time1Latency));
                 Console.WriteLine(string.Format("Time 2 latency: {0} (ideal < 3s)", time2Latency));
                 Console.WriteLine(string.Format("Defer delta: {0} (ideal = 0s)", deferDelta));
-                
+
                 Assert.Less(timeBetweenMessages, TimeSpan.FromSeconds(3.5), "timeBetweenMessages");
 
                 Assert.GreaterOrEqual(time1Latency, TimeSpan.FromSeconds(0), "time1Latency");

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using NsqSharp.Core;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Loggers;
@@ -22,7 +20,7 @@ namespace NsqSharp.Tests.Utils.Loggers
             for (int i = 0; i < 100; i++)
             {
                 int n = rnd.Next(100, 65536);
-                var msg = new string('x', n);
+                var msg = new string('.', n);
                 var t = new Thread(() =>
                 {
                     consoleLogger.Output(LogLevel.Warning, msg);

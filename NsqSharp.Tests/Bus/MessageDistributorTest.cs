@@ -138,7 +138,6 @@ namespace NsqSharp.Tests.Bus
             RunTest(testData);
         }
 
-        [Test]
         private void RunTest(TestData td)
         {
             string topicName = string.Format("{0}_{1}", td.TopicPrefix, DateTime.Now.UnixNano());
