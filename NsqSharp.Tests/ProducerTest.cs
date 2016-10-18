@@ -326,19 +326,51 @@ namespace NsqSharp.Tests
                     {
                         Thread.Sleep(millisecondsBetweenNsqdShutdown);
 
-                        Console.WriteLine("Stopping nsqd {0}/{1}...", i + 1, shutdownCount);
+                        Console.WriteLine("{2:HH:mm:ss.fff} Stopping nsqd {0}/{1}...", i + 1, shutdownCount, DateTime.Now);
                         var p = new ProcessStartInfo("net", "stop nsqd");
                         p.CreateNoWindow = true;
                         p.UseShellExecute = false;
                         Process.Start(p).WaitForExit();
 
-                        Console.WriteLine("Starting nsqd {0}/{1}...", i + 1, shutdownCount);
+                        while (true)
+                        {
+                            try
+                            {
+                                Console.WriteLine("{0:HH:mm:ss.fff} Pinging to confirm stop...", DateTime.Now);
+                                _nsqdHttpClient.Ping();
+                            }
+                            catch
+                            {
+                                // we want an exception here
+                                break;
+                            }
+                        }
+
+                        Console.WriteLine("{0:HH:mm:ss.fff} Ping confirms stopped.", DateTime.Now);
+
+                        Console.WriteLine("{2:HH:mm:ss.fff} Starting nsqd {0}/{1}...", i + 1, shutdownCount, DateTime.Now);
                         p = new ProcessStartInfo("net", "start nsqd");
                         p.CreateNoWindow = true;
                         p.UseShellExecute = false;
                         Process.Start(p).WaitForExit();
 
-                        Console.WriteLine("Attempting publish...");
+                        while (true)
+                        {
+                            try
+                            {
+                                Console.WriteLine("{0:HH:mm:ss.fff} Pinging to confirm start...", DateTime.Now);
+                                _nsqdHttpClient.Ping();
+                                break;
+                            }
+                            catch
+                            {
+                                Thread.Sleep(TimeSpan.FromSeconds(1));
+                            }
+                        }
+
+                        Console.WriteLine("{0:HH:mm:ss.fff} Ping confirms started.", DateTime.Now);
+
+                        Console.WriteLine("{0:HH:mm:ss.fff} Attempting publish...", DateTime.Now);
 
                         // test the waters
                         int tries;
@@ -356,17 +388,17 @@ namespace NsqSharp.Tests
 
                                 if (tries == 60)
                                 {
-                                    errorMessage = string.Format("Producer not accepting Publish requests.\n" +
+                                    errorMessage = string.Format("P{5} Producer not accepting Publish requests.\n" +
                                         "Producer Threads: {0}\nTime between NSQd shutdowns:{1}ms\n" +
                                         "Shutdown Count: {2}/{3}\nLast Exception Message: {4}", publishingThreads,
-                                        millisecondsBetweenNsqdShutdown, i + 1, shutdownCount, ex.Message);
+                                        millisecondsBetweenNsqdShutdown, i + 1, shutdownCount, ex.Message, publisher._id);
                                     Console.WriteLine(errorMessage);
                                     wg.Done();
                                     return;
                                 }
                             }
                         }
-                        Console.WriteLine("Successful publish on attempt #{0}", tries + 1);
+                        Console.WriteLine("{1:HH:mm:ss.fff} Successful publish on attempt #{0}", tries + 1, DateTime.Now);
                     }
                     wg.Done();
                 }, "nsqd restart thread");
@@ -377,12 +409,26 @@ namespace NsqSharp.Tests
                 if (!string.IsNullOrEmpty(errorMessage))
                     Assert.Fail(errorMessage);
 
-                Console.WriteLine("Starting test publishing of 1000 messages...");
+                Console.WriteLine("{0:HH:mm:ss.fff} Starting test publishing of 1000 messages...", DateTime.Now);
 
                 for (int j = 0; j < 1000; j++)
                 {
-                    publisher.Publish(topicName, payload);
+                    try
+                    {
+                        publisher.Publish(topicName, payload);
+                    }
+                    catch (Exception ex)
+                    {
+                        errorMessage = string.Format("P{3} Producer not accepting Publish requests in test of 1000 messages.\n" +
+                            "Producer Threads: {0}\nTime between NSQd shutdowns:{1}ms\n" +
+                            "Publish #: {2}/1000", publishingThreads, millisecondsBetweenNsqdShutdown, j + 1,
+                            publisher._id);
+                        Console.WriteLine(errorMessage);
+                        throw new Exception(errorMessage, ex);
+                    }
                 }
+
+                publisher.Stop();
 
                 Console.WriteLine("Done.");
             }

@@ -577,44 +577,9 @@ namespace NsqSharp
             _errorChan.Send(data);
         }
 
-        void IConnDelegate.OnMessage(Conn c, Message m)
-        {
-            // no-op
-        }
-
-        void IConnDelegate.OnMessageFinished(Conn c, Message m)
-        {
-            // no-op
-        }
-
-        void IConnDelegate.OnMessageRequeued(Conn c, Message m)
-        {
-            // no-op
-        }
-
-        void IConnDelegate.OnBackoff(Conn c)
-        {
-            // no-op
-        }
-
-        void IConnDelegate.OnContinue(Conn c)
-        {
-            // no-op
-        }
-
-        void IConnDelegate.OnResume(Conn c)
-        {
-            // no-op
-        }
-
         void IConnDelegate.OnIOError(Conn c, Exception err)
         {
             close();
-        }
-
-        void IConnDelegate.OnHeartbeat(Conn c)
-        {
-            // no-op
         }
 
         void IConnDelegate.OnClose(Conn c)
@@ -624,5 +589,13 @@ namespace NsqSharp
                 _closeChan.Close();
             }
         }
+
+        void IConnDelegate.OnMessage(Conn c, Message m) { }
+        void IConnDelegate.OnMessageFinished(Conn c, Message m) { }
+        void IConnDelegate.OnMessageRequeued(Conn c, Message m) { }
+        void IConnDelegate.OnBackoff(Conn c) { }
+        void IConnDelegate.OnContinue(Conn c) { }
+        void IConnDelegate.OnResume(Conn c) { }
+        void IConnDelegate.OnHeartbeat(Conn c) { }
     }
 }
