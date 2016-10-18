@@ -326,7 +326,7 @@ namespace NsqSharp.Tests
                     {
                         Thread.Sleep(millisecondsBetweenNsqdShutdown);
 
-                        Console.WriteLine("{2:HH:mm:ss.fff} Stopping nsqd {0}/{1}...", i + 1, shutdownCount, DateTime.Now);
+                        Console.WriteLine("{0:HH:mm:ss.fff} Stopping nsqd {1}/{2}...", DateTime.Now, i + 1, shutdownCount);
                         var p = new ProcessStartInfo("net", "stop nsqd");
                         p.CreateNoWindow = true;
                         p.UseShellExecute = false;
@@ -338,6 +338,7 @@ namespace NsqSharp.Tests
                             {
                                 Console.WriteLine("{0:HH:mm:ss.fff} Pinging to confirm stop...", DateTime.Now);
                                 _nsqdHttpClient.Ping();
+                                Thread.Sleep(TimeSpan.FromSeconds(1));
                             }
                             catch
                             {
@@ -348,7 +349,7 @@ namespace NsqSharp.Tests
 
                         Console.WriteLine("{0:HH:mm:ss.fff} Ping confirms stopped.", DateTime.Now);
 
-                        Console.WriteLine("{2:HH:mm:ss.fff} Starting nsqd {0}/{1}...", i + 1, shutdownCount, DateTime.Now);
+                        Console.WriteLine("{0:HH:mm:ss.fff} Starting nsqd {1}/{2}...", DateTime.Now, i + 1, shutdownCount);
                         p = new ProcessStartInfo("net", "start nsqd");
                         p.CreateNoWindow = true;
                         p.UseShellExecute = false;
@@ -388,17 +389,18 @@ namespace NsqSharp.Tests
 
                                 if (tries == 60)
                                 {
-                                    errorMessage = string.Format("P{5} Producer not accepting Publish requests.\n" +
-                                        "Producer Threads: {0}\nTime between NSQd shutdowns:{1}ms\n" +
-                                        "Shutdown Count: {2}/{3}\nLast Exception Message: {4}", publishingThreads,
-                                        millisecondsBetweenNsqdShutdown, i + 1, shutdownCount, ex.Message, publisher._id);
+                                    errorMessage = string.Format("P{0} Producer not accepting Publish requests.\n" +
+                                        "Producer Threads: {1}\nTime between NSQd shutdowns:{2}ms\n" +
+                                        "Shutdown Count: {3}/{4}\nLast Exception Message: {5}", publisher._id,
+                                        publishingThreads, millisecondsBetweenNsqdShutdown, i + 1, shutdownCount,
+                                        ex.Message);
                                     Console.WriteLine(errorMessage);
                                     wg.Done();
                                     return;
                                 }
                             }
                         }
-                        Console.WriteLine("{1:HH:mm:ss.fff} Successful publish on attempt #{0}", tries + 1, DateTime.Now);
+                        Console.WriteLine("{0:HH:mm:ss.fff} Successful publish on attempt #{1}", DateTime.Now, tries + 1);
                     }
                     wg.Done();
                 }, "nsqd restart thread");
@@ -419,10 +421,10 @@ namespace NsqSharp.Tests
                     }
                     catch (Exception ex)
                     {
-                        errorMessage = string.Format("P{3} Producer not accepting Publish requests in test of 1000 messages.\n" +
-                            "Producer Threads: {0}\nTime between NSQd shutdowns:{1}ms\n" +
-                            "Publish #: {2}/1000", publishingThreads, millisecondsBetweenNsqdShutdown, j + 1,
-                            publisher._id);
+                        errorMessage = string.Format("P{0} Producer not accepting Publish requests in test of 1000 messages.\n" +
+                            "Producer Threads: {1}\nTime between NSQd shutdowns:{2}ms\n" +
+                            "Publish #: {3}/1000", publisher._id, publishingThreads,
+                            millisecondsBetweenNsqdShutdown, j + 1);
                         Console.WriteLine(errorMessage);
                         throw new Exception(errorMessage, ex);
                     }
