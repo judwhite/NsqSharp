@@ -60,11 +60,19 @@ namespace NsqSharp.Bus
             _dependencyInjectionContainer.Inject((IBus)this);
         }
 
+        private string GetTopic(Type t)
+        {
+            return _messageTypeToTopicProvider.GetTopic(t);
+        }
         private string GetTopic<T>()
         {
             return _messageTypeToTopicProvider.GetTopic(typeof(T));
         }
 
+        public void Send(Type messsageType, object message)
+        {
+            Send(message, GetTopic(messsageType));
+        }
         public void Send<T>(T message)
         {
             Send(message, GetTopic<T>());

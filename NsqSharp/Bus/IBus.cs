@@ -9,6 +9,14 @@ namespace NsqSharp.Bus
     public interface IBus
     {
         /// <summary>
+        /// Sends a <paramref name="message"/> of type <paramref name="messsageType"/> on the configured topic.
+        /// 
+        /// </summary>
+        /// <param name="messsageType">The message type.</param>
+        /// <param name="message">The message.</param>
+        void Send(Type messsageType, object message);
+
+        /// <summary>
         /// Sends a message of type <typeparamref name="T"/> on the configured topic.
         /// </summary>
         /// <typeparam name="T">The message type.</typeparam>
