@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 using NsqSharp.Api;
 using NsqSharp.Bus.Configuration.BuiltIn;
 using NsqSharp.Bus.Configuration.Providers;
@@ -66,6 +67,7 @@ namespace NsqSharp.Bus.Configuration
         /// <param name="logOnProcessCrash"><c>true</c> to log <see cref="E:AppDomain.CurrentDomain.UnhandledException" /> using
         /// <paramref name="nsqLogger"/> (default = <c>true</c>).
         /// </param>
+        /// <param name="finalizerProvider">Message finalizer provider</param>
         public BusConfiguration(
             IObjectBuilder dependencyInjectionContainer,
             IMessageSerializer defaultMessageSerializer,
@@ -81,7 +83,8 @@ namespace NsqSharp.Bus.Configuration
             IMessageMutator messageMutator = null,
             IMessageTopicRouter messageTopicRouter = null,
             INsqdPublisher nsqdPublisher = null,
-            bool logOnProcessCrash = true
+            bool logOnProcessCrash = true,
+            IMessageFinalizerProvider finalizerProvider = null
         )
         {
             _nsqLogger = nsqLogger ?? new TraceLogger();
@@ -125,7 +128,10 @@ namespace NsqSharp.Bus.Configuration
             _nsqdPublisher = nsqdPublisher ?? new NsqdTcpPublisher("127.0.0.1:4150", _nsqLogger, _nsqConfig);
 
             var handlerTypes = _handlerTypeToChannelProvider.GetHandlerTypes();
-            AddMessageHandlers(handlerTypes);
+            IEnumerable<MessageFinalizerInfo> finalizerTypes = finalizerProvider != null
+                ? finalizerProvider.GetMessageFinalizers()
+                : null;
+            AddMessageHandlers(handlerTypes, finalizerTypes);
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -145,10 +151,40 @@ namespace NsqSharp.Bus.Configuration
         /// Uses defaults specified in the <see cref="BusConfiguration"/> constructor.
         /// </summary>
         /// <param name="handlerTypes">The message handler types to add. Throws if a type is an invalid message handler.</param>
-        private void AddMessageHandlers(IEnumerable<Type> handlerTypes)
+        /// <param name="finalizerTypes">The message finalizer types to add. Throws if a type is an invalid message finalizer.</param>
+        private void AddMessageHandlers(IEnumerable<Type> handlerTypes,IEnumerable<MessageFinalizerInfo> finalizerTypes)
         {
             if (handlerTypes == null)
                 throw new ArgumentNullException("handlerTypes");
+
+            Dictionary<Type, Type> finalizerLookup = null;
+            if (finalizerTypes != null)
+            {
+                var lst = finalizerTypes
+                    .GroupBy(x => x.MessageHandlerType, x => x.MessageFinalizerType)
+                    .Select(x=>new {MessageHandlerType=x.Key, MessageFinalizerTypes = x.ToArray()})
+                    .ToArray();
+
+                var dupes = lst.Where(x => x.MessageFinalizerTypes.Length > 1).ToArray();
+
+                if (dupes.Any())
+                {
+                    StringBuilder sb = new StringBuilder();
+                    foreach (var dupe in dupes)
+                    {
+                        var errorMessage = string.Format(
+                            "Handler '{0}' has multiple finalizers: {1}",
+                            dupe.MessageHandlerType, string.Join(",",dupe.MessageFinalizerTypes.Select(x=>x.FullName))
+                        );
+
+                        sb.AppendLine(errorMessage);
+                    }
+
+                    throw new HandlerConfigurationException(sb.ToString());
+                }
+                finalizerLookup = lst.ToDictionary(x => x.MessageHandlerType, x => x.MessageFinalizerTypes.Single());
+            }
+
 
             foreach (var handlerType in handlerTypes)
             {
@@ -210,9 +246,16 @@ namespace NsqSharp.Bus.Configuration
                             "Channel for handler type '{0}' not registered.", handlerType.FullName), ex);
                     }
 
+                    Type finalizerType = null;
+                    if(finalizerLookup!=null)
+                        finalizerLookup.TryGetValue(handlerType, out finalizerType);
+                    if (finalizerTypes != null)
+                    {
+                        
+                    }
                     foreach (var topic in topics)
                     {
-                        AddMessageHandler(handlerType, messageType, topic, channel);
+                        AddMessageHandler(handlerType,finalizerType, messageType, topic, channel);
                     }
                 }
                 else
@@ -242,11 +285,42 @@ namespace NsqSharp.Bus.Configuration
         )
             where THandler : IHandleMessages<TMessage>
         {
-            AddMessageHandler(typeof(THandler), typeof(TMessage), topic, channel,
+            AddMessageHandler(typeof(THandler), null,typeof(TMessage), topic, channel,
                 messageSerializer, config, threadsPerHandler, nsqLookupdHttpAddresses);
         }
 
-        private void AddMessageHandler(Type handlerType, Type messageType, string topic, string channel,
+        /// <summary>
+        /// Adds message handler and message finalizer. If a duplicate <paramref name="topic"/>, <paramref name="channel"/>, and
+        /// <typeparamref name="THandler" /> is added the old value will be overwritten.
+        /// </summary>
+        /// <typeparam name="THandler">The concrete message handler type.</typeparam>
+        /// <typeparam name="TMessage">The message type.</typeparam>
+        /// <typeparam name="TFinalizer">The concrete message finalizer type</typeparam>
+        /// <param name="topic">The topic name.</param>
+        /// <param name="channel">The channel name.</param>
+        /// <param name="messageSerializer">The message serializer (optional; otherwise uses default).</param>
+        /// <param name="config">The Consumer <see cref="Config"/> to use (optional; otherwise uses default).</param>
+        /// <param name="threadsPerHandler">The number of threads per message handler (optional; otherwise uses default).</param>
+        /// <param name="nsqLookupdHttpAddresses">The nsqlookupd HTTP addresses to use (optional; otherwise uses default).</param>
+        public void AddMessageHandler<THandler, TFinalizer,TMessage>(string topic, string channel,
+            IMessageSerializer messageSerializer = null,
+            Config config = null,
+            int? threadsPerHandler = null,
+            params string[] nsqLookupdHttpAddresses
+        )
+            where THandler : IHandleMessages<TMessage>
+            where TFinalizer: IFinalizeMessages<TFinalizer>
+        {
+            AddMessageHandler(typeof(THandler), null, typeof(TMessage), topic, channel,
+                messageSerializer, config, threadsPerHandler, nsqLookupdHttpAddresses);
+        }
+
+        private void AddMessageHandler(
+            Type handlerType,
+            Type finalizerType,
+            Type messageType, 
+            string topic, 
+            string channel,
             IMessageSerializer messageSerializer = null,
             Config config = null,
             int? threadsPerHandler = null,
@@ -263,6 +337,9 @@ namespace NsqSharp.Bus.Configuration
 
             if (handlerType.IsAbstract && !handlerType.IsInterface)
                 throw new ArgumentException("handlerType must be instantiable; cannot be an abstract class", "handlerType");
+
+            if (finalizerType!=null && finalizerType.IsAbstract && !finalizerType.IsInterface)
+                throw new ArgumentException("finalizerType must be instantiable; cannot be an abstract class", "finalizerType");
 
             if (nsqLookupdHttpAddresses == null || nsqLookupdHttpAddresses.Length == 0)
                 nsqLookupdHttpAddresses = _defaultNsqlookupdHttpEndpoints;
@@ -291,6 +368,7 @@ namespace NsqSharp.Bus.Configuration
                 Topic = topic,
                 Channel = channel,
                 HandlerType = handlerType,
+                FinalizerType = finalizerType,
                 MessageType = messageType,
                 NsqLookupdHttpAddresses = nsqLookupdHttpAddresses,
                 Serializer = messageSerializer ?? _defaultMessageSerializer,

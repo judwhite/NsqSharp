@@ -91,11 +91,13 @@
     <Compile Include="Bus\Configuration\IObjectBuilder.cs" />
     <Compile Include="Bus\Configuration\MessageHandlerMetadata.cs" />
     <Compile Include="Bus\Configuration\Providers\IHandlerTypeToChannelProvider.cs" />
+    <Compile Include="Bus\Configuration\Providers\IMessageFinalizerProvider.cs" />
     <Compile Include="Bus\Configuration\Providers\IMessageTypeToTopicProvider.cs" />
     <Compile Include="Bus\Configuration\TopicChannels.cs" />
     <Compile Include="Bus\ICurrentMessageInformation.cs" />
     <Compile Include="Bus\Exceptions.cs" />
     <Compile Include="Bus\IBus.cs" />
+    <Compile Include="Bus\IFinalizeMessages.cs" />
     <Compile Include="Bus\IHandleMessages.cs" />
     <Compile Include="Bus\Logging\FailedMessageQueueAction.cs" />
     <Compile Include="Bus\Logging\FailedMessageReason.cs" />

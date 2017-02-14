@@ -16,6 +16,9 @@ namespace NsqSharp.Bus
         private readonly IMessageSerializer _serializer;
         private readonly MethodInfo _handleMethod;
         private readonly Type _handlerType;
+        private readonly MethodInfo _messageSucceededMethod;
+        private readonly MethodInfo _messageFailedMethod;
+        private readonly Type _finalizerType;
         private readonly Type _messageType;
         private readonly Type _concreteMessageType;
         private readonly IMessageAuditor _messageAuditor;
@@ -44,6 +47,7 @@ namespace NsqSharp.Bus
 
             _serializer = messageHandlerMetadata.Serializer;
             _handlerType = messageHandlerMetadata.HandlerType;
+            _finalizerType = messageHandlerMetadata.FinalizerType;
             _messageType = messageHandlerMetadata.MessageType;
             _messageAuditor = messageHandlerMetadata.MessageAuditor;
             _topic = messageHandlerMetadata.Topic;
@@ -71,6 +75,37 @@ namespace NsqSharp.Bus
             {
                 _concreteMessageType = InterfaceBuilder.CreateType(_messageType);
             }
+
+            if (_finalizerType != null)
+            {
+                var possibleSucceededMethods = _finalizerType.GetMethods().Where(p => p.Name == "MessageSucceeded" && !p.IsGenericMethod);
+                var possibleFailedMethods = _finalizerType.GetMethods().Where(p => p.Name == "MessageFailed" && !p.IsGenericMethod);
+
+                foreach (var succeededMethod in possibleSucceededMethods)
+                {
+                    var parameters = succeededMethod.GetParameters();
+                    if (parameters.Length == 1 && parameters[0].ParameterType == _messageType)
+                    {
+                        _messageSucceededMethod = succeededMethod;
+                        break;
+                    }
+                }
+
+                foreach (var failedMethod in possibleFailedMethods)
+                {
+                    var parameters = failedMethod.GetParameters();
+                    if (parameters.Length == 1 && parameters[0].ParameterType == _messageType)
+                    {
+                        _messageFailedMethod = failedMethod;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                _messageSucceededMethod = null;
+                _messageFailedMethod = null;
+            }
         }
 
         public void HandleMessage(IMessage message)
@@ -91,10 +126,17 @@ namespace NsqSharp.Bus
 
             // Get handler
             object handler;
+            object finalzier = null;
             try
             {
                 handler = _objectBuilder.GetInstance(_handlerType);
                 messageInformation.HandlerType = handler.GetType();
+
+                if (_finalizerType != null)
+                {
+                    finalzier = _objectBuilder.GetInstance(_finalizerType);
+                    messageInformation.FinalizerType = finalzier.GetType();
+                }
             }
             catch (Exception ex)
             {
@@ -171,11 +213,34 @@ namespace NsqSharp.Bus
                     )
                 );
 
+                if (!requeue && finalzier != null && _messageFailedMethod != null)
+                {
+                    try
+                    {
+                        _messageFailedMethod.Invoke(finalzier, new[] { value });
+                    }
+                    catch
+                    {
+
+                    }
+                }
+
                 return;
             }
 
             messageInformation.Finished = DateTime.UtcNow;
 
+            if (finalzier!=null && _messageSucceededMethod != null)
+            {
+                try
+                {
+                    _messageSucceededMethod.Invoke(finalzier, new[] {value});
+                }
+                catch
+                {
+                    
+                }
+            }
             _messageAuditor.TryOnSucceeded(_logger, _bus, messageInformation);
         }
 
