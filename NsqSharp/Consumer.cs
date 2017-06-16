@@ -888,7 +888,7 @@ namespace NsqSharp
             }
         }
 
-        internal void onConnMessage(Conn c, Message msg)
+        void IConnDelegate.OnMessage(Conn c, Message msg)
         {
             Interlocked.Decrement(ref _totalRdyCount);
             Interlocked.Increment(ref _messagesReceived);
@@ -896,32 +896,32 @@ namespace NsqSharp
             maybeUpdateRDY(c);
         }
 
-        internal void onConnMessageFinished(Conn c, Message msg)
+        void IConnDelegate.OnMessageFinished(Conn c, Message msg)
         {
             Interlocked.Increment(ref _messagesFinished);
         }
 
-        internal void onConnMessageRequeued(Conn c, Message msg)
+        void IConnDelegate.OnMessageRequeued(Conn c, Message msg)
         {
             Interlocked.Increment(ref _messagesRequeued);
         }
 
-        internal void onConnBackoff()
+        void IConnDelegate.OnBackoff(Conn c)
         {
             startStopContinueBackoff(BackoffSignal.BackoffFlag);
         }
 
-        internal void onConnContinue()
+        void IConnDelegate.OnContinue(Conn c)
         {
             startStopContinueBackoff(BackoffSignal.ContinueFlag);
         }
 
-        internal void onConnResume()
+        void IConnDelegate.OnResume(Conn c)
         {
             startStopContinueBackoff(BackoffSignal.ResumeFlag);
         }
 
-        internal void onConnResponse(Conn c, byte[] data)
+        void IConnDelegate.OnResponse(Conn c, byte[] data)
         {
             if (CLOSE_WAIT_BYTES.SequenceEqual(data))
             {
@@ -933,20 +933,16 @@ namespace NsqSharp
             }
         }
 
-        internal void onConnError(Conn c, byte[] data)
-        {
-        }
+        void IConnDelegate.OnError(Conn c, byte[] data) { }
 
-        internal void onConnHeartbeat(Conn c)
-        {
-        }
+        void IConnDelegate.OnHeartbeat(Conn c) { }
 
-        internal void onConnIOError(Conn c, Exception err)
+        void IConnDelegate.OnIOError(Conn c, Exception err)
         {
             c.Close();
         }
 
-        internal void onConnClose(Conn c)
+        void IConnDelegate.OnClose(Conn c)
         {
             bool hasRDYRetryTimer = false;
 
@@ -1706,17 +1702,5 @@ namespace NsqSharp
             // TODO: proper width formatting
             _logger.Output(lvl, string.Format("C{0} [{1}/{2}] {3}", _id, _topic, _channel, msg));
         }
-
-        void IConnDelegate.OnResponse(Conn c, byte[] data) { onConnResponse(c, data); }
-        void IConnDelegate.OnError(Conn c, byte[] data) { onConnError(c, data); }
-        void IConnDelegate.OnMessage(Conn c, Message m) { onConnMessage(c, m); }
-        void IConnDelegate.OnMessageFinished(Conn c, Message m) { onConnMessageFinished(c, m); }
-        void IConnDelegate.OnMessageRequeued(Conn c, Message m) { onConnMessageRequeued(c, m); }
-        void IConnDelegate.OnBackoff(Conn c) { onConnBackoff(); }
-        void IConnDelegate.OnContinue(Conn c) { onConnContinue(); }
-        void IConnDelegate.OnResume(Conn c) { onConnResume(); }
-        void IConnDelegate.OnIOError(Conn c, Exception err) { onConnIOError(c, err); }
-        void IConnDelegate.OnHeartbeat(Conn c) { onConnHeartbeat(c); }
-        void IConnDelegate.OnClose(Conn c) { onConnClose(c); }
     }
 }

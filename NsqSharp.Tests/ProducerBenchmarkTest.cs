@@ -91,16 +91,11 @@ namespace NsqSharp.Tests
                 for (int j = 0; j < parallel; j++)
                 {
                     wg.Add(1);
-                    //int localj = j;
                     GoFunc.Run(() =>
                     {
                         startCh.Receive();
                         for (int i = 0; i < benchmarkNum / parallel; i++)
                         {
-                            //if (i%10 == 0)
-                            //{
-                            //    Debug.WriteLine(string.Format("{0}: {1}/{2}", localj, i, benchmarkNum/parallel));
-                            //}
                             p.Publish(topicName, body);
                         }
                         wg.Done();
@@ -128,6 +123,8 @@ namespace NsqSharp.Tests
 
                 Console.WriteLine(string.Format("{0:#,0} sent in {1:mm\\:ss\\.fff}; Avg: {2:#,0} msgs/s; Threads: {3}",
                     benchmarkNum, stopwatch.Elapsed, benchmarkNum / stopwatch.Elapsed.TotalSeconds, parallel));
+
+                p.Stop();
             }
             finally
             {

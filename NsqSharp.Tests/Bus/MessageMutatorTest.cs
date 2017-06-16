@@ -48,11 +48,11 @@ namespace NsqSharp.Tests.Bus
                     new StructureMapObjectBuilder(container),
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                     new MessageAuditorStub(),
-                    new MessageTypeToTopicDictionary(new Dictionary<Type, string> { 
-                        { typeof(MyMutatedMessage), topicName } 
+                    new MessageTypeToTopicDictionary(new Dictionary<Type, string> {
+                        { typeof(MyMutatedMessage), topicName }
                     }),
-                    new HandlerTypeToChannelDictionary(new Dictionary<Type, string> { 
-                        { typeof(MyMutatedMessageHandler), channelName } 
+                    new HandlerTypeToChannelDictionary(new Dictionary<Type, string> {
+                        { typeof(MyMutatedMessageHandler), channelName }
                     }),
                     defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
                     defaultThreadsPerHandler: 1,
@@ -238,7 +238,7 @@ namespace NsqSharp.Tests.Bus
 
             try
             {
-                var messageTypeToTopicProvider = new MessageTypeToTopicDictionary(new Dictionary<Type, string> { 
+                var messageTypeToTopicProvider = new MessageTypeToTopicDictionary(new Dictionary<Type, string> {
                     { typeof(MyRoutedMessage), originalTopicName },
                     { typeof(MyMutatedRoutedMessage), childOriginalTopicName },
                 });
@@ -248,7 +248,7 @@ namespace NsqSharp.Tests.Bus
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                     new MessageAuditorStub(),
                     messageTypeToTopicProvider,
-                    new HandlerTypeToChannelDictionary(new Dictionary<Type, string> { 
+                    new HandlerTypeToChannelDictionary(new Dictionary<Type, string> {
                         { typeof(MyRoutedMessageHandler), channelName },
                         { typeof(MyMutatedRoutedMessageHandler), channelName },
                     }),
@@ -267,7 +267,7 @@ namespace NsqSharp.Tests.Bus
 
                 var bus = container.GetInstance<IBus>();
 
-                bus.Send(new MyRoutedMessage { Text = "One" } );
+                bus.Send(new MyRoutedMessage { Text = "One" });
                 bus.Send(new MyRoutedMessage { RouteIndex = 1, Text = "Two" });
                 bus.Send(new MyRoutedMessage { RouteIndex = 2, Text = "Three" });
 
@@ -303,20 +303,20 @@ namespace NsqSharp.Tests.Bus
                 Assert.AreEqual("Two", secondMessage.Value.Text, "secondMessage.Value.Text");
                 Assert.AreEqual("Three", thirdMessage.Value.Text, "thirdMessage.Value.Text");
 
-                Assert.AreEqual(firstMessage.Key.UniqueIdentifier.ToString(), childFirstMessage.Value.ParentId, 
+                Assert.AreEqual(firstMessage.Key.UniqueIdentifier.ToString(), childFirstMessage.Value.ParentId,
                     "childFirstMessage.Value.ParentId");
                 Assert.AreEqual("One Child", childFirstMessage.Value.Text, "childFirstMessage.Value.Text");
-                Assert.AreEqual(secondMessage.Key.UniqueIdentifier.ToString(), childSecondMessage.Value.ParentId, 
+                Assert.AreEqual(secondMessage.Key.UniqueIdentifier.ToString(), childSecondMessage.Value.ParentId,
                     "childSecondMessage.Value.ParentId");
                 Assert.AreEqual("Two Child", childSecondMessage.Value.Text, "childSecondMessage.Value.Text");
-                Assert.AreEqual(thirdMessage.Key.UniqueIdentifier.ToString(), childThirdMessage.Value.ParentId, 
+                Assert.AreEqual(thirdMessage.Key.UniqueIdentifier.ToString(), childThirdMessage.Value.ParentId,
                     "childThirdMessage.Value.ParentId");
                 Assert.AreEqual("Three Child", childThirdMessage.Value.Text, "childThirdMessage.Value.Text");
 
                 // get stats from http server
                 var stats = _nsqdHttpClient.GetStats();
 
-                foreach (var topicName in new[] { 
+                foreach (var topicName in new[] {
                     originalTopicName, topicName1, topicName2,
                     childOriginalTopicName, childTopicName1, childTopicName2
                 })

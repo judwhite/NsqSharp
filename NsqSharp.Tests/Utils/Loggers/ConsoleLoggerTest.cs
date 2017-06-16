@@ -7,10 +7,10 @@ using NUnit.Framework;
 
 namespace NsqSharp.Tests.Utils.Loggers
 {
-    [TestFixture]
+    //[TestFixture]
     public class ConsoleLoggerTest
     {
-        [Test]
+        //[Test]
         public void TestConsoleLoggerThreadSafety()
         {
             var consoleLogger = new ConsoleLogger(LogLevel.Debug);
