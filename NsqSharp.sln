@@ -55,6 +55,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Echo.Bus.Tls", "Echo.Bus.Tl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Echo.Bus.Tls", "Examples\Echo.Bus.Tls\Echo.Bus.Tls.csproj", "{4676806B-2270-4CF5-B85A-B566FF39B426}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NsqSharp.Core", "NsqSharp\NsqSharp.Core.csproj", "{07EB2962-0D7F-4629-AB58-2D61EA352ABB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp.WindowsHosting", "NsqSharp.WindowsHosting\NsqSharp.WindowsHosting.csproj", "{43A66B22-C1A8-4EA8-93EC-CE69563EA8CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
