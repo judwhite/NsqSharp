@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NsqSharp.Tests</RootNamespace>
     <AssemblyName>NsqSharp.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -126,6 +126,10 @@
     <Compile Include="TestHelpers\Result.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NsqSharp.WindowsHosting\NsqSharp.WindowsHosting.csproj">
+      <Project>{43a66b22-c1a8-4ea8-93ec-ce69563ea8ca}</Project>
+      <Name>NsqSharp.WindowsHosting</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NsqSharp\NsqSharp.csproj">
       <Project>{7327244d-e163-4c35-9c1a-8dbdf06b9408}</Project>
       <Name>NsqSharp</Name>

@@ -414,14 +414,6 @@ namespace NsqSharp.Bus.Configuration
 
             return new Collection<ITopicChannels>(list);
         }
-
-        /// <summary>
-        /// <c>true</c> if the process is running in a console window.
-        /// </summary>
-        public bool IsConsoleMode
-        {
-            get { return (NativeMethods.GetConsoleWindow() != IntPtr.Zero); }
-        }
     }
 
     /// <summary>
@@ -434,10 +426,5 @@ namespace NsqSharp.Bus.Configuration
         /// </summary>
         /// <returns>A list of topics/channels currently handled by this process.</returns>
         Collection<ITopicChannels> GetHandledTopics();
-
-        /// <summary>
-        /// <c>true</c> if the process is running in a console window.
-        /// </summary>
-        bool IsConsoleMode { get; }
     }
 }

@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp", "NsqSharp\NsqSharp.csproj", "{7327244D-E163-4C35-9C1A-8DBDF06B9408}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NsqSharp", "NsqSharp\NsqSharp.csproj", "{7327244D-E163-4C35-9C1A-8DBDF06B9408}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{AEA8D8ED-997C-429D-8555-50020C9CC570}"
 EndProject
@@ -55,6 +55,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Echo.Bus.Tls", "Echo.Bus.Tl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Echo.Bus.Tls", "Examples\Echo.Bus.Tls\Echo.Bus.Tls.csproj", "{4676806B-2270-4CF5-B85A-B566FF39B426}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NsqSharp.WindowsHosting", "NsqSharp.WindowsHosting\NsqSharp.WindowsHosting.csproj", "{43A66B22-C1A8-4EA8-93EC-CE69563EA8CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,8 +66,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{7327244D-E163-4C35-9C1A-8DBDF06B9408}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7327244D-E163-4C35-9C1A-8DBDF06B9408}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7327244D-E163-4C35-9C1A-8DBDF06B9408}.Integration Tests|Any CPU.ActiveCfg = Integration Tests|Any CPU
-		{7327244D-E163-4C35-9C1A-8DBDF06B9408}.Integration Tests|Any CPU.Build.0 = Integration Tests|Any CPU
+		{7327244D-E163-4C35-9C1A-8DBDF06B9408}.Integration Tests|Any CPU.ActiveCfg = Release|Any CPU
+		{7327244D-E163-4C35-9C1A-8DBDF06B9408}.Integration Tests|Any CPU.Build.0 = Release|Any CPU
 		{7327244D-E163-4C35-9C1A-8DBDF06B9408}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7327244D-E163-4C35-9C1A-8DBDF06B9408}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2E3FEF1B-1F39-4925-A414-3AC95FA305BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -152,6 +154,12 @@ Global
 		{4676806B-2270-4CF5-B85A-B566FF39B426}.Integration Tests|Any CPU.Build.0 = Release|Any CPU
 		{4676806B-2270-4CF5-B85A-B566FF39B426}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4676806B-2270-4CF5-B85A-B566FF39B426}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43A66B22-C1A8-4EA8-93EC-CE69563EA8CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43A66B22-C1A8-4EA8-93EC-CE69563EA8CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43A66B22-C1A8-4EA8-93EC-CE69563EA8CA}.Integration Tests|Any CPU.ActiveCfg = Release|Any CPU
+		{43A66B22-C1A8-4EA8-93EC-CE69563EA8CA}.Integration Tests|Any CPU.Build.0 = Release|Any CPU
+		{43A66B22-C1A8-4EA8-93EC-CE69563EA8CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43A66B22-C1A8-4EA8-93EC-CE69563EA8CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -178,5 +186,8 @@ Global
 		{438C8E35-46DD-4136-8BBB-40082B305C8D} = {836ECD8F-C1DC-466B-839D-3D4607F5C837}
 		{D48C6B0A-5E6B-4AC8-B1EE-58CF905358AA} = {0FB50390-80AC-4487-BC62-C9311FD60D4D}
 		{4676806B-2270-4CF5-B85A-B566FF39B426} = {D48C6B0A-5E6B-4AC8-B1EE-58CF905358AA}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AAD512E3-E6D4-4819-8F58-EA02DF5BD5C6}
 	EndGlobalSection
 EndGlobal

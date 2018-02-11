@@ -20,7 +20,7 @@ namespace PointOfSale.Handlers.ProductHandlers
 
             public void OnBusStarted(IBusConfiguration config, IBus bus)
             {
-#if DEBUG
+#if false
                 if (config.IsConsoleMode)
                 {
                     bus.Send<GetProductsCommand>();

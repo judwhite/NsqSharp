@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PointOfSale.Handlers.CustomerHandlers</RootNamespace>
     <AssemblyName>PointOfSale.Handlers.CustomerHandlers</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -68,6 +68,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\NsqSharp\NsqSharp.csproj">
+      <Project>{7327244d-e163-4c35-9c1a-8dbdf06b9408}</Project>
+      <Name>NsqSharp</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PointOfSale.Common\PointOfSale.Common.csproj">
       <Project>{75654883-d9c6-498f-9af5-ac1201769890}</Project>
       <Name>PointOfSale.Common</Name>
@@ -75,10 +79,6 @@
     <ProjectReference Include="..\PointOfSale.Messages\PointOfSale.Messages.csproj">
       <Project>{eface6a2-0b05-4e06-9fb6-53a4e2b3beaf}</Project>
       <Name>PointOfSale.Messages</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\NsqSharp\NsqSharp.csproj">
-      <Project>{7327244d-e163-4c35-9c1a-8dbdf06b9408}</Project>
-      <Name>NsqSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\PointOfSale.Services\PointOfSale.Services.csproj">
       <Project>{0e9fd458-7fe1-4917-9717-88376a3896f7}</Project>
