@@ -76,13 +76,17 @@
     <Compile Include="Services\ICounter.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\NsqSharp.WindowsHosting\NsqSharp.WindowsHosting.csproj">
+      <Project>{43a66b22-c1a8-4ea8-93ec-ce69563ea8ca}</Project>
+      <Name>NsqSharp.WindowsHosting</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\NsqSharp\NsqSharp.csproj">
       <Project>{7327244d-e163-4c35-9c1a-8dbdf06b9408}</Project>
       <Name>NsqSharp</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
