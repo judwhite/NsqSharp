@@ -48,29 +48,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\NsqSharp\Bus\BusService.cs">
-      <Link>Bus\BusService.cs</Link>
-    </Compile>
-    <Compile Include="..\NsqSharp\Bus\Utils\NativeMethods.cs">
-      <Link>Bus\Utils\NativeMethods.cs</Link>
-    </Compile>
-    <Compile Include="..\NsqSharp\Bus\Utils\WindowsService.cs">
-      <Link>Bus\Utils\WindowsService.cs</Link>
+    <Compile Include="Bus\BusService.cs" />
+    <Compile Include="Bus\Utils\BusHosting.cs" />
+    <Compile Include="Bus\Utils\NativeMethods.cs" />
+    <Compile Include="Bus\Utils\WindowsService.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Bus\Utils\BusHosting.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\NsqSharp\NsqSharp.Core.csproj">
-      <Project>{07eb2962-0d7f-4629-ab58-2d61ea352abb}</Project>
-      <Name>NsqSharp.Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="NsqSharp.snk" />
     <None Include="NsqSharp.Tests.snk" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\NsqSharp\NsqSharp.csproj">
+      <Project>{7327244d-e163-4c35-9c1a-8dbdf06b9408}</Project>
+      <Name>NsqSharp</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
