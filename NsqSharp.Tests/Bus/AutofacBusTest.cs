@@ -14,7 +14,6 @@ using NUnit.Framework;
 
 namespace NsqSharp.Tests.Bus
 {
-#if !NETFX_3_5
 #if !RUN_INTEGRATION_TESTS
     [TestFixture(IgnoreReason = "NSQD Integration Test")]
 #else
@@ -181,5 +180,4 @@ namespace NsqSharp.Tests.Bus
             }
         }
     }
-#endif
 }

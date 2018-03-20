@@ -14,7 +14,7 @@ namespace NsqSharp.Utils
         /// </summary>
         public TlsConfig()
         {
-#if NETFX_3_5 || NETFX_4_0
+#if NETFX_4_0
             MinVersion = SslProtocols.Tls;
 #else
             MinVersion = SslProtocols.Tls12;

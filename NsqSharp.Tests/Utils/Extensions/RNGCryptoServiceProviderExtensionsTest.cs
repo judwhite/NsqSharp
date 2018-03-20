@@ -31,9 +31,7 @@ namespace NsqSharp.Tests.Utils.Extensions
         [TestFixtureTearDown]
         public void TearDown()
         {
-#if !NETFX_3_5
             _rng.Dispose();
-#endif
         }
     }
 }

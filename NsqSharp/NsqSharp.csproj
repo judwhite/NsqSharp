@@ -64,9 +64,6 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel.Web" />
     <Reference Include="System.ServiceProcess" />
-    <Reference Include="System.Threading" Condition="'$(TargetFrameworkVersion)'=='v3.5'">
-      <HintPath>..\packages\TaskParallelLibrary.1.0.2856.0\lib\Net35\System.Threading.dll</HintPath>
-    </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -136,7 +133,6 @@
     <Compile Include="Utils\Channels\ISendOnlyChan.cs" />
     <Compile Include="Utils\Channels\Select.cs" />
     <Compile Include="Utils\Extensions\X509ChainStatusExtensions.cs" />
-    <Compile Include="Utils\Extensions\StringExtensions.cs" />
     <Compile Include="Utils\Loggers\ConsoleLogger.cs" />
     <Compile Include="Utils\Loggers\TraceLogger.cs" />
     <Compile Include="Config.cs" />
@@ -166,6 +162,12 @@
     <Compile Include="Utils\WaitGroup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\.gitignore">
+      <Link>.gitignore</Link>
+    </None>
+    <None Include="..\nuget-build.ps1">
+      <Link>nuget-build.ps1</Link>
+    </None>
     <None Include="NsqSharp.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -547,7 +547,7 @@ namespace NsqSharp
                             case "tls1.0":
                                 tlsConfig.MinVersion = SslProtocols.Tls;
                                 break;
-#if !NETFX_3_5 && !NETFX_4_0
+#if !NETFX_4_0
                             case "tls1.1":
                                 tlsConfig.MinVersion = SslProtocols.Tls11;
                                 break;

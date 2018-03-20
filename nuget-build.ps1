@@ -47,12 +47,6 @@ if ($LastExitCode -ne 0) {
     Return
 }
 
-msbuild NsqSharp.Tests/NsqSharp.Tests.csproj /p:TargetFrameworkVersion=v3.5 /p:Configuration="Integration Tests" /t:Clean /t:Rebuild /p:OutputPath="../nuget-tests/net35"
-if ($LastExitCode -ne 0) {
-    echo ".NET 3.5 Tests Build failed. Process exited with error code $LastExitCode."
-    Return
-}
-
 ### Run Tests
 
 .\packages\NUnit.Runners.2.6.4\tools\nunit-console.exe ./nuget-tests/net462/NsqSharp.Tests.dll
@@ -104,14 +98,6 @@ if ($LastExitCode -ne 0) {
 }
 echo "*** .NET 4.0 All tests passed."
 
-.\packages\NUnit.Runners.2.6.4\tools\nunit-console.exe ./nuget-tests/net35/NsqSharp.Tests.dll
-if ($LastExitCode -ne 0) {
-    echo ".NET 3.5 Tests failed. Process exited with error code $LastExitCode."
-    Return
-}
-echo "*** .NET 3.5 All tests passed."
-
-
 ### Build Nuget DLL's
 
 msbuild NsqSharp/NsqSharp.csproj /p:TargetFrameworkVersion=v4.6.2 /p:Configuration="Integration Tests" /t:Clean /t:Rebuild /p:OutputPath="../nuget/lib/net462"
@@ -153,12 +139,6 @@ if ($LastExitCode -ne 0) {
 msbuild NsqSharp/NsqSharp.csproj /p:TargetFrameworkVersion=v4.0 /p:Configuration="Integration Tests" /t:Clean /t:Rebuild /p:OutputPath="../nuget/lib/net40"
 if ($LastExitCode -ne 0) {
     echo ".NET 4.0 Build failed. Process exited with error code $LastExitCode."
-    Return
-}
-
-msbuild NsqSharp/NsqSharp.csproj /p:TargetFrameworkVersion=v3.5 /p:Configuration="Integration Tests" /t:Clean /t:Rebuild /p:OutputPath="../nuget/lib/net35"
-if ($LastExitCode -ne 0) {
-    echo ".NET 3.5 Build failed. Process exited with error code $LastExitCode."
     Return
 }
 

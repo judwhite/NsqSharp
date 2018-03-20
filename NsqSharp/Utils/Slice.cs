@@ -127,11 +127,7 @@ namespace NsqSharp.Utils
                 return new string((char[])(object)ToArray());
             }
 
-#if !NETFX_3_5
             return string.Format("[ {0} ]", string.Join(" ", ToArray()));
-#else
-            return string.Format("[ {0} ]", string.Join(" ", ToArray().Select(p => p.ToString()).ToArray()));
-#endif
         }
 
         /// <summary>
