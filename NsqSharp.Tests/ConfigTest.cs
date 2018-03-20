@@ -399,7 +399,7 @@ namespace NsqSharp.Tests
             c.Set("tls_min_version", "tls1.0");
             Assert.AreEqual(SslProtocols.Tls, c.TlsConfig.MinVersion);
 
-#if !NETFX_3_5 && !NETFX_4_0
+#if !NETFX_4_0
             c.Set("tls_min_version", "tls1.1");
             Assert.AreEqual(SslProtocols.Tls11, c.TlsConfig.MinVersion);
 

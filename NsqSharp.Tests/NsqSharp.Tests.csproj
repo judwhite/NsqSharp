@@ -81,9 +81,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel.Web" />
-    <Reference Include="System.Threading" Condition="'$(TargetFrameworkVersion)'=='v3.5'">
-      <HintPath>..\packages\TaskParallelLibrary.1.0.2856.0\lib\Net35\System.Threading.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -99,7 +96,6 @@
     <Compile Include="Bus\MultiImplementIHandleMessagesTest.cs" />
     <Compile Include="Bus\TestFakes\MessageAuditorStub.cs" />
     <Compile Include="Bus\TouchTest.cs" />
-    <Compile Include="Bus\Tuple.cs" />
     <Compile Include="Bus\Utils\InterfaceBuilderTest.cs" />
     <Compile Include="ConsumerRdyRedistributionTest.cs" />
     <Compile Include="TestHelpers\TestConsoleLogger.cs" />
