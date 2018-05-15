@@ -153,7 +153,7 @@ namespace NsqSharp.Api
 
         /// <summary>POSTs to the specified route using the HTTP address from the constructor.</summary>
         /// <param name="route">The route.</param>
-        /// /// <param name="contentType">The content type.</param>
+        /// <param name="contentType">The content type.</param>
         /// <param name="body">The body.</param>
         /// <returns>The response from the server.</returns>
         protected string Post(string route, string contentType = null, byte[] body = null)
