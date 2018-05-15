@@ -188,10 +188,11 @@ namespace NsqSharp.Api
             webRequest.Timeout = timeoutMilliseconds;
             webRequest.Accept = "application/vnd.nsq; version=1.0";
             webRequest.UserAgent = string.Format("{0}/{1}", ClientInfo.ClientName, ClientInfo.Version);
+            webRequest.UseDefaultCredentials = true;
 
             if (httpMethod == HttpMethod.Post && body != null && body.Length != 0)
             {
-                webRequest.ContentType = "application/x-www-form-urlencoded";
+                webRequest.ContentType = "application/octet-stream";
                 webRequest.ContentLength = body.Length;
 
                 using (var request = webRequest.GetRequestStream())
