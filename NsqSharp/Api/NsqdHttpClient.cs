@@ -14,14 +14,17 @@ namespace NsqSharp.Api
     public class NsqdHttpClient : NsqHttpApi
     {
         private readonly int _timeoutMilliseconds;
+        private readonly string _contentType;
 
         /// <summary>Initializes a new instance of <see cref="NsqLookupdHttpClient" /> class.</summary>
         /// <param name="nsqdHttpAddress">The nsqd HTTP address, including port. Example: 127.0.0.1:4151</param>
         /// <param name="httpRequestTimeout">The HTTP request timeout.</param>
-        public NsqdHttpClient(string nsqdHttpAddress, TimeSpan httpRequestTimeout)
+        /// <param name="contentType">Content-Type header value to use</param>
+        public NsqdHttpClient(string nsqdHttpAddress, TimeSpan httpRequestTimeout, string contentType = "application/x-www-form-urlencoded")
             : base(nsqdHttpAddress, httpRequestTimeout)
         {
             _timeoutMilliseconds = (int)httpRequestTimeout.TotalMilliseconds;
+            _contentType = contentType;
         }
 
         /// <summary>
@@ -52,7 +55,7 @@ namespace NsqSharp.Api
                 throw new ArgumentNullException("message");
 
             string route = string.Format("/pub?topic={0}", topic);
-            return Post(route, message);
+            return Post(route, _contentType, message);
         }
 
         /// <summary>
@@ -75,7 +78,7 @@ namespace NsqSharp.Api
             string body = string.Join("\n", messagesArray);
 
             string route = string.Format("/mpub?topic={0}", topic);
-            return Post(route, Encoding.UTF8.GetBytes(body));
+            return Post(route, _contentType, Encoding.UTF8.GetBytes(body));
         }
 
         /// <summary>
@@ -115,7 +118,7 @@ namespace NsqSharp.Api
             }
 
             string route = string.Format("/mpub?topic={0}&binary=true", topic);
-            return Post(route, body);
+            return Post(route, _contentType, body);
         }
 
         /// <summary>
