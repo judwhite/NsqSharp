@@ -14,6 +14,7 @@ namespace NsqSharp.Api
     {
         private readonly string _httpAddress;
         private readonly int _timeoutMilliseconds;
+
         /// <summary>Initializes a new instance of <see cref="NsqHttpApi" /> class.</summary>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="httpAddress"/> is <c>null</c> or empty.
         /// </exception>
@@ -153,13 +154,13 @@ namespace NsqSharp.Api
 
         /// <summary>POSTs to the specified route using the HTTP address from the constructor.</summary>
         /// <param name="route">The route.</param>
-        /// <param name="contentType">The content type.</param>
         /// <param name="body">The body.</param>
+        /// /// <param name="contentType">The content type.</param>
         /// <returns>The response from the server.</returns>
-        protected string Post(string route, string contentType = null, byte[] body = null)
+        protected string Post(string route, byte[] body = null, string contentType = null)
         {
             string endpoint = GetFullUrl(route);
-            var bytes = Request(endpoint, HttpMethod.Post, _timeoutMilliseconds, contentType, body);
+            var bytes = Request(endpoint, HttpMethod.Post, _timeoutMilliseconds, body, contentType);
             return Encoding.UTF8.GetString(bytes);
         }
 
@@ -181,7 +182,7 @@ namespace NsqSharp.Api
         /// <param name="body">The body.</param>
         /// <param name="contentType">The content type.</param>
         /// <returns>The response from the server.</returns>
-        protected static byte[] Request(string endpoint, HttpMethod httpMethod, int timeoutMilliseconds, string contentType = null, byte[] body = null)
+        protected static byte[] Request(string endpoint, HttpMethod httpMethod, int timeoutMilliseconds, byte[] body = null, string contentType = null)
         {
             var webRequest = (HttpWebRequest)WebRequest.Create(endpoint);
             webRequest.Proxy = WebRequest.DefaultWebProxy;

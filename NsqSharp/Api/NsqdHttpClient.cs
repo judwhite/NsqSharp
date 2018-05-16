@@ -55,7 +55,7 @@ namespace NsqSharp.Api
                 throw new ArgumentNullException("message");
 
             string route = string.Format("/pub?topic={0}", topic);
-            return Post(route, _contentType, message);
+            return Post(route, message, _contentType);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace NsqSharp.Api
             string body = string.Join("\n", messagesArray);
 
             string route = string.Format("/mpub?topic={0}", topic);
-            return Post(route, _contentType, Encoding.UTF8.GetBytes(body));
+            return Post(route, Encoding.UTF8.GetBytes(body), _contentType);
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace NsqSharp.Api
             }
 
             string route = string.Format("/mpub?topic={0}&binary=true", topic);
-            return Post(route, _contentType, body);
+            return Post(route, body, _contentType);
         }
 
         /// <summary>
