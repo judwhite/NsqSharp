@@ -15,6 +15,9 @@ namespace NsqSharp.Api
         private readonly string _httpAddress;
         private readonly int _timeoutMilliseconds;
 
+        /// <summary>Default content type used for HTTP POST requests.</summary>
+        public const string DefautlContentType = "application/x-www-form-urlencoded";
+
         /// <summary>Initializes a new instance of <see cref="NsqHttpApi" /> class.</summary>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="httpAddress"/> is <c>null</c> or empty.
         /// </exception>
@@ -194,7 +197,7 @@ namespace NsqSharp.Api
 
             if (httpMethod == HttpMethod.Post && body != null && body.Length != 0)
             {
-                webRequest.ContentType = contentType;
+                webRequest.ContentType = contentType ?? DefautlContentType;
                 webRequest.ContentLength = body.Length;
 
                 using (var request = webRequest.GetRequestStream())
