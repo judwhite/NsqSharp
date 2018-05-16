@@ -16,11 +16,14 @@ namespace NsqSharp.Api
         private readonly int _timeoutMilliseconds;
         private readonly string _contentType;
 
+        /// <summary>Default content type used for HTTP POST requests.</summary>
+        public const string DefautlContentType = "application/octet-stream";
+
         /// <summary>Initializes a new instance of <see cref="NsqLookupdHttpClient" /> class.</summary>
         /// <param name="nsqdHttpAddress">The nsqd HTTP address, including port. Example: 127.0.0.1:4151</param>
         /// <param name="httpRequestTimeout">The HTTP request timeout.</param>
         /// <param name="contentType">Content-Type header value to use</param>
-        public NsqdHttpClient(string nsqdHttpAddress, TimeSpan httpRequestTimeout, string contentType = "application/x-www-form-urlencoded")
+        public NsqdHttpClient(string nsqdHttpAddress, TimeSpan httpRequestTimeout, string contentType = DefautlContentType)
             : base(nsqdHttpAddress, httpRequestTimeout)
         {
             _timeoutMilliseconds = (int)httpRequestTimeout.TotalMilliseconds;
