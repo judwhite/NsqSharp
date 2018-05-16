@@ -7,6 +7,35 @@ using NsqSharp.Core;
 namespace NsqSharp.Api
 {
     /// <summary>
+    /// Settings used by <see cref="NsqdHttpClient"/> to configure outgoing HTTP requests.
+    /// </summary>
+    public class NsqHttpApiSettings
+    {
+
+        /// <summary>Default content type used for HTTP POST requests.</summary>
+        public string DefaultContentType { get; set; }
+
+        /// <summary>Enables use of default credentials for automatic HTTP auth challenge.</summary>
+        public bool UseDefaultCredentials { get; set; }
+
+        /// <summary>Specifies HTTP proxy server settings</summary>
+        public IWebProxy Proxy { get; set; }
+
+        /// <summary>Specifies cookie container</summary>
+        public CookieContainer CookieContainer { get; set; }
+
+        /// <summary>Initializes a.</summary>
+        public NsqHttpApiSettings()
+        {
+            DefaultContentType = "application/x-www-form-urlencoded";
+            UseDefaultCredentials = false;
+            Proxy = WebRequest.DefaultWebProxy;
+            CookieContainer = null;
+        }
+
+    }
+
+    /// <summary>
     /// HTTP client for interacting with the common API between nsqd and nsqlookupd. See http://nsq.io/components/nsqd.html#pub.
     /// See <see cref="NsqdHttpClient"/> and <see cref="NsqLookupdHttpClient"/>.
     /// </summary>
@@ -14,16 +43,15 @@ namespace NsqSharp.Api
     {
         private readonly string _httpAddress;
         private readonly int _timeoutMilliseconds;
-
-        /// <summary>Default content type used for HTTP POST requests.</summary>
-        public const string DefautlContentType = "application/x-www-form-urlencoded";
+        private readonly NsqHttpApiSettings _settings;
 
         /// <summary>Initializes a new instance of <see cref="NsqHttpApi" /> class.</summary>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="httpAddress"/> is <c>null</c> or empty.
         /// </exception>
         /// <param name="httpAddress">The nsqd or nsqlookupd HTTP address.</param>
         /// <param name="httpRequestTimeout">The HTTP request timeout.</param>
-        protected NsqHttpApi(string httpAddress, TimeSpan httpRequestTimeout)
+        /// <param name="settings">The HTTP request settings.</param>
+        protected NsqHttpApi(string httpAddress, TimeSpan httpRequestTimeout, NsqHttpApiSettings settings = null)
         {
             if (string.IsNullOrEmpty(httpAddress))
                 throw new ArgumentNullException("httpAddress");
@@ -38,6 +66,7 @@ namespace NsqSharp.Api
             _timeoutMilliseconds = (int)httpRequestTimeout.TotalMilliseconds;
 
             _httpAddress = httpAddress;
+            _settings = settings ?? new NsqHttpApiSettings();
         }
 
         /// <summary>
@@ -163,7 +192,7 @@ namespace NsqSharp.Api
         protected string Post(string route, byte[] body = null, string contentType = null)
         {
             string endpoint = GetFullUrl(route);
-            var bytes = Request(endpoint, HttpMethod.Post, _timeoutMilliseconds, body, contentType);
+            var bytes = Request(endpoint, HttpMethod.Post, _timeoutMilliseconds, body, contentType, _settings);
             return Encoding.UTF8.GetString(bytes);
         }
 
@@ -184,20 +213,26 @@ namespace NsqSharp.Api
         /// <param name="timeoutMilliseconds">The timeout in milliseconds.</param>
         /// <param name="body">The body.</param>
         /// <param name="contentType">The content type.</param>
+        /// <param name="settings">HTTP request settings.</param>
         /// <returns>The response from the server.</returns>
-        protected static byte[] Request(string endpoint, HttpMethod httpMethod, int timeoutMilliseconds, byte[] body = null, string contentType = null)
+        protected static byte[] Request(string endpoint, HttpMethod httpMethod, int timeoutMilliseconds, byte[] body = null, string contentType = null, NsqHttpApiSettings settings = null)
         {
+            if (settings == null)
+                settings = new NsqHttpApiSettings();
+
             var webRequest = (HttpWebRequest)WebRequest.Create(endpoint);
-            webRequest.Proxy = WebRequest.DefaultWebProxy;
+            webRequest.Proxy = settings.Proxy;
             webRequest.Method = httpMethod == HttpMethod.Post ? "POST" : "GET";
             webRequest.Timeout = timeoutMilliseconds;
             webRequest.Accept = "application/vnd.nsq; version=1.0";
             webRequest.UserAgent = string.Format("{0}/{1}", ClientInfo.ClientName, ClientInfo.Version);
-            webRequest.UseDefaultCredentials = true;
+            webRequest.UseDefaultCredentials = settings.UseDefaultCredentials;
+            if (settings.CookieContainer != null)
+                webRequest.CookieContainer = settings.CookieContainer;
 
             if (httpMethod == HttpMethod.Post && body != null && body.Length != 0)
             {
-                webRequest.ContentType = contentType ?? DefautlContentType;
+                webRequest.ContentType = contentType ?? settings.DefaultContentType;
                 webRequest.ContentLength = body.Length;
 
                 using (var request = webRequest.GetRequestStream())

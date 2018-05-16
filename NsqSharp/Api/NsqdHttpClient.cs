@@ -20,8 +20,9 @@ namespace NsqSharp.Api
         /// <param name="nsqdHttpAddress">The nsqd HTTP address, including port. Example: 127.0.0.1:4151</param>
         /// <param name="httpRequestTimeout">The HTTP request timeout.</param>
         /// <param name="contentType">Content-Type header value to use</param>
-        public NsqdHttpClient(string nsqdHttpAddress, TimeSpan httpRequestTimeout, string contentType = null)
-            : base(nsqdHttpAddress, httpRequestTimeout)
+        /// <param name="settings">The HTTP request settings.</param>
+        public NsqdHttpClient(string nsqdHttpAddress, TimeSpan httpRequestTimeout, string contentType = null, NsqHttpApiSettings settings = null)
+            : base(nsqdHttpAddress, httpRequestTimeout, settings)
         {
             _timeoutMilliseconds = (int)httpRequestTimeout.TotalMilliseconds;
             _contentType = contentType;
