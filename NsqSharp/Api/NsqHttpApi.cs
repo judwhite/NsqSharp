@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -23,6 +24,9 @@ namespace NsqSharp.Api
 
         /// <summary>Specifies cookie container</summary>
         public CookieContainer CookieContainer { get; set; }
+
+        /// <summary>HTTP headers to add to outgoing requests</summary>
+        public IDictionary<string, string> Headers { get; set; }
 
         /// <summary>Initializes a.</summary>
         public NsqHttpApiSettings()
@@ -229,6 +233,12 @@ namespace NsqSharp.Api
             webRequest.UseDefaultCredentials = settings.UseDefaultCredentials;
             if (settings.CookieContainer != null)
                 webRequest.CookieContainer = settings.CookieContainer;
+
+            if (settings.Headers != null)
+            {
+                foreach (var hdr in settings.Headers)
+                    webRequest.Headers.Add(hdr.Key, hdr.Value);
+            }
 
             if (httpMethod == HttpMethod.Post && body != null && body.Length != 0)
             {
