@@ -44,9 +44,11 @@ namespace NsqSharp.Tests.Bus
                                     x.For<IHandleMessages<LowPriority<UpdateMessage>>>().Use<UpdateHandler>();
                                 });
 
+            BusConfiguration busConfiguration = null;
+
             try
             {
-                BusService.Start(new BusConfiguration(
+                busConfiguration = new BusConfiguration(
                     new StructureMapObjectBuilder(container),
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                     new MessageAuditorStub(),
@@ -65,7 +67,9 @@ namespace NsqSharp.Tests.Bus
                         LookupdPollJitter = 0,
                         LookupdPollInterval = TimeSpan.FromSeconds(1),
                     }
-                ));
+                );
+
+                busConfiguration.StartBus();
 
                 var bus = container.GetInstance<IBus>();
 
@@ -154,7 +158,7 @@ namespace NsqSharp.Tests.Bus
             }
             finally
             {
-                BusService.Stop();
+                busConfiguration.StopBus();
                 _nsqdHttpClient.DeleteTopic(highPriorityTopicName);
                 _nsqLookupdHttpClient.DeleteTopic(highPriorityTopicName);
                 _nsqdHttpClient.DeleteTopic(lowPriorityTopicName);
@@ -176,7 +180,7 @@ namespace NsqSharp.Tests.Bus
 
             // UpdateHandler implements IHandleMessages multiple times
 
-            Assert.Throws<HandlerConfigurationException>(() => BusService.Start(new BusConfiguration(
+            Assert.Throws<HandlerConfigurationException>(() => (new BusConfiguration(
                 new StructureMapObjectBuilder(container),
                 new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                 new MessageAuditorStub(),
@@ -194,7 +198,7 @@ namespace NsqSharp.Tests.Bus
                     LookupdPollJitter = 0,
                     LookupdPollInterval = TimeSpan.FromSeconds(1),
                 }
-            )));
+            )).StartBus());
 
             // the safe way (explicit channel names for each IHandleMessages<>)
 
@@ -204,7 +208,7 @@ namespace NsqSharp.Tests.Bus
                 x.For<IHandleMessages<LowPriority<UpdateMessage>>>().Use<UpdateHandler>();
             });
 
-            BusService.Start(new BusConfiguration(
+            (new BusConfiguration(
                 new StructureMapObjectBuilder(container),
                 new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                 new MessageAuditorStub(),
@@ -223,7 +227,7 @@ namespace NsqSharp.Tests.Bus
                     LookupdPollJitter = 0,
                     LookupdPollInterval = TimeSpan.FromSeconds(1),
                 }
-            ));
+            )).StartBus();
         }
 
         private class HighPriority<T>

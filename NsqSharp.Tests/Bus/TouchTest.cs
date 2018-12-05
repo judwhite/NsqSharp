@@ -42,9 +42,11 @@ namespace NsqSharp.Tests.Bus
             _nsqdHttpClient.CreateTopic(topicName);
             _nsqLookupdHttpClient.CreateTopic(topicName);
 
+            BusConfiguration busConfiguration = null;
+
             try
             {
-                BusService.Start(new BusConfiguration(
+                busConfiguration = new BusConfiguration(
                     new StructureMapObjectBuilder(container),
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                     new MessageAuditorStub(),
@@ -64,7 +66,9 @@ namespace NsqSharp.Tests.Bus
                         LookupdPollInterval = TimeSpan.FromSeconds(1)
                     },
                     preCreateTopicsAndChannels: true
-                ));
+                );
+
+                busConfiguration.StartBus();
 
                 BlockingNoTouchTestHandler.Reset();
 
@@ -104,7 +108,7 @@ namespace NsqSharp.Tests.Bus
             }
             finally
             {
-                BusService.Stop();
+                busConfiguration.StopBus();
                 _nsqdHttpClient.DeleteTopic(topicName);
                 _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
@@ -121,9 +125,11 @@ namespace NsqSharp.Tests.Bus
             _nsqdHttpClient.CreateTopic(topicName);
             _nsqLookupdHttpClient.CreateTopic(topicName);
 
+            BusConfiguration busConfiguration = null;
+
             try
             {
-                BusService.Start(new BusConfiguration(
+                busConfiguration = new BusConfiguration(
                     new StructureMapObjectBuilder(container),
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                     new MessageAuditorStub(),
@@ -143,7 +149,9 @@ namespace NsqSharp.Tests.Bus
                         LookupdPollInterval = TimeSpan.FromSeconds(1)
                     },
                     preCreateTopicsAndChannels: true
-                ));
+                );
+
+                busConfiguration.StartBus();
 
                 BlockingTouchTestHandler.Reset();
 
@@ -183,7 +191,7 @@ namespace NsqSharp.Tests.Bus
             }
             finally
             {
-                BusService.Stop();
+                busConfiguration.StopBus();
                 _nsqdHttpClient.DeleteTopic(topicName);
                 _nsqLookupdHttpClient.DeleteTopic(topicName);
             }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace NsqSharp.Bus.Utils
+namespace NsqSharp.WindowService
 {
     internal static class NativeMethods
     {

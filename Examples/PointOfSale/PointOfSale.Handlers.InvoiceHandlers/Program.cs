@@ -1,5 +1,6 @@
 ﻿using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
+using NsqSharp.WindowService;
 using PointOfSale.Common.Nsq;
 using PointOfSale.Messages.Invoices.Commands;
 
@@ -23,7 +24,7 @@ namespace PointOfSale.Handlers.InvoiceHandlers
             public void OnBusStarted(IBusConfiguration config, IBus bus)
             {
 #if DEBUG
-                if (config.IsConsoleMode)
+                if ((config as IWindowsBusConfiguration).IsConsoleMode)
                 {
                     bus.Send<GetInvoicesCommand>();
                 }

@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
+using NsqSharp.WindowService;
 using PointOfSale.Common.Nsq;
 using PointOfSale.Messages.Customers.Commands;
 using PointOfSale.Messages.Invoices.Commands;
@@ -34,7 +35,7 @@ namespace PointOfSale.Application.Harness
 
             public void OnBusStarted(IBusConfiguration config, IBus bus)
             {
-                if (config.IsConsoleMode)
+                if ((config as IWindowsBusConfiguration).IsConsoleMode)
                 {
                     Task.Factory.StartNew(() =>
                     {

@@ -67,8 +67,12 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\NsqSharp.WindowService\NsqSharp.WindowService.csproj">
+      <Project>{D030B7A2-7E83-4190-81DE-394D04283ADD}</Project>
+      <Name>NsqSharp.WindowService</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\NsqSharp\NsqSharp.csproj">
-      <Project>{7327244d-e163-4c35-9c1a-8dbdf06b9408}</Project>
+      <Project>{CECBCAB8-292D-4833-B580-0353085EA6F7}</Project>
       <Name>NsqSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\PointOfSale.Common\PointOfSale.Common.csproj">

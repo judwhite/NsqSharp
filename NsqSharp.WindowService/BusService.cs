@@ -7,7 +7,7 @@ using System.Web.Hosting;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Utils;
 
-namespace NsqSharp.Bus
+namespace NsqSharp.WindowService
 {
     /// <summary>
     /// Static class to start and stop the bus.
@@ -26,7 +26,7 @@ namespace NsqSharp.Bus
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="busConfiguration"/> is <c>null</c>.
         /// </exception>
         /// <param name="busConfiguration">The bus configuration.</param>
-        public static void Start(BusConfiguration busConfiguration)
+        public static void Start(WindowsBusConfiguration busConfiguration)
         {
             if (busConfiguration == null)
                 throw new ArgumentNullException("busConfiguration");

@@ -28,7 +28,7 @@ namespace NsqSharp.Tests.Utils.Extensions
             Assert.Throws<ArgumentOutOfRangeException>(() => _rng.Intn(-1));
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TearDown()
         {
             _rng.Dispose();

@@ -321,7 +321,7 @@ namespace NsqSharp.Bus.Configuration
             }
         }
 
-        internal void StartBus()
+        public void StartBus()
         {
             // TODO: Needs to move to NsqBus. See below comment about async bus start.
             // TODO: This also makes an assumption nsqd is running locally on port 4151. Convenient for testing and sample
@@ -383,7 +383,7 @@ namespace NsqSharp.Bus.Configuration
                 _busStateChangedHandler.OnBusStarted(this, _bus);
         }
 
-        internal void StopBus()
+        public void StopBus()
         {
             if (_busStateChangedHandler != null)
                 _busStateChangedHandler.OnBusStopping(this, _bus);
@@ -414,14 +414,6 @@ namespace NsqSharp.Bus.Configuration
 
             return new Collection<ITopicChannels>(list);
         }
-
-        /// <summary>
-        /// <c>true</c> if the process is running in a console window.
-        /// </summary>
-        public bool IsConsoleMode
-        {
-            get { return (NativeMethods.GetConsoleWindow() != IntPtr.Zero); }
-        }
     }
 
     /// <summary>
@@ -434,10 +426,5 @@ namespace NsqSharp.Bus.Configuration
         /// </summary>
         /// <returns>A list of topics/channels currently handled by this process.</returns>
         Collection<ITopicChannels> GetHandledTopics();
-
-        /// <summary>
-        /// <c>true</c> if the process is running in a console window.
-        /// </summary>
-        bool IsConsoleMode { get; }
     }
 }

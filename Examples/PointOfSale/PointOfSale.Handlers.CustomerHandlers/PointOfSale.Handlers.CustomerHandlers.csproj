@@ -68,6 +68,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\NsqSharp.WindowService\NsqSharp.WindowService.csproj">
+      <Project>{D030B7A2-7E83-4190-81DE-394D04283ADD}</Project>
+      <Name>NsqSharp.WindowService</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\NsqSharp\NsqSharp.csproj">
+      <Project>{CECBCAB8-292D-4833-B580-0353085EA6F7}</Project>
+      <Name>NsqSharp</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PointOfSale.Common\PointOfSale.Common.csproj">
       <Project>{75654883-d9c6-498f-9af5-ac1201769890}</Project>
       <Name>PointOfSale.Common</Name>
@@ -75,10 +83,6 @@
     <ProjectReference Include="..\PointOfSale.Messages\PointOfSale.Messages.csproj">
       <Project>{eface6a2-0b05-4e06-9fb6-53a4e2b3beaf}</Project>
       <Name>PointOfSale.Messages</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\NsqSharp\NsqSharp.csproj">
-      <Project>{7327244d-e163-4c35-9c1a-8dbdf06b9408}</Project>
-      <Name>NsqSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\PointOfSale.Services\PointOfSale.Services.csproj">
       <Project>{0e9fd458-7fe1-4917-9717-88376a3896f7}</Project>
