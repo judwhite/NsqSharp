@@ -35,7 +35,7 @@ namespace PointOfSale.Application.Harness
 
             public void OnBusStarted(IBusConfiguration config, IBus bus)
             {
-                if ((config as IWindowsBusConfiguration).IsConsoleMode)
+                if (((IWindowsBusConfiguration)config).IsConsoleMode)
                 {
                     Task.Factory.StartNew(() =>
                     {

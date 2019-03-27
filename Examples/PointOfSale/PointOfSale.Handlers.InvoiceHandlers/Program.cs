@@ -24,7 +24,7 @@ namespace PointOfSale.Handlers.InvoiceHandlers
             public void OnBusStarted(IBusConfiguration config, IBus bus)
             {
 #if DEBUG
-                if ((config as IWindowsBusConfiguration).IsConsoleMode)
+                if (((IWindowsBusConfiguration)config).IsConsoleMode)
                 {
                     bus.Send<GetInvoicesCommand>();
                 }
