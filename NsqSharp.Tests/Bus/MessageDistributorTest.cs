@@ -256,7 +256,7 @@ namespace NsqSharp.Tests.Bus
             }
             finally
             {
-                busConfiguration.StopBus();
+                busConfiguration?.StopBus();
                 _nsqdHttpClient.DeleteTopic(topicName);
                 _nsqLookupdHttpClient.DeleteTopic(topicName);
             }
