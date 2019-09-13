@@ -1,7 +1,7 @@
 NsqSharp
 ========
 
-[![Build status](https://ci.appveyor.com/api/projects/status/s4yca701nhj1db9t/branch/master?svg=true)](https://ci.appveyor.com/project/judwhite/nsqsharp/branch/master)&nbsp;&nbsp;[![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)&nbsp;&nbsp;[![NuGet version](https://badge.fury.io/nu/nsqsharp.svg)](https://www.nuget.org/packages/nsqsharp)
+[![Build status](https://ci.appveyor.com/api/projects/status/s4yca701nhj1db9t/branch/master?svg=true)](https://ci.appveyor.com/project/judwhite/nsqsharp/branch/master)&nbsp;&nbsp;[![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)&nbsp;&nbsp;[![NuGet version](https://badge.fury.io/nu/nsqsharp.svg)](https://www.nuget.org/packages/nsqsharp)&nbsp;&nbsp;![Nuget](https://img.shields.io/nuget/dt/NsqSharp?label=nuget%20downloads)
 
 A .NET client library for [NSQ](https://github.com/nsqio/nsq), a realtime distributed messaging platform.
 
