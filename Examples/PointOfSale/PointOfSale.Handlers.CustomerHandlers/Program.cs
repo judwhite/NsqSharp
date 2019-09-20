@@ -1,5 +1,6 @@
 ﻿using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
+using NsqSharp.WindowService;
 using PointOfSale.Common.Nsq;
 using PointOfSale.Messages.Customers.Commands;
 
@@ -21,7 +22,7 @@ namespace PointOfSale.Handlers.CustomerHandlers
             public void OnBusStarted(IBusConfiguration config, IBus bus)
             {
 #if DEBUG
-                if (config.IsConsoleMode)
+                if (((IWindowsBusConfiguration)config).IsConsoleMode)
                 {
                     bus.Send<GetCustomersCommand>();
                 }

@@ -48,9 +48,10 @@ namespace NsqSharp.Tests.Bus
             _nsqLookupdHttpClient.CreateTopic(topicName);
 
             IBus bus = null;
+
             try
             {
-                BusService.Start(new BusConfiguration(
+                var busConfiguration = new BusConfiguration(
                     new StructureMapObjectBuilder(container),
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                     new MessageAuditorStub(),
@@ -69,7 +70,9 @@ namespace NsqSharp.Tests.Bus
                         LookupdPollJitter = 0,
                         LookupdPollInterval = TimeSpan.FromSeconds(300)
                     }
-                ));
+                );
+
+                busConfiguration.StartBus();
 
                 bus = container.GetInstance<IBus>();
 

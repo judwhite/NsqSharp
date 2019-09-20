@@ -12,6 +12,7 @@ using NsqSharp.Bus.Configuration.BuiltIn;
 using NsqSharp.Core;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Loggers;
+using NsqSharp.WindowService;
 
 namespace Echo.Bus.Tls
 {
@@ -43,7 +44,7 @@ namespace Echo.Bus.Tls
                             };
 
             // start the bus
-            BusService.Start(new BusConfiguration(
+            BusService.Start(new WindowsBusConfiguration(
                 new AutofacObjectBuilder(container), // dependency injection container
                 new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly), // message serializer
                 new ConsoleMessageAuditor(), // receives received, started, and failed notifications

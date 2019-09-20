@@ -177,6 +177,8 @@ namespace NsqSharp.Tests.Bus
                                         }
             );
 
+            BusConfiguration busConfiguration = null;
+
             try
             {
                 var nsqConfig = new Config
@@ -189,7 +191,7 @@ namespace NsqSharp.Tests.Bus
                 if (td.MaxAttempts != null)
                     nsqConfig.MaxAttempts = td.MaxAttempts.Value;
 
-                var busConfig = new BusConfiguration(
+                busConfiguration = new BusConfiguration(
                     new StructureMapObjectBuilder(container),
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                     fakeMessageAuditor.Object,
@@ -207,7 +209,7 @@ namespace NsqSharp.Tests.Bus
                     preCreateTopicsAndChannels: true
                 );
 
-                BusService.Start(busConfig);
+                busConfiguration.StartBus();
 
                 var bus = container.GetInstance<IBus>();
 
@@ -254,7 +256,7 @@ namespace NsqSharp.Tests.Bus
             }
             finally
             {
-                BusService.Stop();
+                busConfiguration?.StopBus();
                 _nsqdHttpClient.DeleteTopic(topicName);
                 _nsqLookupdHttpClient.DeleteTopic(topicName);
             }

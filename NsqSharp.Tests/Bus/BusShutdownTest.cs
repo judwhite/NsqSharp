@@ -44,10 +44,10 @@ namespace NsqSharp.Tests.Bus
 
             _nsqdHttpClient.CreateTopic(topicName);
             _nsqLookupdHttpClient.CreateTopic(topicName);
-
+           
             try
             {
-                BusService.Start(new BusConfiguration(
+                var busConfiguration = new BusConfiguration(
                     new StructureMapObjectBuilder(container),
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                     new MessageAuditorStub(),
@@ -64,7 +64,8 @@ namespace NsqSharp.Tests.Bus
                         LookupdPollJitter = 0,
                         LookupdPollInterval = TimeSpan.FromSeconds(1)
                     }
-                ));
+                );
+                busConfiguration.StartBus();
 
                 var bus = container.GetInstance<IBus>();
 
@@ -76,7 +77,7 @@ namespace NsqSharp.Tests.Bus
                 GoFunc.Run(() =>
                            {
                                var start = DateTime.Now;
-                               BusService.Stop();
+                               busConfiguration.StopBus();
                                Console.WriteLine(string.Format("Shutdown occurred in {0}", DateTime.Now - start));
                                stoppedChan.Send(true);
                            }, "bus stopper and stopped notifier");

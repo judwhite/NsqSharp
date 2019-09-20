@@ -3,6 +3,7 @@ using NsqSharp;
 using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Utils.Loggers;
+using NsqSharp.WindowService;
 using PingPong.Configuration;
 using PingPong.Configuration.Audit;
 using PingPong.Configuration.Mappings;
@@ -21,7 +22,7 @@ namespace PingPong
             var container = SetupDependencyInjectionContainer();
 
             // start the bus
-            BusService.Start(new BusConfiguration(
+            BusService.Start(new WindowsBusConfiguration(
                 new ObjectBuilder(container), // dependency injection container
                 new MessageSerializer(), // message serializer
                 new MessageAuditor(), // receives received, started, and failed notifications

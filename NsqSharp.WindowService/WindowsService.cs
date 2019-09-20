@@ -4,19 +4,20 @@ using System.Reflection;
 using System.ServiceProcess;
 using System.Threading;
 using System.Web.Hosting;
-using NsqSharp.Bus.Configuration;
 
-namespace NsqSharp.Bus.Utils
+namespace NsqSharp.WindowService
 {
     internal class WindowsService : ServiceBase, IRegisteredObject
     {
-        private readonly BusConfiguration _busConfiguration;
+        private readonly WindowsBusConfiguration _busConfiguration;
         private int _stop;
 
-        public WindowsService(BusConfiguration busConfiguration)
+        public WindowsService(WindowsBusConfiguration busConfiguration)
         {
             if (busConfiguration == null)
+            {
                 throw new ArgumentNullException("busConfiguration");
+            }
 
             CanStop = true;
             CanShutdown = true;
@@ -46,7 +47,7 @@ namespace NsqSharp.Bus.Utils
 
         public void Start()
         {
-            var entryAssembly = Assembly.GetEntryAssembly();
+            Assembly entryAssembly = Assembly.GetEntryAssembly();
 
             if (entryAssembly != null)
             {

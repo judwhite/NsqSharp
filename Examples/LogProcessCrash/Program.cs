@@ -8,6 +8,7 @@ using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.BuiltIn;
 using NsqSharp.Bus.Logging;
+using NsqSharp.WindowService;
 using StructureMap;
 using StructureMap.Graph;
 
@@ -29,7 +30,7 @@ namespace LogProcessCrash
             handlerChannels.Add(typeof(HelloMessageHandler), "LogProcessCrash-Channel");
 
             // start the bus
-            BusService.Start(new BusConfiguration(
+            BusService.Start(new WindowsBusConfiguration(
                 new StructureMapObjectBuilder(_structureMapContainer), // dependency injection container
                 new NewtonsoftJsonSerializer(typeof(JsonConvert).Assembly), // message serializer
                 new MessageAuditor(), // receives received, started, and failed notifications

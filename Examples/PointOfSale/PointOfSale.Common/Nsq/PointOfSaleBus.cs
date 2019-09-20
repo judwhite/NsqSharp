@@ -5,6 +5,7 @@ using NsqSharp.Bus;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.BuiltIn;
 using NsqSharp.Bus.Configuration.Providers;
+using NsqSharp.WindowService;
 using PointOfSale.Common.IoC;
 
 namespace PointOfSale.Common.Nsq
@@ -20,7 +21,7 @@ namespace PointOfSale.Common.Nsq
             if (channelProvider == null)
                 throw new ArgumentNullException("channelProvider");
 
-            var config = new BusConfiguration(
+            var config = new WindowsBusConfiguration(
                 new StructureMapObjectBuilder(ObjectFactory.Container),
                 new NewtonsoftJsonSerializer(typeof(JsonConvert).Assembly),
                 new MessageAuditor(),

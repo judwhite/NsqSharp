@@ -51,13 +51,15 @@ namespace NsqSharp.Tests.Bus
             _nsqLookupdHttpClient.CreateTopic(topicName2);
             _nsqLookupdHttpClient.CreateChannel(topicName2, channelName);
 
+            BusConfiguration busConfiguration = null;
+
             try
             {
                 var messageTypeToTopicProvider = new MessageTypeToTopicDictionary(new Dictionary<Type, string> {
                     { typeof(MyRoutedMessage), originalTopicName }
                 });
 
-                BusService.Start(new BusConfiguration(
+                busConfiguration = new BusConfiguration(
                     new StructureMapObjectBuilder(container),
                     new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
                     new MessageAuditorStub(),
@@ -75,7 +77,9 @@ namespace NsqSharp.Tests.Bus
                     },
                     preCreateTopicsAndChannels: true,
                     messageTopicRouter: new MessageTopicRouter(messageTypeToTopicProvider)
-                ));
+                );
+
+                busConfiguration.StartBus();
 
                 var bus = container.GetInstance<IBus>();
 
@@ -124,7 +128,7 @@ namespace NsqSharp.Tests.Bus
             }
             finally
             {
-                BusService.Stop();
+                busConfiguration?.StopBus();
 
                 _nsqdHttpClient.DeleteTopic(originalTopicName);
                 _nsqLookupdHttpClient.DeleteTopic(originalTopicName);

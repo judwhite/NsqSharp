@@ -39,12 +39,12 @@ namespace NsqSharp.Tests.Bus
             var builder = new ContainerBuilder();
             builder.RegisterType<TestDependency>().As<ITestDependency>();
             var container = builder.Build();
-
+            BusConfiguration busConfiguration = null;
             try
             {
                 var objectBuilder = new AutofacObjectBuilder(container);
 
-                var busConfiguration =
+                busConfiguration =
                     new BusConfiguration(
                         objectBuilder,
                         new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly),
@@ -66,7 +66,7 @@ namespace NsqSharp.Tests.Bus
                         },
                         preCreateTopicsAndChannels: true);
 
-                BusService.Start(busConfiguration);
+                busConfiguration.StartBus();
 
                 var bus = objectBuilder.GetInstance<IBus>();
 
@@ -100,7 +100,7 @@ namespace NsqSharp.Tests.Bus
             }
             finally
             {
-                BusService.Stop();
+                busConfiguration?.StopBus();
                 _nsqdHttpClient.DeleteTopic(topicName);
                 _nsqLookupdHttpClient.DeleteTopic(topicName);
             }

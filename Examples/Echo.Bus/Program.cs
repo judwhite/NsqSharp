@@ -8,6 +8,7 @@ using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.BuiltIn;
 using NsqSharp.Core;
 using NsqSharp.Utils.Loggers;
+using NsqSharp.WindowService;
 using StructureMap;
 
 namespace Echo.Bus
@@ -20,7 +21,7 @@ namespace Echo.Bus
             var container = new Container();
 
             // start the bus
-            BusService.Start(new BusConfiguration(
+            BusService.Start(new WindowsBusConfiguration(
                 new StructureMapObjectBuilder(container), // dependency injection container
                 new NewtonsoftJsonSerializer(typeof(JsonConverter).Assembly), // message serializer
                 new ConsoleMessageAuditor(), // receives received, started, and failed notifications
