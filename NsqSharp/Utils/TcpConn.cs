@@ -53,6 +53,12 @@ namespace NsqSharp.Utils
 
                     try
                     {
+                        var certCollection = new X509Certificate2Collection();
+                        if (tlsConfig.ClientCertificate != null)
+                        {
+                            certCollection.Add(tlsConfig.ClientCertificate);
+                        }
+
                         sslStream.AuthenticateAsClient(_hostname, new X509Certificate2Collection(), enabledSslProtocols, tlsConfig.CheckCertificateRevocation);
                     }
                     catch (Exception ex)

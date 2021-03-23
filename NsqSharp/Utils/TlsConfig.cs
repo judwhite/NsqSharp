@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 
 namespace NsqSharp.Utils
 {
@@ -43,6 +44,10 @@ namespace NsqSharp.Utils
         /// <value>true if certificate revocation should be checked, false if not.</value>
         public bool CheckCertificateRevocation { get; set; }
 
+        /// <summary>Gets or sets the client certificate used during authentication</summary>
+        /// <value>client certificate</value>
+        public X509Certificate2 ClientCertificate { get; set; }
+
         /// <summary>
         /// Gets the enabled <see cref="SslProtocols"/> based on <see cref="MinVersion"/>.
         /// </summary>
@@ -67,7 +72,8 @@ namespace NsqSharp.Utils
             {
                 MinVersion = MinVersion,
                 InsecureSkipVerify = InsecureSkipVerify,
-                CheckCertificateRevocation = CheckCertificateRevocation
+                CheckCertificateRevocation = CheckCertificateRevocation,
+                ClientCertificate = ClientCertificate
             };
         }
     }
