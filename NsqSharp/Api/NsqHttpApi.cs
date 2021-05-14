@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Web;
 using NsqSharp.Core;
 
 namespace NsqSharp.Api
@@ -148,7 +149,7 @@ namespace NsqSharp.Api
                 throw new ArgumentNullException("route");
 
             route = route.TrimStart(new[] { '/' });
-
+            route = route.Replace("#", "%23");
             return string.Format("{0}/{1}", _httpAddress, route);
         }
 

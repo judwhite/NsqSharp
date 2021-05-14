@@ -16,8 +16,8 @@ namespace PingPong.Configuration.Mappings
 
         public HandlerTypeToChannelProvider()
         {
-            _handlerToChannel.Add(typeof(PingHandler), "ping-handler");
-            _handlerToChannel.Add(typeof(PongHandler), "pong-handler");
+            _handlerToChannel.Add(typeof(PingHandler), "ping-handler#ephemeral");
+            _handlerToChannel.Add(typeof(PongHandler), "pong-handler#ephemeral");
         }
 
         public string GetChannel(Type handlerType)
