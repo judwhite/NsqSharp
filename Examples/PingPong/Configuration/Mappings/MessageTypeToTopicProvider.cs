@@ -13,8 +13,8 @@ namespace PingPong.Configuration.Mappings
 
         public MessageTypeToTopicProvider()
         {
-            _messageToTopic.Add(typeof(PingMessage), "pings");
-            _messageToTopic.Add(typeof(PongMessage), "pongs");
+            _messageToTopic.Add(typeof(PingMessage), "pings#ephemeral");
+            _messageToTopic.Add(typeof(PongMessage), "pongs#ephemeral");
         }
 
         public string GetTopic(Type messageType)
