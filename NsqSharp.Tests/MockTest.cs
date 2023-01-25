@@ -61,7 +61,7 @@ namespace NsqSharp.Tests
             var config = new Config();
             config.MaxInFlight = 5;
             config.BackoffMultiplier = Time.Duration(10 * Time.Millisecond);
-            var q = new Consumer(topicName, "ch", new ConsoleLogger(LogLevel.Debug), config);
+            var q = new Consumer(topicName, "ch", new ConsoleLogger(Core.LogLevel.Debug), config);
             q.AddHandler(new testHandler());
             q.ConnectToNsqd(n.tcpAddr);
 
@@ -141,7 +141,7 @@ namespace NsqSharp.Tests
             var config = new Config();
             config.MaxInFlight = 1;
             config.BackoffMultiplier = Time.Duration(10 * Time.Millisecond);
-            var q = new Consumer(topicName, "ch", new ConsoleLogger(LogLevel.Debug), config);
+            var q = new Consumer(topicName, "ch", new ConsoleLogger(Core.LogLevel.Debug), config);
             q.AddHandler(new testHandler());
             q.ConnectToNsqd(n.tcpAddr);
 
@@ -215,7 +215,7 @@ namespace NsqSharp.Tests
             config.BackoffMultiplier = Time.Duration(10 * Time.Millisecond);
             config.LookupdPollInterval = Time.Duration(10 * Time.Millisecond);
             config.RDYRedistributeInterval = Time.Duration(10 * Time.Millisecond);
-            var q = new Consumer(topicName, "ch", new ConsoleLogger(LogLevel.Debug), config);
+            var q = new Consumer(topicName, "ch", new ConsoleLogger(Core.LogLevel.Debug), config);
             q.AddHandler(new testHandler());
             q.ConnectToNsqd(n.tcpAddr);
 

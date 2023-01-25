@@ -3,14 +3,14 @@ using NsqSharp.Core;
 
 namespace NsqSharp.Tests.TestHelpers
 {
-    public class TestConsoleLogger : ILogger
+    public class TestConsoleLogger : Core.ILogger
     {
         /// <summary>
         /// Writes the output for a logging event.
         /// </summary>
-        public void Output(LogLevel logLevel, string message)
+        public void Output(Core.LogLevel Core.LogLevel, string message)
         {
-            Console.WriteLine("[{0}] {1}", logLevel, message);
+            Console.WriteLine("[{0}] {1}", Core.LogLevel, message);
         }
 
         public void Flush()

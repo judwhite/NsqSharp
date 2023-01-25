@@ -13,7 +13,7 @@ namespace NsqSharp.Tests.Utils.Loggers
         //[Test]
         public void TestConsoleLoggerThreadSafety()
         {
-            var consoleLogger = new ConsoleLogger(LogLevel.Debug);
+            var consoleLogger = new ConsoleLogger(Core.LogLevel.Debug);
             var wg = new WaitGroup();
             wg.Add(100);
             var rnd = new Random();
@@ -23,7 +23,7 @@ namespace NsqSharp.Tests.Utils.Loggers
                 var msg = new string('.', n);
                 var t = new Thread(() =>
                 {
-                    consoleLogger.Output(LogLevel.Warning, msg);
+                    consoleLogger.Output(Core.LogLevel.Warning, msg);
                     wg.Done();
                 });
                 t.IsBackground = true;

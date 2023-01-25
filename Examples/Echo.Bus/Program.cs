@@ -38,7 +38,7 @@ namespace Echo.Bus
                 ),
                 busStateChangedHandler: new BusStateChangedHandler(),
                 defaultNsqLookupdHttpEndpoints: new[] { "127.0.0.1:4161" },
-                nsqLogger: new ConsoleLogger(LogLevel.Info), // default = TraceLogger
+                nsqLogger: new ConsoleLogger(Core.LogLevel.Info), // default = TraceLogger
                 defaultThreadsPerHandler: 1, // threads per handler. tweak based on use case.
                 preCreateTopicsAndChannels: true // pre-create topics so we dont have to wait for an nsqlookupd cycle
             ));
