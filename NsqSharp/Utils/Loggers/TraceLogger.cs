@@ -6,7 +6,7 @@ namespace NsqSharp.Utils.Loggers
     /// <summary>
     /// Trace logger
     /// </summary>
-    public class TraceLogger : ILogger
+    public class TraceLogger : Core.ILogger
     {
         private readonly TraceSource _traceSource;
 
@@ -22,23 +22,23 @@ namespace NsqSharp.Utils.Loggers
         /// the text to print after the prefix specified by the flags of the
         /// Logger. A newline is appended if the last character of s is not
         /// already a newline.
-        public void Output(LogLevel logLevel, string message)
+        public void Output(Core.LogLevel logLevel, string message)
         {
             switch (logLevel)
             {
-                case LogLevel.Debug:
+                case Core.LogLevel.Debug:
                     _traceSource.TraceEvent(TraceEventType.Verbose, 0, message);
                     break;
-                case LogLevel.Info:
+                case Core.LogLevel.Info:
                     _traceSource.TraceEvent(TraceEventType.Information, 0, message);
                     break;
-                case LogLevel.Warning:
+                case Core.LogLevel.Warning:
                     _traceSource.TraceEvent(TraceEventType.Warning, 0, message);
                     break;
-                case LogLevel.Error:
+                case Core.LogLevel.Error:
                     _traceSource.TraceEvent(TraceEventType.Error, 0, message);
                     break;
-                case LogLevel.Critical:
+                case Core.LogLevel.Critical:
                     _traceSource.TraceEvent(TraceEventType.Critical, 0, message);
                     break;
             }

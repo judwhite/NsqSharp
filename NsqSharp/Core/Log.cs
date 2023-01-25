@@ -7,37 +7,37 @@
     /// </summary>
     internal static class Log
     {
-        /// <summary>LogLevelDebugPrefix</summary>
+        /// <summary>Core.LogLevelDebugPrefix</summary>
         public const string DebugPrefix = "DBG";
-        /// <summary>LogLevelInfoPrefix</summary>
+        /// <summary>Core.LogLevelInfoPrefix</summary>
         public const string InfoPrefix = "INF";
-        /// <summary>LogLevelWarningPrefix</summary>
+        /// <summary>Core.LogLevelWarningPrefix</summary>
         public const string WarningPrefix = "WRN";
-        /// <summary>LogLevelErrorPrefix</summary>
+        /// <summary>Core.LogLevelErrorPrefix</summary>
         public const string ErrorPrefix = "ERR";
-        /// <summary>LogLevelCriticalPrefix</summary>
+        /// <summary>Core.LogLevelCriticalPrefix</summary>
         public const string CriticalPrefix = "FAT";
 
         /// <summary>LogPrefix Resolution</summary>
-        internal static string Prefix(LogLevel lvl)
+        internal static string Prefix(Core.LogLevel lvl)
         {
             string prefix = string.Empty;
 
             switch (lvl)
             {
-                case LogLevel.Debug:
+                case Core.LogLevel.Debug:
                     prefix = DebugPrefix;
                     break;
-                case LogLevel.Info:
+                case Core.LogLevel.Info:
                     prefix = InfoPrefix;
                     break;
-                case LogLevel.Warning:
+                case Core.LogLevel.Warning:
                     prefix = WarningPrefix;
                     break;
-                case LogLevel.Error:
+                case Core.LogLevel.Error:
                     prefix = ErrorPrefix;
                     break;
-                case LogLevel.Critical:
+                case Core.LogLevel.Critical:
                     prefix = CriticalPrefix;
                     break;
             }

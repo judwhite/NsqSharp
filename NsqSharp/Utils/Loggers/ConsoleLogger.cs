@@ -8,17 +8,17 @@ namespace NsqSharp.Utils.Loggers
     /// <summary>
     /// Console logger
     /// </summary>
-    public class ConsoleLogger : ILogger
+    public class ConsoleLogger : Core.ILogger
     {
         private readonly TextWriter _textWriter;
-        private readonly LogLevel _minLogLevel;
+        private readonly Core.LogLevel _minLogLevel;
         private readonly object _textWriterLocker = new object();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsoleLogger"/> class.
         /// </summary>
-        /// <param name="minLogLevel">The minimum <see cref="LogLevel"/> to output.</param>
-        public ConsoleLogger(LogLevel minLogLevel)
+        /// <param name="minLogLevel">The minimum <see cref="Core.LogLevel"/> to output.</param>
+        public ConsoleLogger(Core.LogLevel minLogLevel)
         {
             _textWriter = new StreamWriter(Console.OpenStandardError());
             _minLogLevel = minLogLevel;
@@ -27,7 +27,7 @@ namespace NsqSharp.Utils.Loggers
         /// <summary>
         /// Writes the output for a logging event.
         /// </summary>
-        public void Output(LogLevel logLevel, string message)
+        public void Output(Core.LogLevel logLevel, string message)
         {
             if (logLevel < _minLogLevel)
                 return;

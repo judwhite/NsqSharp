@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reflection;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Logging;
-using NsqSharp.Bus.Utils;
 using NsqSharp.Core;
 
 namespace NsqSharp.Bus
@@ -11,8 +10,7 @@ namespace NsqSharp.Bus
     internal class MessageDistributor : IHandler
     {
         private readonly NsqBus _bus;
-        private readonly IObjectBuilder _objectBuilder;
-        private readonly ILogger _logger;
+        private readonly Core.ILogger _logger;
         private readonly IMessageSerializer _serializer;
         private readonly MethodInfo _handleMethod;
         private readonly Type _handlerType;
@@ -24,24 +22,19 @@ namespace NsqSharp.Bus
 
         public MessageDistributor(
             NsqBus bus,
-            IObjectBuilder objectBuilder,
-            ILogger logger,
+            Core.ILogger logger,
             MessageHandlerMetadata messageHandlerMetadata
         )
         {
             if (bus == null)
                 throw new ArgumentNullException("bus");
-            if (objectBuilder == null)
-                throw new ArgumentNullException("objectBuilder");
             if (logger == null)
                 throw new ArgumentNullException("logger");
             if (messageHandlerMetadata == null)
                 throw new ArgumentNullException("messageHandlerMetadata");
 
             _bus = bus;
-            _objectBuilder = objectBuilder;
             _logger = logger;
-
             _serializer = messageHandlerMetadata.Serializer;
             _handlerType = messageHandlerMetadata.HandlerType;
             _messageType = messageHandlerMetadata.MessageType;
@@ -69,7 +62,7 @@ namespace NsqSharp.Bus
             }
             else
             {
-                _concreteMessageType = InterfaceBuilder.CreateType(_messageType);
+                //_concreteMessageType = InterfaceBuilder.CreateType(_messageType);
             }
         }
 
@@ -89,30 +82,31 @@ namespace NsqSharp.Bus
 
             _bus.SetCurrentMessageInformation(messageInformation);
 
+            // TODO Object Builder stuff
             // Get handler
-            object handler;
-            try
-            {
-                handler = _objectBuilder.GetInstance(_handlerType);
-                messageInformation.HandlerType = handler.GetType();
-            }
-            catch (Exception ex)
-            {
-                messageInformation.Finished = DateTime.UtcNow;
+            // object handler;
+            // try
+            // {
+            //     handler = _objectBuilder.GetInstance(_handlerType);
+            //     messageInformation.HandlerType = handler.GetType();
+            // }
+            // catch (Exception ex)
+            // {
+            //     messageInformation.Finished = DateTime.UtcNow;
 
-                _messageAuditor.TryOnFailed(_logger, _bus,
-                    new FailedMessageInformation
-                    (
-                        messageInformation,
-                        FailedMessageQueueAction.Finish,
-                        FailedMessageReason.HandlerConstructor,
-                        ex
-                    )
-                );
+            //     _messageAuditor.TryOnFailed(_logger, _bus,
+            //         new FailedMessageInformation
+            //         (
+            //             messageInformation,
+            //             FailedMessageQueueAction.Finish,
+            //             FailedMessageReason.HandlerConstructor,
+            //             ex
+            //         )
+            //     );
 
-                message.Finish();
-                return;
-            }
+            //     message.Finish();
+            //     return;
+            // }
 
             // Get deserialized value
             object value;
@@ -142,37 +136,38 @@ namespace NsqSharp.Bus
             messageInformation.DeserializedMessageBody = value;
             _messageAuditor.TryOnReceived(_logger, _bus, messageInformation);
 
-            try
-            {
-                _handleMethod.Invoke(handler, new[] { value });
-            }
-            catch (Exception ex)
-            {
-                messageInformation.Finished = DateTime.UtcNow;
+            // TODO Object Builder stuff
+            // try
+            // {
+            //     _handleMethod.Invoke(handler, new[] { value });
+            // }
+            // catch (Exception ex)
+            // {
+            //     messageInformation.Finished = DateTime.UtcNow;
 
-                if (!message.HasResponded)
-                {
-                    if (message.Attempts < message.MaxAttempts)
-                        message.Requeue();
-                    else
-                        message.Finish();
-                }
+            //     if (!message.HasResponded)
+            //     {
+            //         if (message.Attempts < message.MaxAttempts)
+            //             message.Requeue();
+            //         else
+            //             message.Finish();
+            //     }
 
-                bool requeued = (message.RequeuedUntil != null);
-                bool maxAttemptsExceeded = (message.Attempts >= message.MaxAttempts);
+            //     bool requeued = (message.RequeuedUntil != null);
+            //     bool maxAttemptsExceeded = (message.Attempts >= message.MaxAttempts);
 
-                _messageAuditor.TryOnFailed(_logger, _bus,
-                    new FailedMessageInformation
-                    (
-                        messageInformation,
-                        requeued ? FailedMessageQueueAction.Requeue : FailedMessageQueueAction.Finish,
-                        maxAttemptsExceeded ? FailedMessageReason.MaxAttemptsExceeded : FailedMessageReason.HandlerException,
-                        ex
-                    )
-                );
+            //     _messageAuditor.TryOnFailed(_logger, _bus,
+            //         new FailedMessageInformation
+            //         (
+            //             messageInformation,
+            //             requeued ? FailedMessageQueueAction.Requeue : FailedMessageQueueAction.Finish,
+            //             maxAttemptsExceeded ? FailedMessageReason.MaxAttemptsExceeded : FailedMessageReason.HandlerException,
+            //             ex
+            //         )
+            //     );
 
-                return;
-            }
+            //     return;
+            // }
 
             messageInformation.Finished = DateTime.UtcNow;
 
@@ -181,15 +176,16 @@ namespace NsqSharp.Bus
 
         public void LogFailedMessage(IMessage message)
         {
-            object handler;
-            try
-            {
-                handler = _objectBuilder.GetInstance(_handlerType);
-            }
-            catch
-            {
-                handler = _handlerType;
-            }
+            // TODO Object Builder stuff
+            // object handler;
+            // try
+            // {
+            //     handler = _objectBuilder.GetInstance(_handlerType);
+            // }
+            // catch
+            // {
+            //     handler = _handlerType;
+            // }
 
             object deserializedMessageBody;
             try
@@ -206,7 +202,9 @@ namespace NsqSharp.Bus
                 UniqueIdentifier = Guid.NewGuid(),
                 Topic = _topic,
                 Channel = _channel,
-                HandlerType = handler.GetType(),
+                //HandlerType = handler.GetType(),
+                // TODO Object Builder stuff
+                HandlerType = message.GetType(),
                 MessageType = _messageType,
                 Message = message,
                 DeserializedMessageBody = deserializedMessageBody,

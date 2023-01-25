@@ -8,7 +8,7 @@
         /// <summary>
         /// Writes the output for a logging event.
         /// </summary>
-        void Output(LogLevel logLevel, string message);
+        void Output(Core.LogLevel loglevel, string message);
 
         /// <summary>
         /// Flushes the output stream.

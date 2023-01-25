@@ -16,7 +16,7 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
         /// <param name="nsqdAddress">The nsqd address.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="config">The configuration.</param>
-        public NsqdTcpPublisher(string nsqdAddress, ILogger logger, Config config)
+        public NsqdTcpPublisher(string nsqdAddress, Core.ILogger logger, IPleaseWorkConfig config)
         {
             if (string.IsNullOrEmpty(nsqdAddress))
                 throw new ArgumentNullException("nsqdAddress");
@@ -25,7 +25,8 @@ namespace NsqSharp.Bus.Configuration.BuiltIn
             if (config == null)
                 throw new ArgumentNullException("config");
 
-            _producer = new Producer(nsqdAddress, logger, config);
+            // TODO
+            _producer = new Producer(nsqdAddress, logger, (Config)config);
         }
 
         /// <summary>Publishes a <paramref name="message"/> on the specified <paramref name="topic"/>.</summary>

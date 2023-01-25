@@ -3,7 +3,7 @@
     // https://github.com/nsqio/go-nsq/blob/master/delegates.go
 
     /// <summary>
-    /// LogLevel specifies the severity of a given log message
+    /// Core.LogLevel specifies the severity of a given log message
     /// </summary>
     public enum LogLevel
     {

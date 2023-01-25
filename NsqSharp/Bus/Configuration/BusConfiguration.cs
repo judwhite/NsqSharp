@@ -6,7 +6,6 @@ using NsqSharp.Api;
 using NsqSharp.Bus.Configuration.BuiltIn;
 using NsqSharp.Bus.Configuration.Providers;
 using NsqSharp.Bus.Logging;
-using NsqSharp.Bus.Utils;
 using NsqSharp.Core;
 using NsqSharp.Utils;
 using NsqSharp.Utils.Loggers;
@@ -18,18 +17,17 @@ namespace NsqSharp.Bus.Configuration
     /// </summary>
     public class BusConfiguration : IBusConfiguration
     {
-        private readonly Dictionary<string, List<MessageHandlerMetadata>> _topicChannelHandlers;
-
-        private readonly IObjectBuilder _dependencyInjectionContainer;
+        private readonly ITopicChannelHandlerWrapper _topicChannelHandlers;
         private readonly IMessageSerializer _defaultMessageSerializer;
         private readonly IMessageAuditor _messageAuditor;
         private readonly string[] _defaultNsqlookupdHttpEndpoints;
+        //private readonly Config _nsqConfig;
         private readonly Config _nsqConfig;
         private readonly int _defaultThreadsPerHandler;
         private readonly IMessageTypeToTopicProvider _messageTypeToTopicProvider;
         private readonly IHandlerTypeToChannelProvider _handlerTypeToChannelProvider;
         private readonly IBusStateChangedHandler _busStateChangedHandler;
-        private readonly ILogger _nsqLogger;
+        private readonly Core.ILogger _nsqLogger;
         private readonly bool _preCreateTopicsAndChannels;
         private readonly IMessageMutator _messageMutator;
         private readonly IMessageTopicRouter _messageTopicRouter;
@@ -40,8 +38,6 @@ namespace NsqSharp.Bus.Configuration
         /// <summary>
         /// Initializes a new instance of the <see cref="BusConfiguration"/> class.
         /// </summary>
-        /// <param name="dependencyInjectionContainer">The DI container to use for this bus (required). See
-        /// <see cref="StructureMapObjectBuilder"/> for a default implementation.</param>
         /// <param name="defaultMessageSerializer">The default message serializer/deserializer. See
         /// <see cref="NewtonsoftJsonSerializer" /> for a default implementation.</param>
         /// <param name="messageAuditor">The handler to call when a message fails to process.</param>
@@ -52,7 +48,7 @@ namespace NsqSharp.Bus.Configuration
         /// <param name="defaultThreadsPerHandler">The default number of threads per message handler.</param>
         /// <param name="nsqConfig">The NSQ <see cref="Config"/> (optional).</param>
         /// <param name="busStateChangedHandler">Handle bus start and stop events (optional).</param>
-        /// <param name="nsqLogger">The <see cref="ILogger"/> used by NsqSharp when communicating with nsqd/nsqlookupd.
+        /// <param name="nsqLogger">The <see cref="Core.ILogger"/> used by NsqSharp when communicating with nsqd/nsqlookupd.
         /// (default = <see cref="TraceLogger"/>).</param>
         /// <param name="preCreateTopicsAndChannels">Set to <c>true</c> to pre-create all registered topics and channels
         /// on the local nsqd instance listening on 127.0.0.1:4151; useful for self-contained clusters (default =
@@ -67,31 +63,35 @@ namespace NsqSharp.Bus.Configuration
         /// <paramref name="nsqLogger"/> (default = <c>true</c>).
         /// </param>
         public BusConfiguration(
-            IObjectBuilder dependencyInjectionContainer,
             IMessageSerializer defaultMessageSerializer,
             IMessageAuditor messageAuditor,
             IMessageTypeToTopicProvider messageTypeToTopicProvider,
             IHandlerTypeToChannelProvider handlerTypeToChannelProvider,
-            string[] defaultNsqLookupdHttpEndpoints,
-            int defaultThreadsPerHandler,
-            Config nsqConfig = null,
-            IBusStateChangedHandler busStateChangedHandler = null,
-            ILogger nsqLogger = null,
-            bool preCreateTopicsAndChannels = false,
-            IMessageMutator messageMutator = null,
-            IMessageTopicRouter messageTopicRouter = null,
-            INsqdPublisher nsqdPublisher = null,
-            bool logOnProcessCrash = true
+            //string[] defaultNsqLookupdHttpEndpoints,
+            IDefaultNsqLookupdHttpEndpoints defaultNsqLookupdHttpEndpoints,
+            //int defaultThreadsPerHandler,
+            IDefaultThreadsPerHandler defaultThreadsPerHandler,
+            //NsqSharp.Config nsqConfig = null,
+            
+            IBusStateChangedHandler busStateChangedHandler,
+            Core.ILogger nsqLogger,
+            //bool preCreateTopicsAndChannels = false,
+            IPreCreateTopicsAndChannels preCreateTopicsAndChannels,
+            IMessageMutator messageMutator,
+            IMessageTopicRouter messageTopicRouter,
+            INsqdPublisher nsqdPublisher,
+            Config nsqConfig = null
+            //bool logOnProcessCrash = true
         )
         {
+            // TODO 
+            bool logOnProcessCrash = true;
             _nsqLogger = nsqLogger ?? new TraceLogger();
             if (logOnProcessCrash)
             {
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             }
 
-            if (dependencyInjectionContainer == null)
-                throw new ArgumentNullException("dependencyInjectionContainer");
             if (defaultMessageSerializer == null)
                 throw new ArgumentNullException("defaultMessageSerializer");
             if (messageAuditor == null)
@@ -102,24 +102,25 @@ namespace NsqSharp.Bus.Configuration
                 throw new ArgumentNullException("handlerTypeToChannelProvider");
             if (defaultNsqLookupdHttpEndpoints == null)
                 throw new ArgumentNullException("defaultNsqLookupdHttpEndpoints");
-            if (defaultNsqLookupdHttpEndpoints.Length == 0)
+            // TODO
+            if (defaultNsqLookupdHttpEndpoints.GetDefaultNsqLookupdHttpEndpoints().Count == 0)
                 throw new ArgumentNullException("defaultNsqLookupdHttpEndpoints", "must contain elements");
-            if (defaultThreadsPerHandler <= 0)
+            if (defaultThreadsPerHandler.GetDefaultThreadsPerHandler() <= 0)
                 throw new ArgumentOutOfRangeException("defaultThreadsPerHandler", "must be > 0");
 
-            _topicChannelHandlers = new Dictionary<string, List<MessageHandlerMetadata>>();
+            //_topicChannelHandlers = new Dictionary<string, List<MessageHandlerMetadata>>();
+            _topicChannelHandlers = new TopicChannelHandlerWrapper();
 
             _messageTypeToTopicProvider = messageTypeToTopicProvider;
             _handlerTypeToChannelProvider = handlerTypeToChannelProvider;
-
-            _dependencyInjectionContainer = dependencyInjectionContainer;
             _defaultMessageSerializer = defaultMessageSerializer;
             _messageAuditor = messageAuditor;
-            _defaultNsqlookupdHttpEndpoints = defaultNsqLookupdHttpEndpoints;
+            // TODO
+            _defaultNsqlookupdHttpEndpoints = defaultNsqLookupdHttpEndpoints.GetDefaultNsqLookupdHttpEndpoints().ToArray();
             _nsqConfig = nsqConfig ?? new Config();
-            _defaultThreadsPerHandler = defaultThreadsPerHandler;
+            _defaultThreadsPerHandler = defaultThreadsPerHandler.GetDefaultThreadsPerHandler();
             _busStateChangedHandler = busStateChangedHandler;
-            _preCreateTopicsAndChannels = preCreateTopicsAndChannels;
+            _preCreateTopicsAndChannels = preCreateTopicsAndChannels.GetPreCreateTopicsAndChannels();
             _messageMutator = messageMutator;
             _messageTopicRouter = messageTopicRouter;
             _nsqdPublisher = nsqdPublisher ?? new NsqdTcpPublisher("127.0.0.1:4150", _nsqLogger, _nsqConfig);
@@ -136,7 +137,7 @@ namespace NsqSharp.Bus.Configuration
             else
                 message = "Process Crash";
 
-            _nsqLogger.Output(LogLevel.Critical, message);
+            _nsqLogger.Output(Core.LogLevel.Critical, message);
             _nsqLogger.Flush();
         }
 
@@ -248,7 +249,7 @@ namespace NsqSharp.Bus.Configuration
 
         private void AddMessageHandler(Type handlerType, Type messageType, string topic, string channel,
             IMessageSerializer messageSerializer = null,
-            Config config = null,
+            IPleaseWorkConfig config = null,
             int? threadsPerHandler = null,
             params string[] nsqLookupdHttpAddresses
         )
@@ -270,10 +271,11 @@ namespace NsqSharp.Bus.Configuration
             string key = string.Format("{0}/{1}", topic, channel);
 
             List<MessageHandlerMetadata> list;
-            if (!_topicChannelHandlers.TryGetValue(key, out list))
+            if (!_topicChannelHandlers.GetTopicChannelHandlers().TryGetValue(key, out list))
             {
                 list = new List<MessageHandlerMetadata>();
-                _topicChannelHandlers.Add(key, list);
+                _topicChannelHandlers.AddTopicChannelHandlers(key, list);
+                //_topicChannelHandlers.Add(key, list);
             }
 
             // remove duplicates based on topic/channel/handlerType; replace with new values
@@ -295,7 +297,7 @@ namespace NsqSharp.Bus.Configuration
                 NsqLookupdHttpAddresses = nsqLookupdHttpAddresses,
                 Serializer = messageSerializer ?? _defaultMessageSerializer,
                 MessageAuditor = _messageAuditor,
-                Config = config ?? _nsqConfig,
+                Config = config ?? (Config)_nsqConfig,
                 InstanceCount = threadsPerHandler ?? _defaultThreadsPerHandler
             };
 
@@ -349,7 +351,7 @@ namespace NsqSharp.Bus.Configuration
                             }
                             catch (Exception ex)
                             {
-                                _nsqLogger.Output(LogLevel.Error,
+                                _nsqLogger.Output(Core.LogLevel.Error,
                                     string.Format("error creating topic/channel on {0} - {1}", nsqdHttpAddress, ex));
                             }
 
@@ -366,7 +368,6 @@ namespace NsqSharp.Bus.Configuration
 
             _bus = new NsqBus(
                 _topicChannelHandlers,
-                _dependencyInjectionContainer,
                 _messageTypeToTopicProvider,
                 _defaultMessageSerializer,
                 _nsqLogger,
@@ -401,7 +402,7 @@ namespace NsqSharp.Bus.Configuration
         public Collection<ITopicChannels> GetHandledTopics()
         {
             var list = new Collection<ITopicChannels>();
-            foreach (var tch in _topicChannelHandlers)
+            foreach (var tch in _topicChannelHandlers.GetTopicChannelHandlers())
             {
                 var topic = tch.Value.Select(p => p.Topic).Distinct().Single();
 
@@ -415,12 +416,18 @@ namespace NsqSharp.Bus.Configuration
             return new Collection<ITopicChannels>(list);
         }
 
+        void IBusConfiguration.StartBus()
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// <c>true</c> if the process is running in a console window.
         /// </summary>
         public bool IsConsoleMode
         {
-            get { return (NativeMethods.GetConsoleWindow() != IntPtr.Zero); }
+            get { return true; }
+            //get { return (NativeMethods.GetConsoleWindow() != IntPtr.Zero); }
         }
     }
 
@@ -439,5 +446,7 @@ namespace NsqSharp.Bus.Configuration
         /// <c>true</c> if the process is running in a console window.
         /// </summary>
         bool IsConsoleMode { get; }
+
+        void StartBus();
     }
 }

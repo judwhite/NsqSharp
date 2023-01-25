@@ -150,7 +150,7 @@ namespace NsqSharp
     ///
     /// Use Set(string option, object value) as an alternate way to set parameters
     /// </summary>
-    public class Config : IBackoffConfig
+    public class Config : IPleaseWorkConfig, IBackoffConfig
     {
         // used to Initialize, Validate
         private readonly List<configHandler> configHandlers;
@@ -324,6 +324,9 @@ namespace NsqSharp
         /// </summary>
         [Opt("auth_secret")]
         public string AuthSecret { get; set; }
+        bool IPleaseWorkConfig.Deflate { get => true; set => throw new NotImplementedException(); }
+        int IPleaseWorkConfig.DeflateLevel { get => 1; set => throw new NotImplementedException(); }
+        bool IPleaseWorkConfig.Snappy { get => true; set => throw new NotImplementedException(); }
 
         /// <summary>
         /// Initializes a new instance of Config.

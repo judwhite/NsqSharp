@@ -25,7 +25,7 @@ namespace NsqSharp
         /// context to the log messages that the connection will print, the default
         /// is '({0})'.
         /// </summary>
-        void SetLogger(ILogger l, string format);
+        void SetLogger(Core.ILogger l, string format);
 
         /// <summary>
         /// Connect dials and bootstraps the nsqd connection
@@ -64,7 +64,7 @@ namespace NsqSharp
         private IConn _conn;
         private readonly Config _config;
 
-        private readonly ILogger _logger;
+        private readonly Core.ILogger _logger;
 
         private readonly Chan<byte[]> _responseChan;
         private readonly Chan<byte[]> _errorChan;
@@ -128,7 +128,7 @@ namespace NsqSharp
         /// <param name="config">The config. After Config is passed in the values are
         /// no longer mutable (they are copied).</param>
         public Producer(string nsqdAddress, Config config)
-            : this(nsqdAddress, new ConsoleLogger(LogLevel.Info), config, null)
+            : this(nsqdAddress, new ConsoleLogger(Core.LogLevel.Info), config, null)
         {
         }
 
@@ -137,9 +137,9 @@ namespace NsqSharp
         /// </summary>
         /// <param name="nsqdAddress">The nsqd address.</param>
         /// <param name="logger">
-        /// The logger. Default = <see cref="ConsoleLogger"/>(<see cref="E:LogLevel.Info"/>).
+        /// The logger. Default = <see cref="ConsoleLogger"/>(<see cref="E:Core.LogLevel.Info"/>).
         /// </param>
-        public Producer(string nsqdAddress, ILogger logger)
+        public Producer(string nsqdAddress, Core.ILogger logger)
             : this(nsqdAddress, logger, new Config(), null)
         {
         }
@@ -149,16 +149,16 @@ namespace NsqSharp
         /// </summary>
         /// <param name="nsqdAddress">The nsqd address.</param>
         /// <param name="logger">
-        /// The logger. Default = <see cref="ConsoleLogger"/>(<see cref="E:LogLevel.Info"/>).
+        /// The logger. Default = <see cref="ConsoleLogger"/>(<see cref="E:Core.LogLevel.Info"/>).
         /// </param>
         /// <param name="config">The config. Values are copied, changing the properties on <paramref name="config"/>
         /// after the constructor is called will have no effect on the <see cref="Producer"/>.</param>
-        public Producer(string nsqdAddress, ILogger logger, Config config)
+        public Producer(string nsqdAddress, Core.ILogger logger, Config config)
             : this(nsqdAddress, logger, config, null)
         {
         }
 
-        private Producer(string addr, ILogger logger, Config config, Func<Producer, IConn> connFactory)
+        private Producer(string addr, Core.ILogger logger, Config config, Func<Producer, IConn> connFactory)
         {
             if (string.IsNullOrEmpty(addr))
                 throw new ArgumentNullException("addr");
@@ -208,7 +208,7 @@ namespace NsqSharp
                     // already closed
                     return;
                 }
-                log(LogLevel.Info, "stopping");
+                log(Core.LogLevel.Info, "stopping");
                 _exitChan.Close();
                 close();
                 _wg.Wait();
@@ -401,7 +401,7 @@ namespace NsqSharp
                         throw new ErrNotConnected();
                 }
 
-                log(LogLevel.Info, string.Format("{0} connecting to nsqd", _addr));
+                log(Core.LogLevel.Info, string.Format("{0} connecting to nsqd", _addr));
 
                 _conn = _connFactory(this);
                 _conn.SetLogger(_logger, string.Format("P{0} ({{0}})", _id));
@@ -411,7 +411,7 @@ namespace NsqSharp
                 }
                 catch (Exception ex)
                 {
-                    log(LogLevel.Error, string.Format("({0}) error connecting to nsqd - {1}", _addr, ex.Message));
+                    log(Core.LogLevel.Error, string.Format("({0}) error connecting to nsqd - {1}", _addr, ex.Message));
                     _conn.Close();
                     throw;
                 }
@@ -419,7 +419,7 @@ namespace NsqSharp
                 _state = (int)State.Connected;
                 _closeChan = new Chan<int>();
                 _wg.Add(1);
-                log(LogLevel.Info, string.Format("{0} connected to nsqd", _addr));
+                log(Core.LogLevel.Info, string.Format("{0} connected to nsqd", _addr));
                 GoFunc.Run(router, string.Format("Producer:router P{0}", _id));
             }
         }
@@ -459,7 +459,7 @@ namespace NsqSharp
                         }
                         catch (Exception ex)
                         {
-                            log(LogLevel.Error, string.Format("({0}) sending command - {1}", _conn, ex.Message));
+                            log(Core.LogLevel.Error, string.Format("({0}) sending command - {1}", _conn, ex.Message));
                             close();
                         }
                     })
@@ -488,7 +488,7 @@ namespace NsqSharp
 
             transactionCleanup();
             _wg.Done();
-            log(LogLevel.Info, "exiting router");
+            log(Core.LogLevel.Info, "exiting router");
         }
 
         private void popTransaction(FrameType frameType, byte[] data)
@@ -545,7 +545,7 @@ namespace NsqSharp
                             doLoop = false;
                             return;
                         }
-                        log(LogLevel.Warning, string.Format(
+                        log(Core.LogLevel.Warning, string.Format(
                             "waiting for {0} concurrent producers to finish", _concurrentProducers));
                     })
                     .NoDefault(defer: true)
@@ -561,7 +561,7 @@ namespace NsqSharp
             wg.Wait();
         }
 
-        private void log(LogLevel lvl, string line)
+        private void log(Core.LogLevel lvl, string line)
         {
             // TODO: proper width formatting
             _logger.Output(lvl, string.Format("P{0} {1}", _id, line));

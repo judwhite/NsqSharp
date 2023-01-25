@@ -33,7 +33,7 @@ namespace NsqSharp.Utils
                                    catch (Exception ex)
                                    {
                                        var logger = new TraceLogger();
-                                       logger.Output(LogLevel.Critical, string.Format("{0} - {1}", threadName, ex));
+                                       logger.Output(Core.LogLevel.Critical, string.Format("{0} - {1}", threadName, ex));
                                        logger.Flush();
                                        Trace.Flush();
                                        throw;

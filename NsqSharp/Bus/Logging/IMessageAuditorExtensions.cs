@@ -7,7 +7,7 @@ namespace NsqSharp.Bus.Logging
     {
         public static void TryOnReceived(
             this IMessageAuditor messageAuditor,
-            ILogger logger,
+            Core.ILogger logger,
             IBus bus,
             MessageInformation messageInformation
         )
@@ -18,13 +18,13 @@ namespace NsqSharp.Bus.Logging
             }
             catch (Exception ex)
             {
-                logger.Output(LogLevel.Error, string.Format("messageAuditor.OnReceived - {0}", ex));
+                logger.Output(Core.LogLevel.Error, string.Format("messageAuditor.OnReceived - {0}", ex));
             }
         }
 
         public static void TryOnSucceeded(
             this IMessageAuditor messageAuditor,
-            ILogger logger,
+            Core.ILogger logger,
             IBus bus,
             MessageInformation messageInformation
         )
@@ -35,13 +35,13 @@ namespace NsqSharp.Bus.Logging
             }
             catch (Exception ex)
             {
-                logger.Output(LogLevel.Error, string.Format("messageAuditor.OnSucceeded - {0}", ex));
+                logger.Output(Core.LogLevel.Error, string.Format("messageAuditor.OnSucceeded - {0}", ex));
             }
         }
 
         public static void TryOnFailed(
             this IMessageAuditor messageAuditor,
-            ILogger logger,
+            Core.ILogger logger,
             IBus bus,
             FailedMessageInformation failedMessageInformation
         )
@@ -52,7 +52,7 @@ namespace NsqSharp.Bus.Logging
             }
             catch (Exception ex)
             {
-                logger.Output(LogLevel.Error, string.Format("messageAuditor.OnFailed - {0}", ex));
+                logger.Output(Core.LogLevel.Error, string.Format("messageAuditor.OnFailed - {0}", ex));
             }
         }
     }

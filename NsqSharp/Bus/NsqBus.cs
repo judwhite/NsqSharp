@@ -4,19 +4,17 @@ using System.Diagnostics;
 using System.Linq;
 using NsqSharp.Bus.Configuration;
 using NsqSharp.Bus.Configuration.Providers;
-using NsqSharp.Bus.Utils;
 using NsqSharp.Core;
 using NsqSharp.Utils;
 
 namespace NsqSharp.Bus
 {
-    internal class NsqBus : IBus
+    public class NsqBus : IBus
     {
-        private readonly Dictionary<string, List<MessageHandlerMetadata>> _topicChannelHandlers;
-        private readonly IObjectBuilder _dependencyInjectionContainer;
+        private readonly ITopicChannelHandlerWrapper _topicChannelHandlers;
         private readonly IMessageTypeToTopicProvider _messageTypeToTopicProvider;
         private readonly IMessageSerializer _sendMessageSerializer;
-        private readonly ILogger _nsqLogger;
+        private readonly Core.ILogger _nsqLogger;
         private readonly IMessageMutator _messageMutator;
         private readonly IMessageTopicRouter _messageTopicRouter;
         private readonly INsqdPublisher _nsqdPublisher;
@@ -25,20 +23,17 @@ namespace NsqSharp.Bus
         private static ICurrentMessageInformation _threadMessage;
 
         public NsqBus(
-            Dictionary<string, List<MessageHandlerMetadata>> topicChannelHandlers,
-            IObjectBuilder dependencyInjectionContainer,
+            ITopicChannelHandlerWrapper topicChannelHandlers,
             IMessageTypeToTopicProvider messageTypeToTopicProvider,
             IMessageSerializer sendMessageSerializer,
-            ILogger nsqLogger,
+            Core.ILogger nsqLogger,
             IMessageMutator messageMutator,
             IMessageTopicRouter messageTopicRouter,
             INsqdPublisher nsqdPublisher
         )
         {
             if (topicChannelHandlers == null)
-                throw new ArgumentNullException("topicChannelHandlers");
-            if (dependencyInjectionContainer == null)
-                throw new ArgumentNullException("dependencyInjectionContainer");
+                 throw new ArgumentNullException("topicChannelHandlers");
             if (messageTypeToTopicProvider == null)
                 throw new ArgumentNullException("messageTypeToTopicProvider");
             if (sendMessageSerializer == null)
@@ -49,15 +44,12 @@ namespace NsqSharp.Bus
                 throw new ArgumentNullException("nsqLogger");
 
             _topicChannelHandlers = topicChannelHandlers;
-            _dependencyInjectionContainer = dependencyInjectionContainer;
             _messageTypeToTopicProvider = messageTypeToTopicProvider;
             _sendMessageSerializer = sendMessageSerializer;
             _nsqLogger = nsqLogger;
             _messageMutator = messageMutator;
             _messageTopicRouter = messageTopicRouter;
             _nsqdPublisher = nsqdPublisher;
-
-            _dependencyInjectionContainer.Inject((IBus)this);
         }
 
         private string GetTopic<T>()
@@ -199,21 +191,22 @@ namespace NsqSharp.Bus
 
         private T CreateInstance<T>()
         {
-            return typeof(T).IsInterface
-                        ? InterfaceBuilder.CreateObject<T>()
-                        : _dependencyInjectionContainer.GetInstance<T>();
+            return default(T);
+            // return typeof(T).IsInterface
+            //             ? InterfaceBuilder.CreateObject<T>()
+            //             : _dependencyInjectionContainer.GetInstance<T>();
         }
 
         public void Start()
         {
             Trace.WriteLine("Starting...");
 
-            foreach (var topicChannelHandler in _topicChannelHandlers)
+            foreach (var topicChannelHandler in _topicChannelHandlers.GetTopicChannelHandlers())
             {
                 foreach (var item in topicChannelHandler.Value)
                 {
                     var consumer = new Consumer(item.Topic, item.Channel, _nsqLogger, item.Config);
-                    var distributor = new MessageDistributor(this, _dependencyInjectionContainer, _nsqLogger, item);
+                    var distributor = new MessageDistributor(this, _nsqLogger, item);
                     consumer.AddHandler(distributor, item.InstanceCount);
 
                     // TODO: max_in_flight vs item.InstanceCount
@@ -238,7 +231,7 @@ namespace NsqSharp.Bus
             // Stop all Consumers
 
             var wg = new WaitGroup();
-            foreach (var topicChannelHandler in _topicChannelHandlers)
+            foreach (var topicChannelHandler in _topicChannelHandlers.GetTopicChannelHandlers())
             {
                 foreach (var item in topicChannelHandler.Value)
                 {

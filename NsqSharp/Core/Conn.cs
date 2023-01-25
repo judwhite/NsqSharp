@@ -88,7 +88,7 @@ namespace NsqSharp.Core
 
         private readonly IConnDelegate _delegate;
 
-        private ILogger _logger;
+        private Core.ILogger _logger;
         private string _logFmt;
 
         private IReader _r;
@@ -138,7 +138,7 @@ namespace NsqSharp.Core
         /// context to the log messages that the connection will print, the default
         /// is '({0})'.
         /// </summary>
-        public void SetLogger(ILogger l, string format)
+        public void SetLogger(Core.ILogger l, string format)
         {
             if (l == null)
                 throw new ArgumentNullException("l");
@@ -202,7 +202,7 @@ namespace NsqSharp.Core
             {
                 if (string.IsNullOrEmpty(_config.AuthSecret))
                 {
-                    log(LogLevel.Error, "Auth Required");
+                    log(Core.LogLevel.Error, "Auth Required");
                     throw new Exception("Auth Required");
                 }
                 auth(_config.AuthSecret);
@@ -347,7 +347,7 @@ namespace NsqSharp.Core
             catch (Exception ex)
             {
                 object msg = (ex is ConnectionClosedException) ? ex.Message : (object)ex;
-                log(LogLevel.Error, string.Format("Conn.WriteCommand IO error - {0}", msg));
+                log(Core.LogLevel.Error, string.Format("Conn.WriteCommand IO error - {0}", msg));
                 _delegate.OnIOError(this, ex);
                 throw;
             }
@@ -426,7 +426,7 @@ namespace NsqSharp.Core
                 }
 
                 string respJson = Encoding.UTF8.GetString(data);
-                log(LogLevel.Debug, string.Format("IDENTIFY response: {0}", respJson));
+                log(Core.LogLevel.Debug, string.Format("IDENTIFY response: {0}", respJson));
 
                 IdentifyResponse resp;
                 var serializer = new DataContractJsonSerializer(typeof(IdentifyResponse));
@@ -439,13 +439,13 @@ namespace NsqSharp.Core
 
                 if (resp.TLSv1)
                 {
-                    log(LogLevel.Info, "upgrading to TLS");
+                    log(Core.LogLevel.Info, "upgrading to TLS");
                     upgradeTLS(_config.TlsConfig);
                 }
 
                 // TODO: Deflate
                 /*if resp.Deflate {
-                    c.log(LogLevelInfo, "upgrading to Deflate")
+                    c.log(Core.LogLevelInfo, "upgrading to Deflate")
                     err := c.upgradeDeflate(c.config.DeflateLevel)
                     if err != nil {
                         return nil, ErrIdentify{err.Error()}
@@ -454,7 +454,7 @@ namespace NsqSharp.Core
 
                 // TODO: Snappy
                 /*if resp.Snappy {
-                    c.log(LogLevelInfo, "upgrading to Snappy")
+                    c.log(Core.LogLevelInfo, "upgrading to Snappy")
                     err := c.upgradeSnappy()
                     if err != nil {
                         return nil, ErrIdentify{err.Error()}
@@ -530,7 +530,7 @@ namespace NsqSharp.Core
                 resp = (AuthResponse)serializer.ReadObject(memoryStream);
             }
 
-            log(LogLevel.Info, string.Format("Auth accepted. Identity: {0} {1} Permissions: {2}",
+            log(Core.LogLevel.Info, string.Format("Auth accepted. Identity: {0} {1} Permissions: {2}",
                 resp.Identity, resp.IdentityUrl, resp.PermissionCount));
         }
 
@@ -560,7 +560,7 @@ namespace NsqSharp.Core
                         // if !strings.Contains(err.Error(), "use of closed network connection")
                         if (_closeFlag != 1)
                         {
-                            log(LogLevel.Error, string.Format("IO error on ReadUnpackedResponse - {0}", ex));
+                            log(Core.LogLevel.Error, string.Format("IO error on ReadUnpackedResponse - {0}", ex));
                             _delegate.OnIOError(this, ex);
                         }
                         break;
@@ -577,7 +577,7 @@ namespace NsqSharp.Core
                         {
                             if (_closeFlag != 1)
                             {
-                                log(LogLevel.Error, string.Format("IO error on Heartbeat - {0}", ex));
+                                log(Core.LogLevel.Error, string.Format("IO error on Heartbeat - {0}", ex));
                                 _delegate.OnIOError(this, ex);
                             }
                             break;
@@ -598,7 +598,7 @@ namespace NsqSharp.Core
                             }
                             catch (Exception ex)
                             {
-                                log(LogLevel.Error, string.Format("IO error on DecodeMessage - {0}", ex));
+                                log(Core.LogLevel.Error, string.Format("IO error on DecodeMessage - {0}", ex));
                                 _delegate.OnIOError(this, ex);
                                 doLoop = false;
                                 break;
@@ -614,14 +614,14 @@ namespace NsqSharp.Core
                             break;
                         case FrameType.Error:
                             string errMsg = Encoding.UTF8.GetString(data);
-                            log(LogLevel.Error, string.Format("protocol error - {0}", errMsg));
+                            log(Core.LogLevel.Error, string.Format("protocol error - {0}", errMsg));
                             _delegate.OnError(this, data);
                             break;
                         default:
                             // TODO: what would 'err' be in this case?
                             // https://github.com/nsqio/go-nsq/blob/v1.0.3/conn.go#L518
                             var unknownFrameTypeEx = new Exception(string.Format("unknown frame type {0}", frameType));
-                            log(LogLevel.Error, string.Format("IO error - {0}", unknownFrameTypeEx.Message));
+                            log(Core.LogLevel.Error, string.Format("IO error - {0}", unknownFrameTypeEx.Message));
                             _delegate.OnIOError(this, unknownFrameTypeEx);
                             break;
                     }
@@ -641,10 +641,10 @@ namespace NsqSharp.Core
                 }
                 else
                 {
-                    log(LogLevel.Warning, string.Format("delaying close, {0} outstanding messages", messagesInFlight));
+                    log(Core.LogLevel.Warning, string.Format("delaying close, {0} outstanding messages", messagesInFlight));
                 }
                 _wg.Done();
-                log(LogLevel.Info, "readLoop exiting");
+                log(Core.LogLevel.Info, "readLoop exiting");
             }
         }
 
@@ -655,7 +655,7 @@ namespace NsqSharp.Core
                 Select
                     .CaseReceive(_exitChan, o =>
                     {
-                        log(LogLevel.Info, "breaking out of writeLoop");
+                        log(Core.LogLevel.Info, "breaking out of writeLoop");
                         // Indicate drainReady because we will not pull any more off msgResponseChan
                         _drainReady.Close();
                         doLoop = false;
@@ -669,7 +669,7 @@ namespace NsqSharp.Core
                         catch (Exception ex)
                         {
                             object msg = (ex is ConnectionClosedException) ? ex.Message : (object)ex;
-                            log(LogLevel.Error, string.Format("Conn.writeLoop, cmdChan: error sending command {0} - {1}", cmd, msg));
+                            log(Core.LogLevel.Error, string.Format("Conn.writeLoop, cmdChan: error sending command {0} - {1}", cmd, msg));
                             close();
                         }
                         // TODO: Create PR to remove unnecessary continue in go-nsq
@@ -682,13 +682,13 @@ namespace NsqSharp.Core
 
                         if (resp.success)
                         {
-                            log(LogLevel.Debug, string.Format("FIN {0}", resp.msg.Id));
+                            log(Core.LogLevel.Debug, string.Format("FIN {0}", resp.msg.Id));
                             _delegate.OnMessageFinished(this, resp.msg);
                             _delegate.OnResume(this);
                         }
                         else
                         {
-                            log(LogLevel.Debug, string.Format("REQ {0}", resp.msg.Id));
+                            log(Core.LogLevel.Debug, string.Format("REQ {0}", resp.msg.Id));
                             _delegate.OnMessageRequeued(this, resp.msg);
                             if (resp.backoff)
                             {
@@ -712,7 +712,7 @@ namespace NsqSharp.Core
                         catch (Exception ex)
                         {
                             object msg = (ex is ConnectionClosedException) ? ex.Message : (object)ex;
-                            log(LogLevel.Error, string.Format("Conn.writeLoop, msgResponseChan: error sending command {0} - {1}", resp.cmd, msg));
+                            log(Core.LogLevel.Error, string.Format("Conn.writeLoop, msgResponseChan: error sending command {0} - {1}", resp.cmd, msg));
                             close();
                         }
                     })
@@ -726,7 +726,7 @@ namespace NsqSharp.Core
             }
 
             _wg.Done();
-            log(LogLevel.Info, "writeLoop exiting");
+            log(Core.LogLevel.Info, "writeLoop exiting");
         }
 
         private void close()
@@ -759,7 +759,7 @@ namespace NsqSharp.Core
 
             _stopper.Do(() =>
             {
-                log(LogLevel.Info, "beginning close");
+                log(Core.LogLevel.Info, "beginning close");
                 _exitChan.Close();
                 _conn.Close();
 
@@ -795,7 +795,7 @@ namespace NsqSharp.Core
                 {
                     if (DateTime.Now - lastWarning > TimeSpan.FromSeconds(1))
                     {
-                        log(LogLevel.Warning, string.Format("draining... waiting for {0} messages in flight", msgsInFlight));
+                        log(Core.LogLevel.Warning, string.Format("draining... waiting for {0} messages in flight", msgsInFlight));
                         lastWarning = DateTime.Now;
                     }
                     continue;
@@ -807,7 +807,7 @@ namespace NsqSharp.Core
                 {
                     if (DateTime.Now - lastWarning > TimeSpan.FromSeconds(1))
                     {
-                        log(LogLevel.Warning, "draining... readLoop still running");
+                        log(Core.LogLevel.Warning, "draining... readLoop still running");
                         lastWarning = DateTime.Now;
                     }
                     continue;
@@ -818,14 +818,14 @@ namespace NsqSharp.Core
             //exit:
             ticker.Stop();
             _wg.Done();
-            log(LogLevel.Info, "finished draining, cleanup exiting");
+            log(Core.LogLevel.Info, "finished draining, cleanup exiting");
         }
 
         private void waitForCleanup()
         {
             _wg.Wait();
             _conn.Close();
-            log(LogLevel.Info, "clean close complete");
+            log(Core.LogLevel.Info, "clean close complete");
             _delegate.OnClose(this);
         }
 
@@ -866,7 +866,7 @@ namespace NsqSharp.Core
                 .NoDefault();
         }
 
-        private void log(LogLevel lvl, string line)
+        private void log(Core.LogLevel lvl, string line)
         {
             // TODO: thread safety
 
